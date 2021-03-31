@@ -24,8 +24,18 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Renderer extends AbstractRenderer {
     private GLCamera camera;
-    double vpredVzad = 0.0;
 
+
+    int pocetKrychli =  5;
+    int delkaHrany = 100;
+    int jednaHrana = delkaHrany/pocetKrychli;
+    int[][] rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
+    Box[][] boxes = new Box[pocetKrychli][pocetKrychli];
+
+
+    private boolean mouseButton1 = false;
+    private float dx, dy, ox, oy;
+    private float zenit, azimut;
     public Renderer() {
         super();
 
@@ -41,17 +51,37 @@ public class Renderer extends AbstractRenderer {
         };
 
         /*used default glfwKeyCallback */
+//        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
+//
+//            @Override
+//            public void invoke(long window, int button, int action, int mods) {
+//
+//                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+//                    double x = 0,y = 0;
+////                    glfwGetCursorPos(window, x, y);
+//
+//                    System.out.println(x+" test kliku  "+y);
+//                }
+//            }
+//
+//        };
 
         glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
 
             @Override
             public void invoke(long window, int button, int action, int mods) {
+                DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                glfwGetCursorPos(window, xBuffer, yBuffer);
+                double x = xBuffer.get(0);
+                double y = yBuffer.get(0);
+
+                mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
 
                 if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-                    double x = 0,y = 0;
-//                    glfwGetCursorPos(window, x, y);
-
-                    System.out.println(x+" test kliku  "+y);
+                    ox = (float) x;
+                    oy = (float) y;
+                    System.out.println(x+" , "+y);
                 }
             }
 
@@ -60,7 +90,23 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-//                System.out.println("glfwCursorPosCallback  "+x+"   "+y);
+                if (mouseButton1) {
+                    dx = (float) x - ox;
+                    dy = (float) y - oy;
+                    ox = (float) x;
+                    oy = (float) y;
+                    zenit -= dy / width * 180;
+                    if (zenit > 90)
+                        zenit = 90;
+                    if (zenit <= -90)
+                        zenit = -90;
+                    azimut += dx / height * 180;
+                    azimut = azimut % 360;
+                    camera.setAzimuth(Math.toRadians(azimut));
+                    camera.setZenith(Math.toRadians(zenit));
+                    dx = 0;
+                    dy = 0;
+                }
             }
         };
 
@@ -95,7 +141,7 @@ public class Renderer extends AbstractRenderer {
 
         glFrontFace(GL_CCW);
         glPolygonMode(GL_FRONT, GL_FILL);
-        glPolygonMode(GL_BACK, GL_LINE);
+        glPolygonMode(GL_BACK, GL_FILL);
         glDisable(GL_CULL_FACE);
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
@@ -104,11 +150,12 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
 
         camera = new GLCamera();
-        camera.setPosition(new Vec3D(0,0,1));
+        camera.setPosition(new Vec3D(30*0.04,100*0.04,5*0.04));
 
-
+        createMaze();
 
     }
+
 
     @Override
     public void display() {
@@ -120,7 +167,7 @@ public class Renderer extends AbstractRenderer {
         //Mdoelovaci
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glScalef(0.01f,0.01f,0.01f);
+        glScalef(0.04f,0.04f,0.04f);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -130,12 +177,12 @@ public class Renderer extends AbstractRenderer {
 
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
 
-        camera.setFirstPerson(false);
-        camera.setRadius(5);
+        camera.setFirstPerson(true);
+//        camera.setRadius(5);
         camera.setMatrix();
 
 //        camera.setPosition(new Vec3D(0,0,1));
-        camera.setMatrix();
+//        camera.setMatrix();
 
         // Rendering triangle by fixed pipeline
 //        glBegin(GL_QUADS);
@@ -154,16 +201,92 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void renderMaze() {
+//        glBegin(GL_QUADS);
+//        glColor3f(1f, 0f, 0f);
+//        glVertex3f(20f, 20f,0f);
+//        glVertex3f(20f, 0f,0f);
+//        glVertex3f(0, 0,0f);
+//        glVertex3f(0, 20,0f);
+//
+//        glEnd();
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                if(rozlozeniBludiste[i][j] == 0){
+                    renderPlate(i,j);
+                }else {
+                    renderBox(i,j);
+                }
+            }
+        }
+    }
 
+    private void renderBox(int x,int y) {
         glBegin(GL_QUADS);
-        glColor3f(1f, 0f, 0f);
-        glVertex3f(20f, 20f,0f);
-        glVertex3f(20f, 0f,0f);
-        glVertex3f(0, 0,0f);
-        glVertex3f(0, 20,0f);
+        glColor3f(0f, 1f, 0f);
+
+        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+
+        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+
+        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+
+        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+
+        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+
+
+        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+
 
         glEnd();
+    }
 
+    private void renderPlate(int x,int y){
+        glBegin(GL_QUADS);
+        glColor3f(1f, 0f, 0f);
+
+        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),0f);
+        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),0f);
+        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),0f);
+        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),0f);
+
+        glEnd();
+    }
+
+    private void createMaze() {
+
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                rozlozeniBludiste[i][j] = 1;
+                boxes[i][j] = new Box(i,j,jednaHrana);
+            }
+        }
+
+        rozlozeniBludiste[3][0] = 0;
+        rozlozeniBludiste[3][1] = 0;
+        rozlozeniBludiste[3][2] = 0;
+        rozlozeniBludiste[2][2] = 0;
+        rozlozeniBludiste[2][3] = 0;
+        rozlozeniBludiste[1][3] = 0;
+        rozlozeniBludiste[1][4] = 0;
 
     }
 
