@@ -105,6 +105,9 @@ public class Renderer extends AbstractRenderer {
 
         camera = new GLCamera();
         camera.setPosition(new Vec3D(0,0,1));
+
+
+
     }
 
     @Override
@@ -115,9 +118,9 @@ public class Renderer extends AbstractRenderer {
 
 
         //Mdoelovaci
-//        glMatrixMode(GL_MODELVIEW);
-//        glLoadIdentity();
-//        glScalef(5,5,5);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glScalef(0.01f,0.01f,0.01f);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -125,27 +128,42 @@ public class Renderer extends AbstractRenderer {
 
 //        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
 
-//        gluLookAt(vpredVzad, vpredVzad, 1, 0, 1, 0.5, 0, 0, 1);
+//        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
 
-//        camera.setFirstPerson(false);
-//        camera.setRadius(5);
-//        camera.setMatrix();
+        camera.setFirstPerson(false);
+        camera.setRadius(5);
+        camera.setMatrix();
 
 //        camera.setPosition(new Vec3D(0,0,1));
         camera.setMatrix();
 
         // Rendering triangle by fixed pipeline
+//        glBegin(GL_QUADS);
+//        glColor3f(1f, 0f, 0f);
+//
+//        glVertex3f(-1f, 1f,0f);
+//        glColor3f(0f, 0f, 1f);
+//        glVertex3f(-1f, -1f,0f);
+//        glVertex3f(1, -1,0f);
+//        glColor3f(0f, 1f, 0f);
+//        glVertex3f(1, 1,0f);
+//
+//        glEnd();
+        renderMaze();
+
+    }
+
+    private void renderMaze() {
+
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
-
-        glVertex3f(-1f, 1f,0f);
-        glColor3f(0f, 0f, 1f);
-        glVertex3f(-1f, -1f,0f);
-        glVertex3f(1, -1,0f);
-        glColor3f(0f, 1f, 0f);
-        glVertex3f(1, 1,0f);
+        glVertex3f(20f, 20f,0f);
+        glVertex3f(20f, 0f,0f);
+        glVertex3f(0, 0,0f);
+        glVertex3f(0, 20,0f);
 
         glEnd();
+
 
     }
 
