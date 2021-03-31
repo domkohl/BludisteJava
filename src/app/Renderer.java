@@ -104,8 +104,13 @@ public class Renderer extends AbstractRenderer {
                     azimut = azimut % 360;
                     camera.setAzimuth(Math.toRadians(azimut));
                     camera.setZenith(Math.toRadians(zenit));
+
+//                    camera.setAzimuth(Math.PI / 2 * (dx) / width);
+//                    camera.setZenith(Math.PI / 2 * (dx) / width);
+
                     dx = 0;
                     dy = 0;
+                    System.out.println(x+" , "+y);
                 }
             }
         };
@@ -126,8 +131,10 @@ public class Renderer extends AbstractRenderer {
                     camera.forward(0.1);
                 if (key == GLFW_KEY_S && action == GLFW_PRESS)
                     camera.backward(0.1);
-//                    System.out.println(dopredu);
-
+                if (key == GLFW_KEY_A && action == GLFW_PRESS)
+                    camera.left(0.1);
+                if (key == GLFW_KEY_D && action == GLFW_PRESS)
+                    camera.right(0.1);
             }
         };
 
@@ -151,6 +158,8 @@ public class Renderer extends AbstractRenderer {
 
         camera = new GLCamera();
         camera.setPosition(new Vec3D(30*0.04,100*0.04,5*0.04));
+        camera.setAzimuth(0);
+        camera.setZenith(0);
 
         createMaze();
 
@@ -176,39 +185,16 @@ public class Renderer extends AbstractRenderer {
 //        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
 
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
-
+        glLoadIdentity();
         camera.setFirstPerson(true);
 //        camera.setRadius(5);
         camera.setMatrix();
 
-//        camera.setPosition(new Vec3D(0,0,1));
-//        camera.setMatrix();
-
-        // Rendering triangle by fixed pipeline
-//        glBegin(GL_QUADS);
-//        glColor3f(1f, 0f, 0f);
-//
-//        glVertex3f(-1f, 1f,0f);
-//        glColor3f(0f, 0f, 1f);
-//        glVertex3f(-1f, -1f,0f);
-//        glVertex3f(1, -1,0f);
-//        glColor3f(0f, 1f, 0f);
-//        glVertex3f(1, 1,0f);
-//
-//        glEnd();
         renderMaze();
 
     }
 
     private void renderMaze() {
-//        glBegin(GL_QUADS);
-//        glColor3f(1f, 0f, 0f);
-//        glVertex3f(20f, 20f,0f);
-//        glVertex3f(20f, 0f,0f);
-//        glVertex3f(0, 0,0f);
-//        glVertex3f(0, 20,0f);
-//
-//        glEnd();
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if(rozlozeniBludiste[i][j] == 0){
@@ -249,12 +235,10 @@ public class Renderer extends AbstractRenderer {
         glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
         glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
 
-
         glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
         glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
         glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
         glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
-
 
         glEnd();
     }
@@ -263,16 +247,15 @@ public class Renderer extends AbstractRenderer {
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
-        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),0f);
-        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),0f);
-        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),0f);
-        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),0f);
+        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
 
         glEnd();
     }
 
     private void createMaze() {
-
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 rozlozeniBludiste[i][j] = 1;
