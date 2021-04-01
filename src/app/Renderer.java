@@ -7,17 +7,12 @@ import transforms.Vec3D;
 import utils.AbstractRenderer;
 import utils.GLCamera;
 
-
 import java.io.IOException;
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static utils.GluUtils.gluPerspective;
-import static utils.GluUtils.gluLookAt;
 import static org.lwjgl.opengl.GL11.*;
+import static utils.GluUtils.gluPerspective;
 
 /**
  * Simple scene rendering
@@ -27,25 +22,22 @@ import static org.lwjgl.opengl.GL11.*;
  * @since 2020-01-20
  */
 public class Renderer extends AbstractRenderer {
-    private GLCamera camera;
-
-
-    int pocetKrychli =  5;
+    int pocetKrychli = 5;
     int delkaHrany = 100;
-    int jednaHrana = delkaHrany/pocetKrychli;
+    int jednaHrana = delkaHrany / pocetKrychli;
     int[][] rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
     Box[][] boxes = new Box[pocetKrychli][pocetKrychli];
-
-
+    private GLCamera camera;
     private boolean mouseButton1 = false;
     private float dx, dy, ox, oy;
 //    private float zenit = -1.5707963267948966f ;
 //    private float azimut = -3.141587327267613f ;
 
-    private float azimut,zenit;
+    private float azimut, zenit;
 
     private OGLTexture2D texture1, texture2;
     private OGLTexture2D.Viewer textureViewer;
+
     public Renderer() {
         super();
 
@@ -91,7 +83,7 @@ public class Renderer extends AbstractRenderer {
                 if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
                     ox = (float) x;
                     oy = (float) y;
-                    System.out.println(x+" , "+y);
+                    System.out.println(x + " , " + y);
                 }
             }
 
@@ -122,11 +114,10 @@ public class Renderer extends AbstractRenderer {
 
                     dx = 0;
                     dy = 0;
-                    System.out.println(x+" , "+y);
+                    System.out.println(x + " , " + y);
                 }
             }
         };
-
 
 
         glfwScrollCallback = new GLFWScrollCallback() {
@@ -139,14 +130,32 @@ public class Renderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW_KEY_W && action == GLFW_PRESS)
-                    camera.forward(0.1);
-                if (key == GLFW_KEY_S && action == GLFW_PRESS)
-                    camera.backward(0.1);
-                if (key == GLFW_KEY_A && action == GLFW_PRESS)
-                    camera.left(0.1);
-                if (key == GLFW_KEY_D && action == GLFW_PRESS)
-                    camera.right(0.1);
+                if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.forward(0.1);
+                    if (isOutside(tmp))
+                        camera.forward(0.1);
+                }
+
+                if (key == GLFW_KEY_S && action == GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.backward(0.1);
+                    if (isOutside(tmp))
+                        camera.backward(0.1);
+                }
+
+                if (key == GLFW_KEY_A && action == GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.left(0.1);
+                    if (isOutside(tmp))
+                        camera.left(0.1);
+                }
+                if (key == GLFW_KEY_D && action == GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.right(0.1);
+                    if (isOutside(tmp))
+                        camera.right(0.1);
+                }
             }
         };
 
@@ -178,7 +187,7 @@ public class Renderer extends AbstractRenderer {
         }
 
         camera = new GLCamera();
-        camera.setPosition(new Vec3D(30*0.04,100*0.04,5*0.04));
+        camera.setPosition(new Vec3D(30 * 0.04, 100 * 0.04, 5 * 0.04));
 //        camera.setAzimuth(20);
 //        camera.setPosition(new Vec3D(0,0,10));
         camera.setAzimuth(-3.141587327267613);
@@ -199,24 +208,24 @@ public class Renderer extends AbstractRenderer {
         //Mdoelovaci
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glScalef(0.04f,0.04f,0.04f);
+        glScalef(0.04f, 0.04f, 0.04f);
 //        glScalef(0.5f,0.5f,0.5f);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45, width / (float) height, 0.1f, 10000.0f);
+        gluPerspective(45, width / (float) height, 0.01f, 100.0f);
 
 //        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
 
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
 //        glLoadIdentity();
         camera.setFirstPerson(true);
-        Vec3D  cameraFixedZ = camera.getPosition();
-        camera.setPosition(cameraFixedZ.withZ(5*0.04));
+        Vec3D cameraFixedZ = camera.getPosition();
+        camera.setPosition(cameraFixedZ.withZ(5 * 0.04));
 //        camera.setRadius(5);
         camera.setMatrix();
-        System.out.println("azimuth: "+camera.getAzimuth());
-        System.out.println("zenith: "+camera.getZenith());
+//        System.out.println("azimuth: "+camera.getAzimuth());
+//        System.out.println("zenith: "+camera.getZenith());
 
 //        renderMaze();
 
@@ -224,101 +233,123 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-//
+
 //        drawSimpleScene();
 
 
         renderMaze();
     }
 
+    private boolean isOutside(GLCamera cam) {
+        double camX = cam.getPosition().getX();
+        double camY = cam.getPosition().getY();
+        double camZ = cam.getPosition().getZ();
+
+        System.out.println("testuji");
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                if (rozlozeniBludiste[i][j] == 1) {
+                    if (    boxes[i][j].getxMin()* 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax()* 0.04 * 1.02 &&
+                            boxes[i][j].getyMin()* 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax()* 0.04 * 1.02 &&
+                            boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
+                        return false;
+                }
+
+            }
+        }
+        return true;
+
+
+    }
+
     private void renderMaze() {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
-                if(rozlozeniBludiste[i][j] == 0){
-                    renderPlate(i,j);
-                }else {
-                    renderBox(i,j);
+                if (rozlozeniBludiste[i][j] == 0) {
+                    renderPlate(i, j);
+                } else {
+                    renderBox(i, j);
                 }
             }
         }
     }
 
-    private void renderBox(int x,int y) {
+    private void renderBox(int x, int y) {
         texture2.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
 
         glEnd();
     }
 
-    private void renderPlate(int x,int y){
+    private void renderPlate(int x, int y) {
         texture1.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
 
         glEnd();
     }
@@ -327,7 +358,7 @@ public class Renderer extends AbstractRenderer {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 rozlozeniBludiste[i][j] = 1;
-                boxes[i][j] = new Box(i,j,jednaHrana);
+                boxes[i][j] = new Box(i, j, jednaHrana);
             }
         }
 
