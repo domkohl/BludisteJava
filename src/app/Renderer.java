@@ -13,6 +13,8 @@ import java.nio.DoubleBuffer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static utils.GluUtils.gluPerspective;
+import static utils.GlutUtils.glutWireCube;
+
 
 /**
  * Simple scene rendering
@@ -32,6 +34,8 @@ public class Renderer extends AbstractRenderer {
     private float dx, dy, ox, oy;
 //    private float zenit = -1.5707963267948966f ;
 //    private float azimut = -3.141587327267613f ;
+
+    private OGLTexture2D[] textureCube;
 
     private float azimut, zenit;
 
@@ -179,12 +183,27 @@ public class Renderer extends AbstractRenderer {
 
         glLoadIdentity();
 
+        textureCube = new OGLTexture2D[6];
+
         try {
             texture1 = new OGLTexture2D("textures/mosaic.jpg"); // vzhledem k adresari res v projektu
             texture2 = new OGLTexture2D("textures/wall.jpg"); // vzhledem k adresari res v projektu
+
+            textureCube[0] = new OGLTexture2D("textures/snow_positive_x.jpg");
+            textureCube[1] = new OGLTexture2D("textures/snow_negative_x.jpg");
+            textureCube[2] = new OGLTexture2D("textures/snow_positive_y.jpg");
+            textureCube[3] = new OGLTexture2D("textures/snow_negative_y.jpg");
+            textureCube[4] = new OGLTexture2D("textures/snow_positive_z.jpg");
+            textureCube[5] = new OGLTexture2D("textures/snow_negative_z.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         camera = new GLCamera();
         camera.setPosition(new Vec3D(30 * 0.04, 100 * 0.04, 5 * 0.04));
@@ -193,6 +212,8 @@ public class Renderer extends AbstractRenderer {
         camera.setAzimuth(-3.141587327267613);
         camera.setZenith(-1.5707963267948966);
 
+
+        skyBox();
         createMaze();
 
     }
@@ -205,6 +226,7 @@ public class Renderer extends AbstractRenderer {
         glClearColor(0f, 0f, 0f, 1f);
 
 
+
         //Mdoelovaci
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -213,7 +235,7 @@ public class Renderer extends AbstractRenderer {
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45, width / (float) height, 0.01f, 100.0f);
+        gluPerspective(45, width / (float) height, 0.01f, 10000.0f);
 
 //        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
 
@@ -237,7 +259,9 @@ public class Renderer extends AbstractRenderer {
 //        drawSimpleScene();
 
 
+        skyBox();
         renderMaze();
+
     }
 
     private boolean isOutside(GLCamera cam) {
@@ -254,12 +278,9 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
                         return false;
                 }
-
             }
         }
         return true;
-
-
     }
 
     private void renderMaze() {
@@ -403,6 +424,94 @@ public class Renderer extends AbstractRenderer {
 //        glEnd();
 
 
+    }
+
+    private void skyBox() {
+//        glNewList(0, GL_COMPILE);
+        glPushMatrix();
+        glColor3d(0.5, 0.5, 0.5);
+        int size = 250;
+        glutWireCube(size); //neni nutne, pouze pro znazorneni tvaru skyboxu
+
+        glEnable(GL_TEXTURE_2D);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+        textureCube[1].bind(); //-x  (left)
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(-size, -size, -size);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(-size, size, -size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(-size, size, size);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(-size, -size, size);
+        glEnd();
+
+        textureCube[0].bind();//+x  (right)
+        glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(size, -size, -size);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(size, -size, size);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(size, size, size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(size, size, -size);
+        glEnd();
+
+        textureCube[3].bind(); //-y bottom
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(-size, -size, -size);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(size, -size, -size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(size, -size, size);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(-size, -size, size);
+        glEnd();
+
+        textureCube[2].bind(); //+y  top
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(-size, size, -size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(size, size, -size);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(size, size, size);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(-size, size, size);
+        glEnd();
+
+        textureCube[5].bind(); //-z
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(size, -size, -size);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(-size, -size, -size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(-size, size, -size);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(size, size, -size);
+        glEnd();
+
+        textureCube[4].bind(); //+z
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3d(-size, size, size);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3d(-size, -size, size);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3d(size, -size, size);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3d(size, size, size);
+        glEnd();
+
+//        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+
+        glEndList();
     }
 
 }
