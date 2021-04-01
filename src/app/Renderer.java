@@ -1,5 +1,6 @@
 package app;
 
+import lwjglutils.OGLTexture2D;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Vec3D;
@@ -7,10 +8,13 @@ import utils.AbstractRenderer;
 import utils.GLCamera;
 
 
+import java.io.IOException;
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static utils.GluUtils.gluPerspective;
 import static utils.GluUtils.gluLookAt;
 import static org.lwjgl.opengl.GL11.*;
@@ -36,6 +40,9 @@ public class Renderer extends AbstractRenderer {
     private boolean mouseButton1 = false;
     private float dx, dy, ox, oy;
     private float zenit, azimut;
+
+    private OGLTexture2D texture1, texture2;
+    private OGLTexture2D.Viewer textureViewer;
     public Renderer() {
         super();
 
@@ -104,9 +111,9 @@ public class Renderer extends AbstractRenderer {
                     azimut = azimut % 360;
                     camera.setAzimuth(Math.toRadians(azimut));
                     camera.setZenith(Math.toRadians(zenit));
-
-//                    camera.setAzimuth(Math.PI / 2 * (dx) / width);
-//                    camera.setZenith(Math.PI / 2 * (dx) / width);
+//
+//                    camera.addAzimuth(Math.PI / 2 * (dx) / width);
+//                    camera.addZenith(Math.PI / 2 * (dx) / width);
 
                     dx = 0;
                     dy = 0;
@@ -150,16 +157,26 @@ public class Renderer extends AbstractRenderer {
         glPolygonMode(GL_FRONT, GL_FILL);
         glPolygonMode(GL_BACK, GL_FILL);
         glDisable(GL_CULL_FACE);
-        glDisable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_2D);
+//        glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
         glMatrixMode(GL_MODELVIEW);
+//        glActiveTexture(GL_TEXTURE0);
 
         glLoadIdentity();
 
+        try {
+            texture1 = new OGLTexture2D("textures/mosaic.jpg"); // vzhledem k adresari res v projektu
+            texture2 = new OGLTexture2D("textures/wall.jpg"); // vzhledem k adresari res v projektu
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         camera = new GLCamera();
         camera.setPosition(new Vec3D(30*0.04,100*0.04,5*0.04));
-        camera.setAzimuth(0);
-        camera.setZenith(0);
+//        camera.setPosition(new Vec3D(0,0,10));
+//        camera.setAzimuth(0);
+//        camera.setZenith(0);
 
         createMaze();
 
@@ -177,21 +194,31 @@ public class Renderer extends AbstractRenderer {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glScalef(0.04f,0.04f,0.04f);
+//        glScalef(0.5f,0.5f,0.5f);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45, width / (float) height, 0.1f, 100.0f);
+        gluPerspective(45, width / (float) height, 0.1f, 10000.0f);
 
 //        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
 
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
-        glLoadIdentity();
+//        glLoadIdentity();
         camera.setFirstPerson(true);
 //        camera.setRadius(5);
         camera.setMatrix();
 
-        renderMaze();
+//        renderMaze();
 
+        texture1.bind();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+//
+//        drawSimpleScene();
+
+
+        renderMaze();
     }
 
     private void renderMaze() {
@@ -207,49 +234,80 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void renderBox(int x,int y) {
+        texture2.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
+
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getbUp1().getX(), (float)boxes[x][y].getbUp1().getY(),(float)boxes[x][y].getbUp1().getZ());
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getbUp2().getX(), (float)boxes[x][y].getbUp2().getY(),(float)boxes[x][y].getbUp2().getZ());
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getbUp3().getX(), (float)boxes[x][y].getbUp3().getY(),(float)boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getbUp4().getX(), (float)boxes[x][y].getbUp4().getY(),(float)boxes[x][y].getbUp4().getZ());
 
         glEnd();
     }
 
     private void renderPlate(int x,int y){
+        texture1.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
+        glTexCoord2f(0, 0);
         glVertex3f((float)boxes[x][y].getbH().getX(), (float)boxes[x][y].getbH().getY(),(float)boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
         glVertex3f((float)boxes[x][y].getB2().getX(), (float)boxes[x][y].getB2().getY(),(float)boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
         glVertex3f((float)boxes[x][y].getB3().getX(), (float)boxes[x][y].getB3().getY(),(float)boxes[x][y].getB3().getZ());
+        glTexCoord2f(0, 1);
         glVertex3f((float)boxes[x][y].getB4().getX(), (float)boxes[x][y].getB4().getY(),(float)boxes[x][y].getB4().getZ());
 
         glEnd();
@@ -270,6 +328,39 @@ public class Renderer extends AbstractRenderer {
         rozlozeniBludiste[2][3] = 0;
         rozlozeniBludiste[1][3] = 0;
         rozlozeniBludiste[1][4] = 0;
+
+    }
+
+    private void drawSimpleScene() {
+        texture1.bind();
+
+
+//        // Rendering triangle by fixed pipeline
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.1f, 0.1f);
+        glVertex3f(0.0f, 10.0f, 0.0f);
+        glTexCoord2f(0.0f, 0.9f);
+        glVertex3f(0.0f, 10.0f, 10.0f);
+        glTexCoord2f(1.1f, 0.8f);
+        glVertex3f(0.0f, 0.0f, 10.0f);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glEnd();
+
+//        glBegin(GL_TRIANGLES);
+//        glTexCoord2f(0, 0);
+//        glColor3f(1f, 0f, 0f);
+//        glVertex3f(-1f, -1, 0.9f);
+//
+//        glTexCoord2f(0, 1);
+//        glColor3f(0f, 1f, 0f);
+//        glVertex3f(1, 0, 0.9f);
+//
+//        glTexCoord2f(1, 0);
+//        glColor3f(0f, 0f, 1f);
+//        glVertex3f(0, 1, 0.9f);
+//        glEnd();
+
 
     }
 
