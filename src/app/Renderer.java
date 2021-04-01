@@ -39,7 +39,10 @@ public class Renderer extends AbstractRenderer {
 
     private boolean mouseButton1 = false;
     private float dx, dy, ox, oy;
-    private float zenit, azimut;
+//    private float zenit = -1.5707963267948966f ;
+//    private float azimut = -3.141587327267613f ;
+
+    private float azimut,zenit;
 
     private OGLTexture2D texture1, texture2;
     private OGLTexture2D.Viewer textureViewer;
@@ -111,6 +114,8 @@ public class Renderer extends AbstractRenderer {
                     azimut = azimut % 360;
                     camera.setAzimuth(Math.toRadians(azimut));
                     camera.setZenith(Math.toRadians(zenit));
+
+
 //
 //                    camera.addAzimuth(Math.PI / 2 * (dx) / width);
 //                    camera.addZenith(Math.PI / 2 * (dx) / width);
@@ -174,9 +179,10 @@ public class Renderer extends AbstractRenderer {
 
         camera = new GLCamera();
         camera.setPosition(new Vec3D(30*0.04,100*0.04,5*0.04));
+//        camera.setAzimuth(20);
 //        camera.setPosition(new Vec3D(0,0,10));
-//        camera.setAzimuth(0);
-//        camera.setZenith(0);
+        camera.setAzimuth(-3.141587327267613);
+        camera.setZenith(-1.5707963267948966);
 
         createMaze();
 
@@ -205,8 +211,12 @@ public class Renderer extends AbstractRenderer {
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
 //        glLoadIdentity();
         camera.setFirstPerson(true);
+        Vec3D  cameraFixedZ = camera.getPosition();
+        camera.setPosition(cameraFixedZ.withZ(5*0.04));
 //        camera.setRadius(5);
         camera.setMatrix();
+        System.out.println("azimuth: "+camera.getAzimuth());
+        System.out.println("zenith: "+camera.getZenith());
 
 //        renderMaze();
 
