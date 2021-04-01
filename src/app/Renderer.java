@@ -189,12 +189,12 @@ public class Renderer extends AbstractRenderer {
             texture1 = new OGLTexture2D("textures/mosaic.jpg"); // vzhledem k adresari res v projektu
             texture2 = new OGLTexture2D("textures/wall.jpg"); // vzhledem k adresari res v projektu
 
-            textureCube[0] = new OGLTexture2D("textures/snow_positive_x.jpg");
-            textureCube[1] = new OGLTexture2D("textures/snow_negative_x.jpg");
-            textureCube[2] = new OGLTexture2D("textures/snow_positive_y.jpg");
-            textureCube[3] = new OGLTexture2D("textures/snow_negative_y.jpg");
-            textureCube[4] = new OGLTexture2D("textures/snow_positive_z.jpg");
-            textureCube[5] = new OGLTexture2D("textures/snow_negative_z.jpg");
+            textureCube[0] = new OGLTexture2D("textures/right.png");
+            textureCube[1] = new OGLTexture2D("textures/left.png");
+            textureCube[2] = new OGLTexture2D("textures/top.png");
+            textureCube[3] = new OGLTexture2D("textures/bottom.png");
+            textureCube[4] = new OGLTexture2D("textures/front.png");
+            textureCube[5] = new OGLTexture2D("textures/back.png");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -484,7 +484,7 @@ public class Renderer extends AbstractRenderer {
         glVertex3d(-size, size, size);
         glEnd();
 
-        textureCube[5].bind(); //-z
+        textureCube[5].bind(); //-z (back)
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 1.0f);
         glVertex3d(size, -size, -size);
@@ -496,7 +496,7 @@ public class Renderer extends AbstractRenderer {
         glVertex3d(size, size, -size);
         glEnd();
 
-        textureCube[4].bind(); //+z
+        textureCube[4].bind(); //+z (front)
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 0.0f);
         glVertex3d(-size, size, size);
