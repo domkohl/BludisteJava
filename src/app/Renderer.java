@@ -677,7 +677,7 @@ public class Renderer extends AbstractRenderer {
                     )/8;;
                 }
 
-                if(rozlozeniBludiste[i][j] == 1){
+                if(rozlozeniBludiste[i][j] == 0){
                     addBoxIfPossible(i,j+1);
                     addBoxIfPossible(i+1,j);
                     addBoxIfPossible(i-1,j);
@@ -703,10 +703,10 @@ public class Renderer extends AbstractRenderer {
 //        catch(Exception e){
 //            System.out.println(e.toString());
 //        }
-//        addBoxIfPossible(spawnI,spawnJ+1);
-//        addBoxIfPossible(spawnI+1,spawnJ);
-//        addBoxIfPossible(spawnI-1,spawnJ);
-//        addBoxIfPossible(spawnI,spawnJ-1);
+        addBoxIfPossible(spawnI,spawnJ+1);
+        addBoxIfPossible(spawnI+1,spawnJ);
+        addBoxIfPossible(spawnI-1,spawnJ);
+        addBoxIfPossible(spawnI,spawnJ-1);
 
 
     }
