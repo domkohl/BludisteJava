@@ -118,7 +118,7 @@ public class Renderer extends AbstractRenderer {
 
                     dx = 0;
                     dy = 0;
-                    System.out.println(x + " , " + y);
+//                    System.out.println(x + " , " + y);
                 }
             }
         };
@@ -139,6 +139,7 @@ public class Renderer extends AbstractRenderer {
                     tmp.forward(0.1);
                     if (isOutside(tmp))
                         camera.forward(0.1);
+                    System.out.println(camera.getPosition().toString());
                 }
 
                 if (key == GLFW_KEY_S && action == GLFW_PRESS){
@@ -186,8 +187,8 @@ public class Renderer extends AbstractRenderer {
         textureCube = new OGLTexture2D[6];
 
         try {
-            texture1 = new OGLTexture2D("textures/mosaic.jpg"); // vzhledem k adresari res v projektu
-            texture2 = new OGLTexture2D("textures/wall.jpg"); // vzhledem k adresari res v projektu
+            texture1 = new OGLTexture2D("textures/floor.jpg"); // vzhledem k adresari res v projektu
+            texture2 = new OGLTexture2D("textures/wall.png"); // vzhledem k adresari res v projektu
 
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
@@ -206,11 +207,12 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         camera = new GLCamera();
-        camera.setPosition(new Vec3D(30 * 0.04, 100 * 0.04, 5 * 0.04));
+        camera.setPosition(new Vec3D(30 * 0.04, 5 * 0.04, 100 * 0.04));
+
 //        camera.setAzimuth(20);
 //        camera.setPosition(new Vec3D(0,0,10));
-        camera.setAzimuth(-3.141587327267613);
-        camera.setZenith(-1.5707963267948966);
+//        camera.setAzimuth(-3.141587327267613);
+//        camera.setZenith(-1.5707963267948966);
 
 
         skyBox();
@@ -243,7 +245,7 @@ public class Renderer extends AbstractRenderer {
 //        glLoadIdentity();
         camera.setFirstPerson(true);
         Vec3D cameraFixedZ = camera.getPosition();
-        camera.setPosition(cameraFixedZ.withZ(5 * 0.04));
+        camera.setPosition(cameraFixedZ.withY(5 * 0.04));
 //        camera.setRadius(5);
         camera.setMatrix();
 //        System.out.println("azimuth: "+camera.getAzimuth());

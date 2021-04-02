@@ -9,27 +9,38 @@ import java.util.Collections;
 import java.util.List;
 
 public class Box {
-    private int x,y;
+    private int x,z;
     private Point3D bH,b2,b3,b4,bUp1,bUp2,bUp3,bUp4;
     private int jednaHrana;
 
     private double xMin,xMax,yMin,yMax,zMin,zMax;
 
 
-    public Box(int x, int y , int jednaHrana) {
+    public Box(int x, int z , int jednaHrana) {
         this.x = x;
-        this.y = y;
+        this.z = z;
         this.jednaHrana = jednaHrana;
 
-        this.bH = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,0);
-        this.b2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,0);
-        this.b3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,0);
-        this.b4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),0);
+//        this.bH = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,0);
+//        this.b2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,0);
+//        this.b3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,0);
+//        this.b4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),0);
+//
+//        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,10f);
+//        this.bUp2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,10f);
+//        this.bUp3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,10f);
+//        this.bUp4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),10f);
 
-        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,10f);
-        this.bUp2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,10f);
-        this.bUp3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,10f);
-        this.bUp4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),10f);
+
+        this.bH = new Point3D(jednaHrana + x * jednaHrana,0,jednaHrana + z * jednaHrana);
+        this.b2 = new Point3D(bH.getX(),0,bH.getZ() - jednaHrana);
+        this.b3 = new Point3D(bH.getX() - jednaHrana,0,bH.getZ() - jednaHrana);
+        this.b4 = new Point3D(bH.getX() - jednaHrana,0,bH.getZ());
+
+        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana,10f,jednaHrana + z * jednaHrana);
+        this.bUp2 = new Point3D(bH.getX(),10f,bH.getZ() - jednaHrana);
+        this.bUp3 = new Point3D(bH.getX() - jednaHrana,10f,bH.getZ() - jednaHrana);
+        this.bUp4 = new Point3D(bH.getX() - jednaHrana,10f,bH.getZ());
 
 
 
