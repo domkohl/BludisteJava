@@ -101,24 +101,36 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-//                if(x>=width*0.9||y>=height*0.9){
-////                    dx = 0;
-////                    dy = 0;
-//                    ox = (float) 0;
-//                    oy = (float) 0;
-////                    zenit = 0;
-////                    azimut = 0;
+                if(x>=width*0.9||y>=height*0.9){
+//                    dx = 0;
+//                    dy = 0;
+
+//                    zenit = 0;
+//                    azimut = 0;
 //                    System.out.println("azimut: "+azimut);
 //                    System.out.println("zenit: "+zenit);
 //                    System.out.println("dx: "+dx);
 //                    System.out.println("dy: "+dy);
 //                    System.out.println("ox: "+ox);
 //                    System.out.println("oy: "+oy);
+//                    Vec3D tmp = camera.get;
+//                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
+//
 //
 //                    glfwSetCursorPos(window,width/2,height/2);
-//                }
+//
+//                    dx = tmpDx;
+//                    dy = tmpDy;
+//                    ox = tmpOx;
+//                    oy = tmpOy;
+//
+//                    camera.setAzimuth(tmpAzimit);
+//                    camera.setAzimuth(tmpZenit);
+
+                }
 
                 if (!mouseButton1) {
+//                    glfwSetCursorPos(window,width/2,height/2);
                     dx = (float) x - ox;
                     dy = (float) y - oy;
                     ox = (float) x;
@@ -134,7 +146,7 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(Math.toRadians(zenit));
 
 
-//
+//                  glfwSetCursorPos(window,width/2,height/2);
 //                    System.out.println("azimut: "+azimut);
 //                    System.out.println("zenit: "+zenit);
 //                    System.out.println("dx: "+dx);
@@ -200,11 +212,24 @@ public class Renderer extends AbstractRenderer {
                         System.out.println("Gratuluji jsi v cíli");
                 }
                 if (key == GLFW_KEY_T){
-                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 //                    glfwSetCursorPos(window,width/2,height/2);
 
 //                    GLFWcursor cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
-                    glfwSetCursor(window, glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
+//                    glfwSetCursor(window, glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
+
+                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
+
+
+                    glfwSetCursorPos(window,width/2,height/2);
+
+                    dx = tmpDx;
+                    dy = tmpDy;
+                    ox = width/2;
+                    oy = height/2;
+
+                    camera.setAzimuth(tmpAzimit);
+                    camera.setAzimuth(tmpZenit);
                 }
                 if (key == GLFW_KEY_R){
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -623,7 +648,8 @@ public class Renderer extends AbstractRenderer {
         rozlozeniBludiste[2][2] = 0;
         rozlozeniBludiste[2][3] = 0;
         rozlozeniBludiste[1][3] = 0;
-        rozlozeniBludiste[1][4] = 2;
+        rozlozeniBludiste[0][4] = 2;
+        rozlozeniBludiste[1][4] = 0;
 
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
@@ -649,29 +675,55 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getbUp2().getZ()+
                             boxes[i][j].getbUp1().getZ()
                     )/8;;
-
                 }
+
+                if(rozlozeniBludiste[i][j] == 1){
+                    addBoxIfPossible(i,j+1);
+                    addBoxIfPossible(i+1,j);
+                    addBoxIfPossible(i-1,j);
+                    addBoxIfPossible(i,j-1);
+                }
+
             }
         }
 
 
         //TODo rozsirit pro vsehny 4 strany a oprimalizovat kod opakovani
+//        try {
+//             double tmp = boxes[spawnI][spawnJ+1].getxMax();
+//                System.out.println("v proadku");
+//        }
+//        catch(ArrayIndexOutOfBoundsException e){
+//            System.out.println("arrray prekrocen");
+//
+//            Box tmp = new Box(spawnI,spawnJ+1,jednaHrana);
+//            spawnHelpBoxes.add(tmp);
+//
+//        }
+//        catch(Exception e){
+//            System.out.println(e.toString());
+//        }
+//        addBoxIfPossible(spawnI,spawnJ+1);
+//        addBoxIfPossible(spawnI+1,spawnJ);
+//        addBoxIfPossible(spawnI-1,spawnJ);
+//        addBoxIfPossible(spawnI,spawnJ-1);
+
+
+    }
+
+    private void addBoxIfPossible(int i, int j){
         try {
-             double tmp = boxes[spawnI][spawnJ+1].getxMax();
-                System.out.println("v proadku");
+            double tmp = boxes[i][j].getxMax();
+            System.out.println("v proadku");
         }
         catch(ArrayIndexOutOfBoundsException e){
             System.out.println("arrray prekrocen");
-
-            Box tmp = new Box(spawnI,spawnJ+1,jednaHrana);
+            Box tmp = new Box(i,j,jednaHrana);
             spawnHelpBoxes.add(tmp);
-
         }
         catch(Exception e){
             System.out.println(e.toString());
         }
-
-
     }
 
     private void skyBox() {
