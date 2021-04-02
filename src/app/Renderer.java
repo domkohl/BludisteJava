@@ -89,11 +89,11 @@ public class Renderer extends AbstractRenderer {
 
                 mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
 
-                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-                    ox = (float) x;
-                    oy = (float) y;
+//                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+//                    ox = (float) x;
+//                    oy = (float) y;
 //                    System.out.println(x + " , " + y);
-                }
+//                }
             }
 
         };
@@ -142,10 +142,10 @@ public class Renderer extends AbstractRenderer {
                         zenit = -90;
                     azimut += dx / height * 180;
                     azimut = azimut % 360;
-                    camera.setAzimuth(Math.toRadians(azimut));
-                    camera.setZenith(Math.toRadians(zenit));
+                    camera.addAzimuth(Math.toRadians(azimut));
+                    camera.addZenith(Math.toRadians(zenit));
 
-
+//                    glfwSetCursorPos(window,width/2,height/2);
 //                  glfwSetCursorPos(window,width/2,height/2);
 //                    System.out.println("azimut: "+azimut);
 //                    System.out.println("zenit: "+zenit);
