@@ -96,7 +96,7 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-                if (mouseButton1) {
+                if (!mouseButton1) {
                     dx = (float) x - ox;
                     dy = (float) y - oy;
                     ox = (float) x;
@@ -134,35 +134,45 @@ public class Renderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+                if (key == GLFW_KEY_W) {
                     GLCamera tmp = new GLCamera(camera);
-                    tmp.forward(0.1);
+                    tmp.forward(0.04);
                     if (isOutside(tmp))
-                        camera.forward(0.1);
+                        camera.forward(0.04);
                     System.out.println(camera.getPosition().toString());
                 }
 
-                if (key == GLFW_KEY_S && action == GLFW_PRESS){
+                if (key == GLFW_KEY_S){
                     GLCamera tmp = new GLCamera(camera);
-                    tmp.backward(0.1);
+                    tmp.backward(0.04);
                     if (isOutside(tmp))
-                        camera.backward(0.1);
+                        camera.backward(0.04);
                 }
 
-                if (key == GLFW_KEY_A && action == GLFW_PRESS){
+                if (key == GLFW_KEY_A){
                     GLCamera tmp = new GLCamera(camera);
-                    tmp.left(0.1);
+                    tmp.left(0.04);
                     if (isOutside(tmp))
-                        camera.left(0.1);
+                        camera.left(0.04);
                 }
-                if (key == GLFW_KEY_D && action == GLFW_PRESS){
+                if (key == GLFW_KEY_D){
                     GLCamera tmp = new GLCamera(camera);
-                    tmp.right(0.1);
+                    tmp.right(0.04);
                     if (isOutside(tmp))
-                        camera.right(0.1);
+                        camera.right(0.04);
+                }
+                if (key == GLFW_KEY_T){
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                    glfwSetCursorPos(window,width/2,height/2);
+                }
+                if (key == GLFW_KEY_R){
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
                 }
             }
         };
+
+
 
     }
 
