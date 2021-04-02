@@ -39,8 +39,11 @@ public class Renderer extends AbstractRenderer {
 
     private float azimut, zenit;
 
-    private OGLTexture2D texture1, texture2;
+    private OGLTexture2D texture1, texture2,textureFinish;
     private OGLTexture2D.Viewer textureViewer;
+
+    float xOld;
+    float yOld;
 
     public Renderer() {
         super();
@@ -87,7 +90,7 @@ public class Renderer extends AbstractRenderer {
                 if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
                     ox = (float) x;
                     oy = (float) y;
-                    System.out.println(x + " , " + y);
+//                    System.out.println(x + " , " + y);
                 }
             }
 
@@ -96,6 +99,23 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
+//                if(x>=width*0.9||y>=height*0.9){
+////                    dx = 0;
+////                    dy = 0;
+//                    ox = (float) 0;
+//                    oy = (float) 0;
+////                    zenit = 0;
+////                    azimut = 0;
+//                    System.out.println("azimut: "+azimut);
+//                    System.out.println("zenit: "+zenit);
+//                    System.out.println("dx: "+dx);
+//                    System.out.println("dy: "+dy);
+//                    System.out.println("ox: "+ox);
+//                    System.out.println("oy: "+oy);
+//
+//                    glfwSetCursorPos(window,width/2,height/2);
+//                }
+
                 if (!mouseButton1) {
                     dx = (float) x - ox;
                     dy = (float) y - oy;
@@ -113,12 +133,21 @@ public class Renderer extends AbstractRenderer {
 
 
 //
+//                    System.out.println("azimut: "+azimut);
+//                    System.out.println("zenit: "+zenit);
+//                    System.out.println("dx: "+dx);
+//                    System.out.println("dy: "+dy);
+//                    System.out.println("ox: "+ox);
+//                    System.out.println("oy: "+oy);
 //                    camera.addAzimuth(Math.PI / 2 * (dx) / width);
 //                    camera.addZenith(Math.PI / 2 * (dx) / width);
 
                     dx = 0;
                     dy = 0;
 //                    System.out.println(x + " , " + y);
+
+
+
                 }
             }
         };
@@ -137,33 +166,43 @@ public class Renderer extends AbstractRenderer {
                 if (key == GLFW_KEY_W) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.forward(0.04);
-                    if (isOutside(tmp))
+                    if (isOutside(tmp) == 0)
                         camera.forward(0.04);
-                    System.out.println(camera.getPosition().toString());
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
                 }
 
                 if (key == GLFW_KEY_S){
                     GLCamera tmp = new GLCamera(camera);
                     tmp.backward(0.04);
-                    if (isOutside(tmp))
+                    if (isOutside(tmp) == 0)
                         camera.backward(0.04);
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
                 }
 
                 if (key == GLFW_KEY_A){
                     GLCamera tmp = new GLCamera(camera);
                     tmp.left(0.04);
-                    if (isOutside(tmp))
+                    if (isOutside(tmp) == 0)
                         camera.left(0.04);
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
                 }
                 if (key == GLFW_KEY_D){
                     GLCamera tmp = new GLCamera(camera);
                     tmp.right(0.04);
-                    if (isOutside(tmp))
+                    if (isOutside(tmp) == 0)
                         camera.right(0.04);
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
                 }
                 if (key == GLFW_KEY_T){
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-                    glfwSetCursorPos(window,width/2,height/2);
+//                    glfwSetCursorPos(window,width/2,height/2);
+
+//                    GLFWcursor cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+                    glfwSetCursor(window, glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
                 }
                 if (key == GLFW_KEY_R){
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -199,6 +238,7 @@ public class Renderer extends AbstractRenderer {
         try {
             texture1 = new OGLTexture2D("textures/floor.jpg"); // vzhledem k adresari res v projektu
             texture2 = new OGLTexture2D("textures/wall.png"); // vzhledem k adresari res v projektu
+            textureFinish = new OGLTexture2D("textures/finish.jpg"); // vzhledem k adresari res v projektu
 
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
@@ -218,6 +258,14 @@ public class Renderer extends AbstractRenderer {
 
         camera = new GLCamera();
         camera.setPosition(new Vec3D(30 * 0.04, 5 * 0.04, 100 * 0.04));
+
+        System.out.println("azimut: "+azimut);
+        System.out.println("zenit: "+zenit);
+        System.out.println("dx: "+dx);
+        System.out.println("dy: "+dy);
+        System.out.println("ox: "+ox);
+        System.out.println("oy: "+oy);
+
 
 //        camera.setAzimuth(20);
 //        camera.setPosition(new Vec3D(0,0,10));
@@ -276,7 +324,8 @@ public class Renderer extends AbstractRenderer {
 
     }
 
-    private boolean isOutside(GLCamera cam) {
+    // 0-jsemv bludsiti...1-jsem blizko zdi...2--jsem v cili
+    private int isOutside(GLCamera cam) {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
@@ -288,19 +337,28 @@ public class Renderer extends AbstractRenderer {
                     if (    boxes[i][j].getxMin()* 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax()* 0.04 * 1.02 &&
                             boxes[i][j].getyMin()* 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax()* 0.04 * 1.02 &&
                             boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
-                        return false;
+                        return 1;
+                }
+                if (rozlozeniBludiste[i][j] == 3) {
+                    if (    boxes[i][j].getxMin()* 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax()* 0.04 * 1.02 &&
+                            boxes[i][j].getyMin()* 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax()* 0.04 * 1.02 &&
+                            boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
+                        return 2;
                 }
             }
         }
-        return true;
+        return 0;
     }
 
     private void renderMaze() {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
-                if (rozlozeniBludiste[i][j] == 0) {
+                if (rozlozeniBludiste[i][j] == 0 ||rozlozeniBludiste[i][j] == 2) {
                     renderPlate(i, j);
-                } else {
+                } else if (rozlozeniBludiste[i][j] == 3){
+                    renderFinish(i,j);
+                }
+                else {
                     renderBox(i, j);
                 }
             }
@@ -387,6 +445,71 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
+    private void renderFinish(int x, int y){
+        textureFinish.bind();
+        glBegin(GL_QUADS);
+        glColor3f(0f, 1f, 0f);
+
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+
+
+        //TODO: nevykresluje nenevim proc overi u jinych bludist--> vykresluje ale ne kdyz opoblisz box zdi
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+
+        glEnd();
+    }
+
     private void createMaze() {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
@@ -394,14 +517,14 @@ public class Renderer extends AbstractRenderer {
                 boxes[i][j] = new Box(i, j, jednaHrana);
             }
         }
-
-        rozlozeniBludiste[3][0] = 0;
+        // 0 cesta, 1 blok, 2 start, 3 cil
+        rozlozeniBludiste[3][0] = 3;
         rozlozeniBludiste[3][1] = 0;
         rozlozeniBludiste[3][2] = 0;
         rozlozeniBludiste[2][2] = 0;
         rozlozeniBludiste[2][3] = 0;
         rozlozeniBludiste[1][3] = 0;
-        rozlozeniBludiste[1][4] = 0;
+        rozlozeniBludiste[1][4] = 2;
 
     }
 
