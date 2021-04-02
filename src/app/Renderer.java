@@ -9,6 +9,7 @@ import utils.GLCamera;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
+import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -29,6 +30,7 @@ public class Renderer extends AbstractRenderer {
     int jednaHrana = delkaHrany / pocetKrychli;
     int[][] rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
     Box[][] boxes = new Box[pocetKrychli][pocetKrychli];
+    ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     private GLCamera camera;
     private boolean mouseButton1 = false;
     private float dx, dy, ox, oy;
@@ -43,6 +45,7 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D.Viewer textureViewer;
 
     double spawnX,spawnZ;
+    int spawnI,spawnJ;
 
     public Renderer() {
         super();
@@ -330,7 +333,7 @@ public class Renderer extends AbstractRenderer {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
-
+        //TODO optimalizovat do funci if statmenty
         System.out.println("testuji");
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
@@ -347,6 +350,14 @@ public class Renderer extends AbstractRenderer {
                         return 2;
                 }
             }
+        }
+        for (Box box:spawnHelpBoxes) {
+                if (    box.getxMin()* 0.04 * 0.98 <= camX && camX <= box.getxMax()* 0.04 * 1.02 &&
+                        box.getyMin()* 0.04 * 0.98 <= camY && camY <= box.getyMax()* 0.04 * 1.02 &&
+                        box.getzMin()* 0.04 * 0.98 <= camZ && camZ <= box.getzMax()* 0.04 * 1.02)
+                    return 1;
+
+
         }
         return 0;
     }
@@ -366,6 +377,11 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         }
+
+        for (Box box : spawnHelpBoxes) {
+            renderBox(box);
+        }
+
     }
 
     private void renderBox(int x, int y) {
@@ -427,6 +443,69 @@ public class Renderer extends AbstractRenderer {
         glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
         glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+
+        glEnd();
+    }
+
+    private void renderBox(Box box) {
+        texture2.bind();
+        glBegin(GL_QUADS);
+        glColor3f(0f, 1f, 0f);
+
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getbH().getX(), (float) box.getbH().getY(), (float) box.getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getB2().getX(), (float) box.getB2().getY(), (float) box.getB2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getB3().getX(), (float) box.getB3().getY(), (float) box.getB3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getB4().getX(), (float) box.getB4().getY(), (float) box.getB4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getbUp1().getX(), (float) box.getbUp1().getY(), (float) box.getbUp1().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getbUp2().getX(), (float) box.getbUp2().getY(), (float) box.getbUp2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getbUp3().getX(), (float) box.getbUp3().getY(), (float) box.getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getbUp4().getX(), (float) box.getbUp4().getY(), (float) box.getbUp4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getbH().getX(), (float) box.getbH().getY(), (float) box.getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getbUp1().getX(), (float) box.getbUp1().getY(), (float) box.getbUp1().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getbUp4().getX(), (float) box.getbUp4().getY(), (float) box.getbUp4().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getB4().getX(), (float) box.getB4().getY(), (float) box.getB4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getbH().getX(), (float) box.getbH().getY(), (float) box.getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getB2().getX(), (float) box.getB2().getY(), (float) box.getB2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getbUp2().getX(), (float) box.getbUp2().getY(), (float) box.getbUp2().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getbUp1().getX(), (float) box.getbUp1().getY(), (float) box.getbUp1().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getB2().getX(), (float) box.getB2().getY(), (float) box.getB2().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getB3().getX(), (float) box.getB3().getY(), (float) box.getB3().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getbUp3().getX(), (float) box.getbUp3().getY(), (float) box.getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getbUp2().getX(), (float) box.getbUp2().getY(), (float) box.getbUp2().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) box.getB4().getX(), (float) box.getB4().getY(), (float) box.getB4().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) box.getB3().getX(), (float) box.getB3().getY(), (float) box.getB3().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) box.getbUp3().getX(), (float) box.getbUp3().getY(), (float) box.getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) box.getbUp4().getX(), (float) box.getbUp4().getY(), (float) box.getbUp4().getZ());
 
         glEnd();
     }
@@ -549,6 +628,8 @@ public class Renderer extends AbstractRenderer {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if(rozlozeniBludiste[i][j] == 2){
+                    spawnI = i;
+                    spawnJ = j;
                     spawnX = (boxes[i][j].getbH().getX()+
                             boxes[i][j].getB2().getX()+
                             boxes[i][j].getB3().getX()+
@@ -568,8 +649,26 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getbUp2().getZ()+
                             boxes[i][j].getbUp1().getZ()
                     )/8;;
+
                 }
             }
+        }
+
+
+        //TODo rozsirit pro vsehny 4 strany a oprimalizovat kod opakovani
+        try {
+             double tmp = boxes[spawnI][spawnJ+1].getxMax();
+                System.out.println("v proadku");
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("arrray prekrocen");
+
+            Box tmp = new Box(spawnI,spawnJ+1,jednaHrana);
+            spawnHelpBoxes.add(tmp);
+
+        }
+        catch(Exception e){
+            System.out.println(e.toString());
         }
 
 
