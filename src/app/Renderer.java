@@ -42,8 +42,7 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D texture1, texture2,textureFinish;
     private OGLTexture2D.Viewer textureViewer;
 
-    float xOld;
-    float yOld;
+    double spawnX,spawnZ;
 
     public Renderer() {
         super();
@@ -257,7 +256,7 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         camera = new GLCamera();
-        camera.setPosition(new Vec3D(30 * 0.04, 5 * 0.04, 100 * 0.04));
+//        camera.setPosition(new Vec3D(30 * 0.04, 5 * 0.04, 100 * 0.04));
 
         System.out.println("azimut: "+azimut);
         System.out.println("zenit: "+zenit);
@@ -276,6 +275,7 @@ public class Renderer extends AbstractRenderer {
         skyBox();
         createMaze();
 
+        camera.setPosition(new Vec3D(spawnX* 0.04, 5 * 0.04, spawnZ* 0.04));
     }
 
 
@@ -526,37 +526,31 @@ public class Renderer extends AbstractRenderer {
         rozlozeniBludiste[1][3] = 0;
         rozlozeniBludiste[1][4] = 2;
 
-    }
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                if(rozlozeniBludiste[i][j] == 2){
+                    spawnX = (boxes[i][j].getbH().getX()+
+                            boxes[i][j].getB2().getX()+
+                            boxes[i][j].getB3().getX()+
+                            boxes[i][j].getB4().getX()+
+                            boxes[i][j].getbUp4().getX()+
+                            boxes[i][j].getbUp3().getX()+
+                            boxes[i][j].getbUp2().getX()+
+                            boxes[i][j].getbUp1().getX()
+                    )/8;
 
-    private void drawSimpleScene() {
-        texture1.bind();
-
-
-//        // Rendering triangle by fixed pipeline
-        glBegin(GL_QUADS);
-        glTexCoord2f(0.1f, 0.1f);
-        glVertex3f(0.0f, 10.0f, 0.0f);
-        glTexCoord2f(0.0f, 0.9f);
-        glVertex3f(0.0f, 10.0f, 10.0f);
-        glTexCoord2f(1.1f, 0.8f);
-        glVertex3f(0.0f, 0.0f, 10.0f);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glEnd();
-
-//        glBegin(GL_TRIANGLES);
-//        glTexCoord2f(0, 0);
-//        glColor3f(1f, 0f, 0f);
-//        glVertex3f(-1f, -1, 0.9f);
-//
-//        glTexCoord2f(0, 1);
-//        glColor3f(0f, 1f, 0f);
-//        glVertex3f(1, 0, 0.9f);
-//
-//        glTexCoord2f(1, 0);
-//        glColor3f(0f, 0f, 1f);
-//        glVertex3f(0, 1, 0.9f);
-//        glEnd();
+                    spawnZ = (boxes[i][j].getbH().getZ()+
+                            boxes[i][j].getB2().getZ()+
+                            boxes[i][j].getB3().getZ()+
+                            boxes[i][j].getB4().getZ()+
+                            boxes[i][j].getbUp4().getZ()+
+                            boxes[i][j].getbUp3().getZ()+
+                            boxes[i][j].getbUp2().getZ()+
+                            boxes[i][j].getbUp1().getZ()
+                    )/8;;
+                }
+            }
+        }
 
 
     }
