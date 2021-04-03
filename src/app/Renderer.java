@@ -59,7 +59,7 @@ public class Renderer extends AbstractRenderer {
                     width = w;
                     height = h;
                 }
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
         };
 
@@ -131,7 +131,8 @@ public class Renderer extends AbstractRenderer {
 
 //                }
 
-                if (!mouseButton1) {
+                if (!showCursor) {
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 //                    glfwSetCursorPos(window,width/2,height/2);
                     dx = (float) x - ox;
                     dy = (float) y - oy;
@@ -239,10 +240,20 @@ public class Renderer extends AbstractRenderer {
 //                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 //                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     showCursor = !showCursor;
-                    if(showCursor)
+                    if(showCursor){
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                    else
+                    } else{
+                        DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                        DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                        glfwGetCursorPos(window, xBuffer, yBuffer);
+                        double x = xBuffer.get(0);
+                        double y = yBuffer.get(0);
+                        ox = (float) x;
+                        oy = (float) y;
+
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    }
+
 
                 }
             }
