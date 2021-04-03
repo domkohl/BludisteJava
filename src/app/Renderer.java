@@ -47,6 +47,7 @@ public class Renderer extends AbstractRenderer {
     double spawnX,spawnZ;
     int spawnI,spawnJ;
 
+    boolean showCursor;
     public Renderer() {
         super();
 
@@ -58,6 +59,7 @@ public class Renderer extends AbstractRenderer {
                     width = w;
                     height = h;
                 }
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
         };
 
@@ -101,7 +103,7 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-                if(x>=width*0.9||y>=height*0.9){
+//                if(x>=width*0.9||y>=height*0.9){
 //                    dx = 0;
 //                    dy = 0;
 
@@ -127,7 +129,7 @@ public class Renderer extends AbstractRenderer {
 //                    camera.setAzimuth(tmpAzimit);
 //                    camera.setAzimuth(tmpZenit);
 
-                }
+//                }
 
                 if (!mouseButton1) {
 //                    glfwSetCursorPos(window,width/2,height/2);
@@ -142,8 +144,11 @@ public class Renderer extends AbstractRenderer {
                         zenit = -90;
                     azimut += dx / height * 180;
                     azimut = azimut % 360;
-                    camera.addAzimuth(Math.toRadians(azimut));
-                    camera.addZenith(Math.toRadians(zenit));
+                    camera.setAzimuth(Math.toRadians(azimut));
+                    camera.setZenith(Math.toRadians(zenit));
+
+                    dx = 0;
+                    dy = 0;
 
 //                    glfwSetCursorPos(window,width/2,height/2);
 //                  glfwSetCursorPos(window,width/2,height/2);
@@ -156,13 +161,11 @@ public class Renderer extends AbstractRenderer {
 //                    camera.addAzimuth(Math.PI / 2 * (dx) / width);
 //                    camera.addZenith(Math.PI / 2 * (dx) / width);
 
-                    dx = 0;
-                    dy = 0;
+//                    dx = 0;
+//                    dy = 0;
 //                    System.out.println(x + " , " + y);
-
-
-
                 }
+
             }
         };
 
@@ -215,24 +218,31 @@ public class Renderer extends AbstractRenderer {
 //                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 //                    glfwSetCursorPos(window,width/2,height/2);
 
+
 //                    GLFWcursor cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
 //                    glfwSetCursor(window, glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
 
-                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
+//                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
+//
+//
+//
+//                    dx = tmpDx;
+//                    dy = tmpDy;
+////                    ox = width/2;
+////                    oy = height/2;
+//
+//                    camera.setAzimuth(tmpAzimit);
+//                    camera.setAzimuth(tmpZenit);
 
-
-                    glfwSetCursorPos(window,width/2,height/2);
-
-                    dx = tmpDx;
-                    dy = tmpDy;
-                    ox = width/2;
-                    oy = height/2;
-
-                    camera.setAzimuth(tmpAzimit);
-                    camera.setAzimuth(tmpZenit);
                 }
-                if (key == GLFW_KEY_R){
-                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                if (key == GLFW_KEY_R && action == GLFW_PRESS){
+//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    showCursor = !showCursor;
+                    if(showCursor)
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                    else
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
                 }
             }
