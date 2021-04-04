@@ -9,6 +9,8 @@ import utils.GLCamera;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -25,11 +27,11 @@ import static utils.GlutUtils.glutWireCube;
  * @since 2020-01-20
  */
 public class Renderer extends AbstractRenderer {
-    int pocetKrychli = 5;
-    int delkaHrany = 100;
-    int jednaHrana = delkaHrany / pocetKrychli;
-    int[][] rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
-    Box[][] boxes = new Box[pocetKrychli][pocetKrychli];
+    int pocetKrychli;
+    int delkaHrany;
+    int jednaHrana;
+    int[][] rozlozeniBludiste;
+    Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     private GLCamera camera;
     private boolean mouseButton1 = false;
@@ -266,6 +268,9 @@ public class Renderer extends AbstractRenderer {
 
     @Override
     public void init() {
+
+
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         glEnable(GL_DEPTH_TEST);
@@ -307,21 +312,6 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         camera = new GLCamera();
-//        camera.setPosition(new Vec3D(30 * 0.04, 5 * 0.04, 100 * 0.04));
-
-        System.out.println("azimut: "+azimut);
-        System.out.println("zenit: "+zenit);
-        System.out.println("dx: "+dx);
-        System.out.println("dy: "+dy);
-        System.out.println("ox: "+ox);
-        System.out.println("oy: "+oy);
-
-
-//        camera.setAzimuth(20);
-//        camera.setPosition(new Vec3D(0,0,10));
-//        camera.setAzimuth(-3.141587327267613);
-//        camera.setZenith(-1.5707963267948966);
-
 
         skyBox();
         createMaze();
@@ -657,21 +647,23 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void createMaze() {
-        for (int i = 0; i < pocetKrychli; i++) {
-            for (int j = 0; j < pocetKrychli; j++) {
-                rozlozeniBludiste[i][j] = 1;
-                boxes[i][j] = new Box(i, j, jednaHrana);
-            }
-        }
-        // 0 cesta, 1 blok, 2 start, 3 cil
-        rozlozeniBludiste[3][0] = 3;
-        rozlozeniBludiste[3][1] = 0;
-        rozlozeniBludiste[3][2] = 0;
-        rozlozeniBludiste[2][2] = 0;
-        rozlozeniBludiste[2][3] = 0;
-        rozlozeniBludiste[1][3] = 0;
-        rozlozeniBludiste[0][4] = 2;
-        rozlozeniBludiste[1][4] = 0;
+//        for (int i = 0; i < pocetKrychli; i++) {
+//            for (int j = 0; j < pocetKrychli; j++) {
+//                rozlozeniBludiste[i][j] = 1;
+//                boxes[i][j] = new Box(i, j, jednaHrana);
+//            }
+//        }
+//        // 0 cesta, 1 blok, 2 start, 3 cil
+//        rozlozeniBludiste[3][0] = 3;
+//        rozlozeniBludiste[3][1] = 0;
+//        rozlozeniBludiste[3][2] = 0;
+//        rozlozeniBludiste[2][2] = 0;
+//        rozlozeniBludiste[2][3] = 0;
+//        rozlozeniBludiste[1][3] = 0;
+//        rozlozeniBludiste[0][4] = 2;
+//        rozlozeniBludiste[1][4] = 0;
+
+        parseTxt("src/res/proportions/maze");
 
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
@@ -834,6 +826,45 @@ public class Renderer extends AbstractRenderer {
         glPopMatrix();
 
         glEndList();
+    }
+
+    public String readFromFile(String filename, String extension) {
+        String data = "";
+        try {
+            data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    public void parseTxt(String filename) {
+        String data = readFromFile(filename, "txt");
+        // rozdeleni datoveho souboru na jednotlive radky
+        String[] lines = data.split("\n");
+        String[] velikostString = lines[0].split("!");
+        String[] velikostString2 = lines[1].split("!");
+        pocetKrychli = Integer.parseInt(velikostString[1]);
+        delkaHrany = Integer.parseInt(velikostString2[1]);
+        rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
+        boxes = new Box[pocetKrychli][pocetKrychli];
+
+        jednaHrana = delkaHrany/pocetKrychli;
+
+        for (int i = 0;i<pocetKrychli;i++ ) {
+            // rozdeleni radku na jednotlive segmenty
+            String[] attributes = lines[i+2].split(" ! ");
+            for (int j = 0; j<pocetKrychli;j++){
+                switch (attributes[j]) {
+                    case "c" -> rozlozeniBludiste[i][j] = 0;
+                    case "S" -> rozlozeniBludiste[i][j] = 2;
+                    case "K" -> rozlozeniBludiste[i][j] = 3;
+                    default -> rozlozeniBludiste[i][j] = 1;
+                }
+                boxes[i][j] = new Box(i, j, jednaHrana);
+            }
+        }
+        System.out.println();
     }
 
 }
