@@ -47,7 +47,8 @@ public class Renderer extends AbstractRenderer {
     double spawnX,spawnZ;
     int spawnI,spawnJ;
 
-    boolean showCursor;
+    boolean showCursor = true;
+    boolean pauza = true;
     public Renderer() {
         super();
 
