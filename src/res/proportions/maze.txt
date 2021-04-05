@@ -1,7 +1,12 @@
-Rozměr:!5!
-CelkováDélka:!100!
-S ! Z ! Z ! Z ! Z ! 
-c ! c ! c ! c ! c ! 
-Z ! c ! Z ! Z ! c ! 
-Z ! c ! Z ! Z ! c ! 
-Z ! c ! Z ! Z ! K ! 
+Rozmer:!10!
+CelkovaDelka:!200!
+Z ! Z ! Z ! Z ! S ! Z ! Z ! Z ! Z ! Z ! 
+c ! c ! c ! c ! c ! c ! c ! c ! c ! Z ! 
+Z ! Z ! Z ! Z ! Z ! Z ! Z ! Z ! c ! Z ! 
+c ! c ! c ! c ! c ! c ! c ! c ! c ! Z ! 
+c ! Z ! Z ! Z ! Z ! Z ! Z ! Z ! c ! Z ! 
+c ! Z ! c ! c ! Z ! c ! c ! c ! c ! Z ! 
+c ! Z ! c ! c ! c ! Z ! Z ! Z ! c ! Z ! 
+c ! c ! c ! Z ! Z ! Z ! Z ! Z ! c ! Z ! 
+Z ! Z ! c ! c ! c ! c ! Z ! Z ! c ! Z ! 
+Z ! Z ! Z ! Z ! Z ! K ! Z ! Z ! Z ! Z ! 

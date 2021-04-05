@@ -343,8 +343,10 @@ public class Renderer extends AbstractRenderer {
 //        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
 //        glLoadIdentity();
         camera.setFirstPerson(true);
-        Vec3D cameraFixedZ = camera.getPosition();
-        camera.setPosition(cameraFixedZ.withY(5 * 0.04));
+        Vec3D cameraFixedY = camera.getPosition();
+//        System.out.println(camera.toString());
+        camera.setPosition(cameraFixedY.withY(0.20));
+//        System.out.println("dvojka"+camera.toString());
 //        camera.setRadius(5);
         camera.setMatrix();
 //        System.out.println("azimuth: "+camera.getAzimuth());
@@ -393,7 +395,6 @@ public class Renderer extends AbstractRenderer {
                         box.getyMin()* 0.04 * 0.98 <= camY && camY <= box.getyMax()* 0.04 * 1.02 &&
                         box.getzMin()* 0.04 * 0.98 <= camZ && camZ <= box.getzMax()* 0.04 * 1.02)
                     return 1;
-
 
         }
         return 0;
@@ -717,11 +718,11 @@ public class Renderer extends AbstractRenderer {
 //        catch(Exception e){
 //            System.out.println(e.toString());
 //        }
+
         addBoxIfPossible(spawnI,spawnJ+1);
         addBoxIfPossible(spawnI+1,spawnJ);
         addBoxIfPossible(spawnI-1,spawnJ);
         addBoxIfPossible(spawnI,spawnJ-1);
-
 
     }
 
@@ -745,7 +746,7 @@ public class Renderer extends AbstractRenderer {
         glPushMatrix();
         glColor3d(0.5, 0.5, 0.5);
         int size = 250;
-        glutWireCube(size); //neni nutne, pouze pro znazorneni tvaru skyboxu
+//        glutWireCube(size); //neni nutne, pouze pro znazorneni tvaru skyboxu
 
         glEnable(GL_TEXTURE_2D);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -840,7 +841,6 @@ public class Renderer extends AbstractRenderer {
 
     public void parseTxt(String filename) {
         String data = readFromFile(filename, "txt");
-        // rozdeleni datoveho souboru na jednotlive radky
         String[] lines = data.split("\n");
         String[] velikostString = lines[0].split("!");
         String[] velikostString2 = lines[1].split("!");
@@ -848,7 +848,6 @@ public class Renderer extends AbstractRenderer {
         delkaHrany = Integer.parseInt(velikostString2[1]);
         rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
         boxes = new Box[pocetKrychli][pocetKrychli];
-
         jednaHrana = delkaHrany/pocetKrychli;
 
         for (int i = 0;i<pocetKrychli;i++ ) {
