@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static utils.GluUtils.gluPerspective;
-import static utils.GlutUtils.glutWireCube;
+
 
 
 /**
@@ -34,23 +34,17 @@ public class Renderer extends AbstractRenderer {
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     private GLCamera camera;
-    private boolean mouseButton1 = false;
     private float dx, dy, ox, oy;
-//    private float zenit = -1.5707963267948966f ;
-//    private float azimut = -3.141587327267613f ;
 
     private OGLTexture2D[] textureCube;
 
     private float azimut, zenit;
-
     private OGLTexture2D texture1, texture2,textureFinish,textureStart;
-    private OGLTexture2D.Viewer textureViewer;
 
     double spawnX,spawnZ;
     int spawnI,spawnJ;
 
     boolean showCursor = true;
-    boolean pauza = true;
     public Renderer() {
         super();
 
@@ -86,19 +80,7 @@ public class Renderer extends AbstractRenderer {
 
             @Override
             public void invoke(long window, int button, int action, int mods) {
-                DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
-                DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
-                glfwGetCursorPos(window, xBuffer, yBuffer);
-                double x = xBuffer.get(0);
-                double y = yBuffer.get(0);
-
-                mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
-
-//                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-//                    ox = (float) x;
-//                    oy = (float) y;
-//                    System.out.println(x + " , " + y);
-//                }
+                //TODO
             }
 
         };
@@ -106,37 +88,8 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-//                if(x>=width*0.9||y>=height*0.9){
-//                    dx = 0;
-//                    dy = 0;
-
-//                    zenit = 0;
-//                    azimut = 0;
-//                    System.out.println("azimut: "+azimut);
-//                    System.out.println("zenit: "+zenit);
-//                    System.out.println("dx: "+dx);
-//                    System.out.println("dy: "+dy);
-//                    System.out.println("ox: "+ox);
-//                    System.out.println("oy: "+oy);
-//                    Vec3D tmp = camera.get;
-//                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
-//
-//
-//                    glfwSetCursorPos(window,width/2,height/2);
-//
-//                    dx = tmpDx;
-//                    dy = tmpDy;
-//                    ox = tmpOx;
-//                    oy = tmpOy;
-//
-//                    camera.setAzimuth(tmpAzimit);
-//                    camera.setAzimuth(tmpZenit);
-
-//                }
-
                 if (!showCursor) {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-//                    glfwSetCursorPos(window,width/2,height/2);
                     dx = (float) x - ox;
                     dy = (float) y - oy;
                     ox = (float) x;
@@ -150,24 +103,8 @@ public class Renderer extends AbstractRenderer {
                     azimut = azimut % 360;
                     camera.setAzimuth(Math.toRadians(azimut));
                     camera.setZenith(Math.toRadians(zenit));
-
                     dx = 0;
                     dy = 0;
-
-//                    glfwSetCursorPos(window,width/2,height/2);
-//                  glfwSetCursorPos(window,width/2,height/2);
-//                    System.out.println("azimut: "+azimut);
-//                    System.out.println("zenit: "+zenit);
-//                    System.out.println("dx: "+dx);
-//                    System.out.println("dy: "+dy);
-//                    System.out.println("ox: "+ox);
-//                    System.out.println("oy: "+oy);
-//                    camera.addAzimuth(Math.PI / 2 * (dx) / width);
-//                    camera.addZenith(Math.PI / 2 * (dx) / width);
-
-//                    dx = 0;
-//                    dy = 0;
-//                    System.out.println(x + " , " + y);
                 }
 
             }
@@ -218,30 +155,7 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (key == GLFW_KEY_T){
-//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-//                    glfwSetCursorPos(window,width/2,height/2);
-
-
-//                    GLFWcursor cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
-//                    glfwSetCursor(window, glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR));
-
-//                    float tmpDx = dx,tmpDy = dy,tmpOx= ox,tmpOy = oy ,tmpAzimit = azimut,tmpZenit = zenit;
-//
-//
-//
-//                    dx = tmpDx;
-//                    dy = tmpDy;
-////                    ox = width/2;
-////                    oy = height/2;
-//
-//                    camera.setAzimuth(tmpAzimit);
-//                    camera.setAzimuth(tmpZenit);
-
-                }
                 if (key == GLFW_KEY_R && action == GLFW_PRESS){
-//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     showCursor = !showCursor;
                     if(showCursor){
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -253,48 +167,31 @@ public class Renderer extends AbstractRenderer {
                         double y = yBuffer.get(0);
                         ox = (float) x;
                         oy = (float) y;
-
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     }
-
-
                 }
             }
         };
-
-
-
     }
 
     @Override
     public void init() {
-
-
-
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
         glEnable(GL_DEPTH_TEST);
-
         glFrontFace(GL_CCW);
         glPolygonMode(GL_FRONT, GL_FILL);
         glPolygonMode(GL_BACK, GL_FILL);
         glDisable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_2D);
-//        glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
         glMatrixMode(GL_MODELVIEW);
-//        glActiveTexture(GL_TEXTURE0);
-
         glLoadIdentity();
-
         textureCube = new OGLTexture2D[6];
-
         try {
             texture1 = new OGLTexture2D("textures/floor.jpg"); // vzhledem k adresari res v projektu
             texture2 = new OGLTexture2D("textures/wall.png"); // vzhledem k adresari res v projektu
             textureFinish = new OGLTexture2D("textures/finish.jpg"); // vzhledem k adresari res v projektu
             textureStart = new OGLTexture2D("textures/start.jpg"); // vzhledem k adresari res v projektu
-
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
@@ -304,7 +201,6 @@ public class Renderer extends AbstractRenderer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -312,10 +208,8 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         camera = new GLCamera();
-
         skyBox();
         createMaze();
-
         camera.setPosition(new Vec3D(spawnX* 0.04, 5 * 0.04, spawnZ* 0.04));
     }
 
@@ -325,8 +219,6 @@ public class Renderer extends AbstractRenderer {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
         glClearColor(0f, 0f, 0f, 1f);
-
-
 
         //Mdoelovaci
         glMatrixMode(GL_MODELVIEW);

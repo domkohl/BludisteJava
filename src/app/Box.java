@@ -1,36 +1,14 @@
 package app;
 
-import org.lwjgl.system.CallbackI;
 import transforms.Point3D;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class Box {
-    private int x,z;
-    private Point3D bH,b2,b3,b4,bUp1,bUp2,bUp3,bUp4;
-    private int jednaHrana;
 
-    private double xMin,xMax,yMin,yMax,zMin,zMax;
-
+    private final Point3D bH,b2,b3,b4,bUp1,bUp2,bUp3,bUp4;
+    private final double xMin,xMax,yMin,yMax,zMin,zMax;
 
     public Box(int x, int z , int jednaHrana) {
-        this.x = x;
-        this.z = z;
-        this.jednaHrana = jednaHrana;
-
-//        this.bH = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,0);
-//        this.b2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,0);
-//        this.b3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,0);
-//        this.b4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),0);
-//
-//        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana,jednaHrana + y * jednaHrana,10f);
-//        this.bUp2 = new Point3D(bH.getX(),bH.getY() - jednaHrana,10f);
-//        this.bUp3 = new Point3D(bH.getX() - jednaHrana,bH.getY() - jednaHrana,10f);
-//        this.bUp4 = new Point3D(bH.getX() - jednaHrana,bH.getY(),10f);
-
 
         this.bH = new Point3D(jednaHrana + x * jednaHrana,0,jednaHrana + z * jednaHrana);
         this.b2 = new Point3D(bH.getX(),0,bH.getZ() - jednaHrana);
@@ -41,8 +19,6 @@ public class Box {
         this.bUp2 = new Point3D(bH.getX(),10f,bH.getZ() - jednaHrana);
         this.bUp3 = new Point3D(bH.getX() - jednaHrana,10f,bH.getZ() - jednaHrana);
         this.bUp4 = new Point3D(bH.getX() - jednaHrana,10f,bH.getZ());
-
-
 
         double[] allX = {bH.getX(),b2.getX(),b3.getX(),b4.getX(), bUp1.getX(), bUp2.getX(), bUp3.getX(), bUp4.getX()};
         double[] allY = {bH.getY(),b2.getY(),b3.getY(),b4.getY(), bUp1.getY(), bUp2.getY(), bUp3.getY(), bUp4.getY()};
