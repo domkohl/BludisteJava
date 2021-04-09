@@ -18,13 +18,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static utils.GluUtils.gluPerspective;
 
 
-
 /**
- * Simple scene rendering
- *
- * @author PGRF FIM UHK
- * @version 3.1
- * @since 2020-01-20
+ * Třída pro Renderování bludište a práce s ním
  */
 public class Renderer extends AbstractRenderer {
     int pocetKrychli;
@@ -33,22 +28,19 @@ public class Renderer extends AbstractRenderer {
     int[][] rozlozeniBludiste;
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
+    double spawnX, spawnZ;
+    int spawnI, spawnJ;
+    boolean showCursor = true;
     private GLCamera camera;
     private float dx, dy, ox, oy;
-
     private OGLTexture2D[] textureCube;
-
     private float azimut, zenit;
-    private OGLTexture2D texture1, texture2,textureFinish,textureStart;
+    private OGLTexture2D texture1, texture2, textureFinish, textureStart;
 
-    double spawnX,spawnZ;
-    int spawnI,spawnJ;
 
-    boolean showCursor = true;
     public Renderer() {
         super();
-
-
+        //Zakladni ovladani prostredi
         glfwWindowSizeCallback = new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
@@ -56,35 +48,16 @@ public class Renderer extends AbstractRenderer {
                     width = w;
                     height = h;
                 }
-//                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
         };
-
-        /*used default glfwKeyCallback */
-//        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
-//
-//            @Override
-//            public void invoke(long window, int button, int action, int mods) {
-//
-//                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-//                    double x = 0,y = 0;
-////                    glfwGetCursorPos(window, x, y);
-//
-//                    System.out.println(x+" test kliku  "+y);
-//                }
-//            }
-//
-//        };
-
         glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
-
             @Override
             public void invoke(long window, int button, int action, int mods) {
                 //TODO
             }
-
         };
 
+        //rozhlizeni
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
@@ -117,7 +90,7 @@ public class Renderer extends AbstractRenderer {
                 //do nothing
             }
         };
-
+        //Pohyb
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -130,7 +103,7 @@ public class Renderer extends AbstractRenderer {
                         System.out.println("Gratuluji jsi v cíli");
                 }
 
-                if (key == GLFW_KEY_S){
+                if (key == GLFW_KEY_S) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.backward(0.04);
                     if (isOutside(tmp) == 0)
@@ -139,7 +112,7 @@ public class Renderer extends AbstractRenderer {
                         System.out.println("Gratuluji jsi v cíli");
                 }
 
-                if (key == GLFW_KEY_A){
+                if (key == GLFW_KEY_A) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.left(0.04);
                     if (isOutside(tmp) == 0)
@@ -147,7 +120,7 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (key == GLFW_KEY_D){
+                if (key == GLFW_KEY_D) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.right(0.04);
                     if (isOutside(tmp) == 0)
@@ -155,11 +128,11 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (key == GLFW_KEY_R && action == GLFW_PRESS){
+                if (key == GLFW_KEY_R && action == GLFW_PRESS) {
                     showCursor = !showCursor;
-                    if(showCursor){
+                    if (showCursor) {
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                    } else{
+                    } else {
                         DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
                         DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
                         glfwGetCursorPos(window, xBuffer, yBuffer);
@@ -174,6 +147,7 @@ public class Renderer extends AbstractRenderer {
         };
     }
 
+    //Inicializace bludiste
     @Override
     public void init() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -188,10 +162,10 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
         textureCube = new OGLTexture2D[6];
         try {
-            texture1 = new OGLTexture2D("textures/floor.jpg"); // vzhledem k adresari res v projektu
-            texture2 = new OGLTexture2D("textures/wall.png"); // vzhledem k adresari res v projektu
-            textureFinish = new OGLTexture2D("textures/finish.jpg"); // vzhledem k adresari res v projektu
-            textureStart = new OGLTexture2D("textures/start.jpg"); // vzhledem k adresari res v projektu
+            texture1 = new OGLTexture2D("textures/floor.jpg");
+            texture2 = new OGLTexture2D("textures/wall.png");
+            textureFinish = new OGLTexture2D("textures/finish.jpg");
+            textureStart = new OGLTexture2D("textures/start.jpg");
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
@@ -210,116 +184,101 @@ public class Renderer extends AbstractRenderer {
         camera = new GLCamera();
         skyBox();
         createMaze();
-        camera.setPosition(new Vec3D(spawnX* 0.04, 5 * 0.04, spawnZ* 0.04));
+        camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
     }
 
 
+    //Funkce pro neustale vykreslovani
     @Override
     public void display() {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
         glClearColor(0f, 0f, 0f, 1f);
 
-        //Mdoelovaci
+        //Modelovaci
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glScalef(0.04f, 0.04f, 0.04f);
-//        glScalef(0.5f,0.5f,0.5f);
-
+        //Projekcni
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         gluPerspective(45, width / (float) height, 0.01f, 10000.0f);
 
-//        gluLookAt(0., 0., -10., 0., 0., 0., 1., 1., 0.);
-
-//        gluLookAt(0, 0, 1, 0, 1, 0.5, 0, 0, 1);
-//        glLoadIdentity();
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-//        System.out.println(camera.toString());
         camera.setPosition(cameraFixedY.withY(0.20));
-//        System.out.println("dvojka"+camera.toString());
-//        camera.setRadius(5);
         camera.setMatrix();
-//        System.out.println("azimuth: "+camera.getAzimuth());
-//        System.out.println("zenith: "+camera.getZenith());
-
-//        renderMaze();
 
         texture1.bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-//        drawSimpleScene();
-
-
         skyBox();
         renderMaze();
 
     }
 
-    // 0-jsemv bludsiti...1-jsem blizko zdi...2--jsem v cili
+    //Funkce pro kolize
+    // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
     private int isOutside(GLCamera cam) {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
-        //TODO optimalizovat do funci if statmenty
-        System.out.println("testuji");
+        //TODO optimalizovat do funkci if statmenty
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 1) {
-                    if (    boxes[i][j].getxMin()* 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax()* 0.04 * 1.02 &&
-                            boxes[i][j].getyMin()* 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax()* 0.04 * 1.02 &&
-                            boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 1;
                 }
                 if (rozlozeniBludiste[i][j] == 3) {
-                    if (    boxes[i][j].getxMin()* 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax()* 0.04 * 1.02 &&
-                            boxes[i][j].getyMin()* 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax()* 0.04 * 1.02 &&
-                            boxes[i][j].getzMin()* 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax()* 0.04 * 1.02)
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 2;
                 }
             }
         }
-        for (Box box:spawnHelpBoxes) {
-                if (    box.getxMin()* 0.04 * 0.98 <= camX && camX <= box.getxMax()* 0.04 * 1.02 &&
-                        box.getyMin()* 0.04 * 0.98 <= camY && camY <= box.getyMax()* 0.04 * 1.02 &&
-                        box.getzMin()* 0.04 * 0.98 <= camZ && camZ <= box.getzMax()* 0.04 * 1.02)
-                    return 1;
+        for (Box box : spawnHelpBoxes) {
+            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
+                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
+                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
+                return 1;
 
         }
         return 0;
     }
 
+    //Vykresleni bludiste
     private void renderMaze() {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 0) {
                     renderPlate(i, j);
-                } else if (rozlozeniBludiste[i][j] == 3){
-                    renderFinish(i,j);
-                }else if(rozlozeniBludiste[i][j] == 2){
-                    renderStart(i,j);
-                }
-                else {
+                } else if (rozlozeniBludiste[i][j] == 3) {
+                    renderFinish(i, j);
+                } else if (rozlozeniBludiste[i][j] == 2) {
+                    renderStart(i, j);
+                } else {
                     renderBox(i, j);
                 }
             }
         }
-
         for (Box box : spawnHelpBoxes) {
             renderBox(box);
         }
 
     }
 
+    //Vykresleni boxu/zdi matice
     private void renderBox(int x, int y) {
         texture2.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
-
         glTexCoord2f(0, 0);
         glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
@@ -377,12 +336,12 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
+    //Vykresleni boxu/zdi pomoci boxu
     private void renderBox(Box box) {
         texture2.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
-
         glTexCoord2f(0, 0);
         glVertex3f((float) box.getbH().getX(), (float) box.getbH().getY(), (float) box.getbH().getZ());
         glTexCoord2f(1, 0);
@@ -440,6 +399,7 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
+    //Vykresleni podlahy
     private void renderPlate(int x, int y) {
         texture1.bind();
         glBegin(GL_QUADS);
@@ -457,12 +417,12 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
-    private void renderFinish(int x, int y){
+    //Vykresleni cile
+    private void renderFinish(int x, int y) {
         textureFinish.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
-
         glTexCoord2f(0, 0);
         glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
@@ -508,8 +468,6 @@ public class Renderer extends AbstractRenderer {
         glTexCoord2f(0, 1);
         glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
 
-
-        //TODO: nevykresluje nenevim proc overi u jinych bludist--> vykresluje ale ne kdyz opoblisz box zdi
         glTexCoord2f(0, 0);
         glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
         glTexCoord2f(1, 0);
@@ -522,7 +480,8 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
-    private void renderStart(int x, int y){
+    //Vykresleni startu
+    private void renderStart(int x, int y) {
         textureStart.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
@@ -539,106 +498,70 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
+    //Funkce vytvoreni bludiste
     private void createMaze() {
-//        for (int i = 0; i < pocetKrychli; i++) {
-//            for (int j = 0; j < pocetKrychli; j++) {
-//                rozlozeniBludiste[i][j] = 1;
-//                boxes[i][j] = new Box(i, j, jednaHrana);
-//            }
-//        }
-//        // 0 cesta, 1 blok, 2 start, 3 cil
-//        rozlozeniBludiste[3][0] = 3;
-//        rozlozeniBludiste[3][1] = 0;
-//        rozlozeniBludiste[3][2] = 0;
-//        rozlozeniBludiste[2][2] = 0;
-//        rozlozeniBludiste[2][3] = 0;
-//        rozlozeniBludiste[1][3] = 0;
-//        rozlozeniBludiste[0][4] = 2;
-//        rozlozeniBludiste[1][4] = 0;
 
         parseTxt("src/res/proportions/maze");
 
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
-                if(rozlozeniBludiste[i][j] == 2){
+                if (rozlozeniBludiste[i][j] == 2) {
                     spawnI = i;
                     spawnJ = j;
-                    spawnX = (boxes[i][j].getbH().getX()+
-                            boxes[i][j].getB2().getX()+
-                            boxes[i][j].getB3().getX()+
-                            boxes[i][j].getB4().getX()+
-                            boxes[i][j].getbUp4().getX()+
-                            boxes[i][j].getbUp3().getX()+
-                            boxes[i][j].getbUp2().getX()+
+                    spawnX = (boxes[i][j].getbH().getX() +
+                            boxes[i][j].getB2().getX() +
+                            boxes[i][j].getB3().getX() +
+                            boxes[i][j].getB4().getX() +
+                            boxes[i][j].getbUp4().getX() +
+                            boxes[i][j].getbUp3().getX() +
+                            boxes[i][j].getbUp2().getX() +
                             boxes[i][j].getbUp1().getX()
-                    )/8;
+                    ) / 8;
 
-                    spawnZ = (boxes[i][j].getbH().getZ()+
-                            boxes[i][j].getB2().getZ()+
-                            boxes[i][j].getB3().getZ()+
-                            boxes[i][j].getB4().getZ()+
-                            boxes[i][j].getbUp4().getZ()+
-                            boxes[i][j].getbUp3().getZ()+
-                            boxes[i][j].getbUp2().getZ()+
+                    spawnZ = (boxes[i][j].getbH().getZ() +
+                            boxes[i][j].getB2().getZ() +
+                            boxes[i][j].getB3().getZ() +
+                            boxes[i][j].getB4().getZ() +
+                            boxes[i][j].getbUp4().getZ() +
+                            boxes[i][j].getbUp3().getZ() +
+                            boxes[i][j].getbUp2().getZ() +
                             boxes[i][j].getbUp1().getZ()
-                    )/8;;
+                    ) / 8;
                 }
 
-                if(rozlozeniBludiste[i][j] == 0){
-                    addBoxIfPossible(i,j+1);
-                    addBoxIfPossible(i+1,j);
-                    addBoxIfPossible(i-1,j);
-                    addBoxIfPossible(i,j-1);
+                if (rozlozeniBludiste[i][j] == 0) {
+                    addBoxIfPossible(i, j + 1);
+                    addBoxIfPossible(i + 1, j);
+                    addBoxIfPossible(i - 1, j);
+                    addBoxIfPossible(i, j - 1);
                 }
-
             }
         }
-
-
-        //TODo rozsirit pro vsehny 4 strany a oprimalizovat kod opakovani
-//        try {
-//             double tmp = boxes[spawnI][spawnJ+1].getxMax();
-//                System.out.println("v proadku");
-//        }
-//        catch(ArrayIndexOutOfBoundsException e){
-//            System.out.println("arrray prekrocen");
-//
-//            Box tmp = new Box(spawnI,spawnJ+1,jednaHrana);
-//            spawnHelpBoxes.add(tmp);
-//
-//        }
-//        catch(Exception e){
-//            System.out.println(e.toString());
-//        }
-
-        addBoxIfPossible(spawnI,spawnJ+1);
-        addBoxIfPossible(spawnI+1,spawnJ);
-        addBoxIfPossible(spawnI-1,spawnJ);
-        addBoxIfPossible(spawnI,spawnJ-1);
-
+        addBoxIfPossible(spawnI, spawnJ + 1);
+        addBoxIfPossible(spawnI + 1, spawnJ);
+        addBoxIfPossible(spawnI - 1, spawnJ);
+        addBoxIfPossible(spawnI, spawnJ - 1);
     }
 
-    private void addBoxIfPossible(int i, int j){
+    //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
+    private void addBoxIfPossible(int i, int j) {
         try {
             double tmp = boxes[i][j].getxMax();
-            System.out.println("v proadku");
-        }
-        catch(ArrayIndexOutOfBoundsException e){
-            System.out.println("arrray prekrocen");
-            Box tmp = new Box(i,j,jednaHrana);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            //mimo-vytvorim novy box
+            Box tmp = new Box(i, j, jednaHrana);
             spawnHelpBoxes.add(tmp);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e.toString());
         }
     }
 
+    //Vykresleni skyboxu
     private void skyBox() {
-//        glNewList(0, GL_COMPILE);
+
         glPushMatrix();
         glColor3d(0.5, 0.5, 0.5);
-        int size = 250;
-//        glutWireCube(size); //neni nutne, pouze pro znazorneni tvaru skyboxu
+        int size = 6 * delkaHrany;
 
         glEnable(GL_TEXTURE_2D);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -715,12 +638,12 @@ public class Renderer extends AbstractRenderer {
         glVertex3d(size, size, size);
         glEnd();
 
-//        glDisable(GL_TEXTURE_2D);
         glPopMatrix();
 
         glEndList();
     }
 
+    //Pomocna funkce pro cteni ze souboru
     public String readFromFile(String filename, String extension) {
         String data = "";
         try {
@@ -731,6 +654,7 @@ public class Renderer extends AbstractRenderer {
         return data;
     }
 
+    //Nacteni bludiste ze souboru
     public void parseTxt(String filename) {
         String data = readFromFile(filename, "txt");
         String[] lines = data.split("\n");
@@ -740,12 +664,12 @@ public class Renderer extends AbstractRenderer {
         delkaHrany = Integer.parseInt(velikostString2[1]);
         rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
         boxes = new Box[pocetKrychli][pocetKrychli];
-        jednaHrana = delkaHrany/pocetKrychli;
+        jednaHrana = delkaHrany / pocetKrychli;
 
-        for (int i = 0;i<pocetKrychli;i++ ) {
+        for (int i = 0; i < pocetKrychli; i++) {
             // rozdeleni radku na jednotlive segmenty
-            String[] attributes = lines[i+2].split(" ! ");
-            for (int j = 0; j<pocetKrychli;j++){
+            String[] attributes = lines[i + 2].split(" ! ");
+            for (int j = 0; j < pocetKrychli; j++) {
                 switch (attributes[j]) {
                     case "c" -> rozlozeniBludiste[i][j] = 0;
                     case "S" -> rozlozeniBludiste[i][j] = 2;
@@ -755,7 +679,6 @@ public class Renderer extends AbstractRenderer {
                 boxes[i][j] = new Box(i, j, jednaHrana);
             }
         }
-        System.out.println();
     }
 
 }
