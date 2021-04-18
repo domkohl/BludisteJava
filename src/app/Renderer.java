@@ -227,7 +227,7 @@ public class Renderer extends AbstractRenderer {
         textureFinish.bind();
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glScalef(0.06f, 0.06f, 0.06f);
+        glScaled(0.02, 0.02, 0.02);
 
 
         glBegin(GL_QUADS);
