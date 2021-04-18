@@ -206,7 +206,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        camera.setPosition(cameraFixedY.withY(0.20));
+//        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -216,7 +216,80 @@ public class Renderer extends AbstractRenderer {
 
         skyBox();
         renderMaze();
+    }
 
+    private void renderEnemy(int x,int y) {
+//        glMatrixMode(GL_MODELVIEW);
+//        glPushMatrix();
+//        glLoadIdentity();
+//        glScalef(0.04f, 0.04f, 0.04f);
+//        glScalef(0.5f, 0.5f, 0.5f);
+        textureFinish.bind();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glScalef(0.06f, 0.06f, 0.06f);
+
+
+        glBegin(GL_QUADS);
+//        glColor3f(0f, 1f, 0f);
+
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+//
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+//
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+//
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+//
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glEnd();
+        glLoadIdentity();
+        glScalef(0.04f, 0.04f, 0.04f);
+//        glPopMatrix();
     }
 
     //Funkce pro kolize
@@ -226,29 +299,29 @@ public class Renderer extends AbstractRenderer {
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
         //TODO optimalizovat do funkci if statmenty
-        for (int i = 0; i < pocetKrychli; i++) {
-            for (int j = 0; j < pocetKrychli; j++) {
-                if (rozlozeniBludiste[i][j] == 1) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-                        return 1;
-                }
-                if (rozlozeniBludiste[i][j] == 3) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-                        return 2;
-                }
-            }
-        }
-        for (Box box : spawnHelpBoxes) {
-            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
-                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
-                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
-                return 1;
-
-        }
+//        for (int i = 0; i < pocetKrychli; i++) {
+//            for (int j = 0; j < pocetKrychli; j++) {
+//                if (rozlozeniBludiste[i][j] == 1) {
+//                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+//                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+//                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+//                        return 1;
+//                }
+//                if (rozlozeniBludiste[i][j] == 3) {
+//                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+//                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+//                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+//                        return 2;
+//                }
+//            }
+//        }
+//        for (Box box : spawnHelpBoxes) {
+//            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
+//                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
+//                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
+//                return 1;
+//
+//        }
         return 0;
     }
 
@@ -262,6 +335,8 @@ public class Renderer extends AbstractRenderer {
                     renderFinish(i, j);
                 } else if (rozlozeniBludiste[i][j] == 2) {
                     renderStart(i, j);
+                } else if (rozlozeniBludiste[i][j] == 4) {
+                    renderEnemy(i, j);
                 } else {
                     renderBox(i, j);
                 }
@@ -674,11 +749,11 @@ public class Renderer extends AbstractRenderer {
                     case "c" -> rozlozeniBludiste[i][j] = 0;
                     case "S" -> rozlozeniBludiste[i][j] = 2;
                     case "K" -> rozlozeniBludiste[i][j] = 3;
+                    case "E" -> rozlozeniBludiste[i][j] = 4;
                     default -> rozlozeniBludiste[i][j] = 1;
                 }
                 boxes[i][j] = new Box(i, j, jednaHrana);
             }
         }
     }
-
 }
