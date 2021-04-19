@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -50,6 +51,9 @@ public class Renderer extends AbstractRenderer {
     boolean animaceStop;
     boolean prechodhrana;
     private float startBod,finishBod;
+    private int[] destiantion;
+    private int[] source;
+    boolean newMove;
 
 
 
@@ -226,7 +230,7 @@ public class Renderer extends AbstractRenderer {
         String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
 
         //System.out.println(fps);
-        float speed = 1; // pocet stupnu rotace za vterinu
+        float speed = 3; // pocet stupnu rotace za vterinu
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
@@ -264,9 +268,24 @@ public class Renderer extends AbstractRenderer {
         glPushMatrix();
 
         //zajisteni naharani matice pro npc
+        if(newMove){
+            glLoadIdentity();
+            glScalef(0.04f, 0.04f, 0.04f);
+            glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+            newMove = false;
+        }
         glLoadMatrixf(modelMatrixEnemy);
-        if(animaceRun)
-        glTranslatef(0,0,step);
+
+//            glTranslatef(0,0,step);
+            switch (destiantion[2]) {
+                case 1 -> glTranslatef(0,0,step);
+                case 2 -> glTranslatef(0,0,-step);
+                case 3 ->  glTranslatef(step,0,0);
+                case 4 -> glTranslatef(-step,0,0);
+                default ->  glTranslatef(0,0,0);
+            }
+
+
 
 
         float zmenseni = jednaHrana/3f;
@@ -296,20 +315,25 @@ public class Renderer extends AbstractRenderer {
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
         glPopMatrix();
+
+        //precahzim hranu nastavuji jiny papametry site
+        if(startBod>=jednaHrana/2f ){
+            prechodhrana = true;
+            rozlozeniBludiste[source[0]][source[1]] = 0;
+            rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
+        }
+//        System.out.println(startBod);
         if(startBod<finishBod)
-        startBod = startBod+step;
+            startBod = startBod+step;
 //        System.out.println(startBod);
         if(startBod >= finishBod){
-//            System.out.println(startBod);
+            System.out.println(startBod);
             animaceRun = false;
-            animaceStop = true;
+//            animaceStop = true;
+            prechodhrana = false;
+//            source = destiantion;
+//            destiantion = possibleWaysEnemy(x,y);
 //            animateStart = false;
-        }
-        if(startBod>=jednaHrana/2f){
-            prechodhrana = true;
-            rozlozeniBludiste[3][6] = 0;
-            rozlozeniBludiste[3][7] = 4;
-
         }
     }
 
@@ -358,14 +382,18 @@ public class Renderer extends AbstractRenderer {
                 } else if (rozlozeniBludiste[i][j] == 2) {
                     renderStart(i, j);
                 } else if (rozlozeniBludiste[i][j] == 4) {
-                    if(!animaceRun && !animaceStop){
+                    System.out.println("Animace RUN"+animaceRun);
+//                    System.out.println(""animaceStop);
+                    if(!animaceRun){
+                        destiantion = possibleWaysEnemy(i,j);
                         startBod = 0f;
                         finishBod = jednaHrana;
                         animaceRun = true;
+                        newMove =true;
                     }
                     if(prechodhrana){
-                        //ta predchozi
-                        renderEnemy(3,6);
+                        //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
+                        renderEnemy(source[0],source[1]);
                     }else{
                         renderEnemy(i, j);
                     }
@@ -379,6 +407,36 @@ public class Renderer extends AbstractRenderer {
         }
 
     }
+
+    private int[] possibleWaysEnemy(int i, int j) {
+        source = new int[]{i, j};
+        ArrayList<int[]> possbileWays = new ArrayList<>();
+        // 1 do prava,2 do levam, 3 nahoru,4 dolu
+        if(rozlozeniBludiste[i][j+1] == 0){
+            int[] tmp = {i,j+1,1};
+            possbileWays.add(tmp);
+        }
+        if(rozlozeniBludiste[i][j-1] == 0){
+            int[] tmp = {i,j-1,2};
+            possbileWays.add(tmp);
+        }
+        if(rozlozeniBludiste[i+1][j] == 0){
+            int[] tmp = {i+1,j,3};
+            possbileWays.add(tmp);
+        }
+        if(rozlozeniBludiste[i-1][j] == 0){
+            int[] tmp = {i-1,j,4};
+            possbileWays.add(tmp);
+        }
+
+        System.out.println(possbileWays.toString());
+        int randomWay = (int)(Math.random() * possbileWays.size());
+        System.out.println(Arrays.toString(possbileWays.get(randomWay)));
+
+        return possbileWays.get(randomWay);
+
+    }
+
 
     //Vykresleni boxu/zdi matice
     private void renderBox(int x, int y) {
