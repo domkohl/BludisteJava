@@ -1,6 +1,8 @@
 package app;
 
+import lwjglutils.OGLModelOBJ;
 import lwjglutils.OGLTexture2D;
+import lwjglutils.ShaderUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Vec3D;
@@ -18,6 +20,8 @@ import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 import static utils.GluUtils.gluPerspective;
 
 
@@ -56,6 +60,9 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
+
+    OGLModelOBJ model;
+    int shaderProgram;
 
 
 
@@ -217,6 +224,9 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
         glScalef(0.04f, 0.04f, 0.04f);
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+
+        model = new OGLModelOBJ("/obj/ducky.obj");
+        shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
     }
 
 
@@ -262,6 +272,12 @@ public class Renderer extends AbstractRenderer {
 
         skyBox();
         renderMaze();
+
+
+//        glUseProgram(shaderProgram);
+//        model.getBuffers().draw(model.getTopology(), shaderProgram);
+//        glDeleteProgram(shaderProgram);
+
     }
 
     private void renderEnemy(int x,int y) {
@@ -310,6 +326,8 @@ public class Renderer extends AbstractRenderer {
         glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
         glTexCoord2f(0, 1);
         glVertex3f((float) boxes[x][y].getB4().getX()+zmenseni, (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ()-zmenseni);
+//        glUseProgram(shaderProgram);
+//        model.getBuffers().draw(model.getTopology(), shaderProgram);
 
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
