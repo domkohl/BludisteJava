@@ -12,6 +12,8 @@ import java.nio.DoubleBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -36,6 +38,14 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
     private OGLTexture2D texture1, texture2, textureFinish, textureStart;
+
+
+    private long oldmils;
+    private long oldFPSmils;
+    private double fps;
+    float step;
+    private float[] modelMatrixEnemy = new float[16];
+    boolean animateStart;
 
 
     public Renderer() {
@@ -143,6 +153,9 @@ public class Renderer extends AbstractRenderer {
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     }
                 }
+                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+                    animateStart = !animateStart;
+                }
             }
         };
     }
@@ -150,6 +163,7 @@ public class Renderer extends AbstractRenderer {
     //Inicializace bludiste
     @Override
     public void init() {
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glFrontFace(GL_CCW);
@@ -185,12 +199,32 @@ public class Renderer extends AbstractRenderer {
         skyBox();
         createMaze();
         camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+        Arrays.fill(modelMatrixEnemy, 1);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glScalef(0.04f, 0.04f, 0.04f);
+        glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
     }
 
 
     //Funkce pro neustale vykreslovani
     @Override
     public void display() {
+        // vypocet fps, nastaveni rychlosti otaceni podle rychlosti prekresleni
+        long mils = System.currentTimeMillis();
+        if ((mils - oldFPSmils) > 300) {
+            fps = 1000 / (double) (mils - oldmils + 1);
+            oldFPSmils = mils;
+        }
+        String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
+
+        //System.out.println(fps);
+        float speed = 1; // pocet stupnu rotace za vterinu
+        step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
+        oldmils = mils;
+
+
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
         glClearColor(0f, 0f, 0f, 1f);
@@ -219,77 +253,41 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void renderEnemy(int x,int y) {
-//        glMatrixMode(GL_MODELVIEW);
-//        glPushMatrix();
-//        glLoadIdentity();
-//        glScalef(0.04f, 0.04f, 0.04f);
-//        glScalef(0.5f, 0.5f, 0.5f);
-        textureFinish.bind();
+        if (!animateStart) return;
         glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glScaled(0.02, 0.02, 0.02);
+        glPushMatrix();
 
+        //zajisteni naharani matice pro npc
+        glLoadMatrixf(modelMatrixEnemy);
+        glTranslatef(step,0,0);
+
+        float zmenseni = jednaHrana/3f;
+//        zmenseni = 0f;
+        textureFinish.bind();
 
         glBegin(GL_QUADS);
-//        glColor3f(0f, 1f, 0f);
-
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) boxes[x][y].getbUp1().getX()-zmenseni, (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ()-zmenseni);
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) boxes[x][y].getbUp2().getX()-zmenseni, (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ()+zmenseni);
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) boxes[x][y].getbUp3().getX()+zmenseni, (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ()+zmenseni);
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
-//
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
-//
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
-//
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
-//
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbH().getX()-zmenseni, (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ()-zmenseni);
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getbUp1().getX()-zmenseni, (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ()-zmenseni);
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getB4().getX()+zmenseni, (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ()-zmenseni);
+
         glEnd();
-        glLoadIdentity();
-        glScalef(0.04f, 0.04f, 0.04f);
-//        glPopMatrix();
+        glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+        glPopMatrix();
     }
 
     //Funkce pro kolize
