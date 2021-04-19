@@ -53,7 +53,9 @@ public class Renderer extends AbstractRenderer {
     private float startBod,finishBod;
     private int[] destiantion;
     private int[] source;
+    private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
+    boolean firstTimeRenderEnemy = true;
 
 
 
@@ -230,7 +232,7 @@ public class Renderer extends AbstractRenderer {
         String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
 
         //System.out.println(fps);
-        float speed = 3; // pocet stupnu rotace za vterinu
+        float speed = 20; // pocet stupnu rotace za vterinu
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
@@ -284,9 +286,6 @@ public class Renderer extends AbstractRenderer {
                 case 4 -> glTranslatef(-step,0,0);
                 default ->  glTranslatef(0,0,0);
             }
-
-
-
 
         float zmenseni = jednaHrana/3f;
 //        zmenseni = 0f;
@@ -382,8 +381,14 @@ public class Renderer extends AbstractRenderer {
                 } else if (rozlozeniBludiste[i][j] == 2) {
                     renderStart(i, j);
                 } else if (rozlozeniBludiste[i][j] == 4) {
-                    System.out.println("Animace RUN"+animaceRun);
+//                    System.out.println("Animace RUN"+animaceRun);
 //                    System.out.println(""animaceStop);
+
+                    if(firstTimeRenderEnemy){
+                        allVisitedEnemy.add(new int[]{i,j,0});
+                        firstTimeRenderEnemy = false;
+                    }
+
                     if(!animaceRun){
                         destiantion = possibleWaysEnemy(i,j);
                         startBod = 0f;
@@ -412,29 +417,102 @@ public class Renderer extends AbstractRenderer {
         source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
-        if(rozlozeniBludiste[i][j+1] == 0){
+        if(j+1 < delkaHrany && j+1>=0){
+            if(rozlozeniBludiste[i][j+1] == 0 && isNotInsideEnemyWay(i,j+1)){
             int[] tmp = {i,j+1,1};
             possbileWays.add(tmp);
+            }
         }
-        if(rozlozeniBludiste[i][j-1] == 0){
+
+        if(j-1 < delkaHrany && j-1>=0){
+        if(rozlozeniBludiste[i][j-1] == 0 && isNotInsideEnemyWay(i,j-1)){
             int[] tmp = {i,j-1,2};
             possbileWays.add(tmp);
+            }
         }
+        if(i+1 < delkaHrany && i+1>=0 && isNotInsideEnemyWay(i+1,j)){
         if(rozlozeniBludiste[i+1][j] == 0){
             int[] tmp = {i+1,j,3};
             possbileWays.add(tmp);
+            }
         }
+        if(i-1 < delkaHrany && i-1>=0 && isNotInsideEnemyWay(i-1,j)){
         if(rozlozeniBludiste[i-1][j] == 0){
             int[] tmp = {i-1,j,4};
             possbileWays.add(tmp);
+            }
         }
 
-        System.out.println(possbileWays.toString());
-        int randomWay = (int)(Math.random() * possbileWays.size());
-        System.out.println(Arrays.toString(possbileWays.get(randomWay)));
+        if(possbileWays.size() == 0 && allVisitedEnemy.size() != 0){
+//            possbileWays.add(allVisitedEnemy.get(allVisitedEnemy.size()-1));
+//            int tmpPosun = 0;
+//            int[] tmp = allVisitedEnemy.get(allVisitedEnemy.size()-1);
+//                if(tmp[2] == 1)
+//                    tmpPosun = 2;
+//                if(tmp[2] == 2)
+//                    tmpPosun = 1;
+//                if(tmp[2] == 3)
+//                    tmpPosun = 4;
+//                if(tmp[2] == 4)
+//                    tmpPosun = 3;
+//
+//            possbileWays.add(new int[]{tmp[0],tmp[1],tmpPosun});
+//            allVisitedEnemy.clear();
+//            source = new int[]{tmp[0], tmp[1]};
+            allVisitedEnemy.clear();
+            allVisitedEnemy.add(new int[]{i,j,0});
+            //TODO optimazilovat dat if do funcki a vratit list
+            if(j+1 < delkaHrany && j+1>=0){
+                if(rozlozeniBludiste[i][j+1] == 0 && isNotInsideEnemyWay(i,j+1)){
+                    int[] tmp = {i,j+1,1};
+                    possbileWays.add(tmp);
+                }
+            }
 
+            if(j-1 < delkaHrany && j-1>=0){
+                if(rozlozeniBludiste[i][j-1] == 0 && isNotInsideEnemyWay(i,j-1)){
+                    int[] tmp = {i,j-1,2};
+                    possbileWays.add(tmp);
+                }
+            }
+            if(i+1 < delkaHrany && i+1>=0 && isNotInsideEnemyWay(i+1,j)){
+                if(rozlozeniBludiste[i+1][j] == 0){
+                    int[] tmp = {i+1,j,3};
+                    possbileWays.add(tmp);
+                }
+            }
+            if(i-1 < delkaHrany && i-1>=0 && isNotInsideEnemyWay(i-1,j)){
+                if(rozlozeniBludiste[i-1][j] == 0){
+                    int[] tmp = {i-1,j,4};
+                    possbileWays.add(tmp);
+                }
+            }
+
+        }
+
+        if(possbileWays.size() == 0)
+            possbileWays.add(new int[]{i,j,0});
+
+//        System.out.println(possbileWays.toString());
+        int randomWay = (int)(Math.random() * possbileWays.size());
+//        System.out.println(Arrays.toString(possbileWays.get(randomWay)));
+
+        System.out.println(allVisitedEnemy.toString());
+        allVisitedEnemy.add(possbileWays.get(randomWay));
         return possbileWays.get(randomWay);
 
+    }
+
+    private boolean isNotInsideEnemyWay(int i, int j) {
+        if(allVisitedEnemy.size() <=0){
+            return true;
+        }else{
+            for (int[] blok: allVisitedEnemy) {
+                if(blok[0] == i && blok[1] == j)
+                    return false;
+            }
+        }
+        return true;
     }
 
 
