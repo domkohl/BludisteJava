@@ -46,6 +46,12 @@ public class Renderer extends AbstractRenderer {
     float step;
     private float[] modelMatrixEnemy = new float[16];
     boolean animateStart;
+    boolean animaceRun;
+    boolean animaceStop;
+    boolean prechodhrana;
+    private float startBod,finishBod;
+
+
 
 
     public Renderer() {
@@ -259,7 +265,9 @@ public class Renderer extends AbstractRenderer {
 
         //zajisteni naharani matice pro npc
         glLoadMatrixf(modelMatrixEnemy);
-        glTranslatef(step,0,0);
+        if(animaceRun)
+        glTranslatef(0,0,step);
+
 
         float zmenseni = jednaHrana/3f;
 //        zmenseni = 0f;
@@ -288,6 +296,21 @@ public class Renderer extends AbstractRenderer {
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
         glPopMatrix();
+        if(startBod<finishBod)
+        startBod = startBod+step;
+//        System.out.println(startBod);
+        if(startBod >= finishBod){
+//            System.out.println(startBod);
+            animaceRun = false;
+            animaceStop = true;
+//            animateStart = false;
+        }
+        if(startBod>=jednaHrana/2f){
+            prechodhrana = true;
+            rozlozeniBludiste[3][6] = 0;
+            rozlozeniBludiste[3][7] = 4;
+
+        }
     }
 
     //Funkce pro kolize
@@ -325,6 +348,7 @@ public class Renderer extends AbstractRenderer {
 
     //Vykresleni bludiste
     private void renderMaze() {
+//        rozlozeniBludiste[3][7] = 3;
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 0) {
@@ -334,7 +358,17 @@ public class Renderer extends AbstractRenderer {
                 } else if (rozlozeniBludiste[i][j] == 2) {
                     renderStart(i, j);
                 } else if (rozlozeniBludiste[i][j] == 4) {
-                    renderEnemy(i, j);
+                    if(!animaceRun && !animaceStop){
+                        startBod = 0f;
+                        finishBod = jednaHrana;
+                        animaceRun = true;
+                    }
+                    if(prechodhrana){
+                        //ta predchozi
+                        renderEnemy(3,6);
+                    }else{
+                        renderEnemy(i, j);
+                    }
                 } else {
                     renderBox(i, j);
                 }

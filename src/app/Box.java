@@ -12,8 +12,6 @@ public class Box {
     private final double xMin, xMax, yMin, yMax, zMin, zMax;
 
     public Box(int x, int z, int jednaHrana) {
-//        x=x+1;
-//        z=z+1;
         //vypocet bodu Boxu
         this.bH = new Point3D(jednaHrana + x * jednaHrana, 0, jednaHrana + z * jednaHrana);
         this.b2 = new Point3D(bH.getX(), 0, bH.getZ() - jednaHrana);
