@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.nio.DoubleBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -63,6 +60,9 @@ public class Renderer extends AbstractRenderer {
 
     OGLModelOBJ model;
     int shaderProgram;
+
+
+    FindWayBFS findWay = new FindWayBFS();
 
 
 
@@ -218,12 +218,16 @@ public class Renderer extends AbstractRenderer {
         skyBox();
         createMaze();
         camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+
+        //???
         Arrays.fill(modelMatrixEnemy, 1);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glScalef(0.04f, 0.04f, 0.04f);
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+
+        //objekt
 
         model = new OGLModelOBJ("/obj/ducky.obj");
         shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
@@ -271,6 +275,11 @@ public class Renderer extends AbstractRenderer {
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
         skyBox();
+
+
+//        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
+
+
         renderMaze();
 
 
@@ -361,29 +370,35 @@ public class Renderer extends AbstractRenderer {
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
         //TODO optimalizovat do funkci if statmenty
-//        for (int i = 0; i < pocetKrychli; i++) {
-//            for (int j = 0; j < pocetKrychli; j++) {
-//                if (rozlozeniBludiste[i][j] == 1) {
-//                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-//                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-//                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-//                        return 1;
-//                }
-//                if (rozlozeniBludiste[i][j] == 3) {
-//                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-//                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-//                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-//                        return 2;
-//                }
-//            }
-//        }
-//        for (Box box : spawnHelpBoxes) {
-//            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
-//                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
-//                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
-//                return 1;
-//
-//        }
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                if (rozlozeniBludiste[i][j] == 1) {
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                        return 1;
+                }
+                if (rozlozeniBludiste[i][j] == 3) {
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                        return 2;
+                }
+                if (rozlozeniBludiste[i][j] == 0) {
+                    if (boxes[i][j].getxMin() * 0.04  <= camX && camX <= boxes[i][j].getxMax() * 0.04  &&
+                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04  &&
+                            boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 )
+                        System.out.println("jsem i: "+i +"  a j: "+j );
+                }
+            }
+        }
+        for (Box box : spawnHelpBoxes) {
+            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
+                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
+                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
+                return 1;
+
+        }
         return 0;
     }
 
@@ -420,6 +435,8 @@ public class Renderer extends AbstractRenderer {
                     }else{
                         renderEnemy(i, j);
                     }
+                }else if (rozlozeniBludiste[i][j] == 5) {
+                    renderFinish(i, j);
                 } else {
                     renderBox(i, j);
                 }
@@ -802,6 +819,8 @@ public class Renderer extends AbstractRenderer {
         addBoxIfPossible(spawnI + 1, spawnJ);
         addBoxIfPossible(spawnI - 1, spawnJ);
         addBoxIfPossible(spawnI, spawnJ - 1);
+
+        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
     }
 
     //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
