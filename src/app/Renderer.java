@@ -66,6 +66,7 @@ public class Renderer extends AbstractRenderer {
 
     FindWayBFS findWay = new FindWayBFS();
     int currenI, currenJ;
+    int enemyI, enemyJ;
 
 
 
@@ -185,10 +186,28 @@ public class Renderer extends AbstractRenderer {
 //                System.out.println(rozlozeniBludiste);
 //                System.out.println(Arrays.deepToString(rozlozeniBludisteBackUp));
                 System.out.println(currenI+"  "+currenJ);
-                int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{currenI,currenJ},new int[]{9,5});
-                for (int i = 0; i < pocetKrychli; i++) {
-                    for (int j = 0; j < pocetKrychli; j++) {
-                        rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                //zapiani a vypinani pomoci
+                //nahrani bludiscte pok akzdem kliku
+                if(showHelp){
+                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{currenI,currenJ},new int[]{9,5});
+                    //prida enmyho do pole
+                    tmpBludiste[enemyI][enemyJ] = 4;
+                    for (int i = 0; i < pocetKrychli; i++) {
+                        for (int j = 0; j < pocetKrychli; j++) {
+                            if(rozlozeniBludisteBackUp[i][j]!=4)
+                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                        }
+                    }
+                }else{
+                    for (int i = 0; i < pocetKrychli; i++) {
+                        for (int j = 0; j < pocetKrychli; j++) {
+                            if(rozlozeniBludiste[i][j] ==4){
+                                rozlozeniBludiste[i][j] = 4;
+                            }else {
+                                if(rozlozeniBludisteBackUp[i][j] !=4)
+                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                            }
+                        }
                     }
                 }
 
@@ -253,6 +272,7 @@ public class Renderer extends AbstractRenderer {
         currenI = spawnI;
         currenJ = spawnJ;
 
+
     }
 
 
@@ -312,6 +332,8 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void renderEnemy(int x,int y) {
+        enemyI = x;
+        enemyJ =y;
         if (!animateStart) return;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -406,7 +428,7 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 2;
                 }
-                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 ||rozlozeniBludiste[i][j] == 2 ) {
                     if (boxes[i][j].getxMin() * 0.04  <= camX && camX <= boxes[i][j].getxMax() * 0.04  &&
                             boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04  &&
                             boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 ){
