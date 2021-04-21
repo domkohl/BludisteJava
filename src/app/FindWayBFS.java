@@ -94,14 +94,21 @@ public class FindWayBFS {
             path.removeFirst();
             path.removeLast();
             //vrati pole ne linked list
-//            int m2 = matrix.length;
-//            int n2 = matrix[0].length;
-            int[][] tmp = matrix;
+
+            int m2 = matrix.length;
+            int n2 = matrix[0].length;
+            int[][] tmp = new int[m2][n2];
+            for (int i = 0; i < m2; i++) {
+                for (int j = 0; j < n2; j++) {
+                    tmp[i][j] = matrix[i][j];
+                }
+            }
+//            int[][] tmp = matrix;
             for (Cell c:path) {
                 tmp[c.x][c.y] = 5;
 //          }
-                System.out.println(Arrays.deepToString(matrix));
-                System.out.println(Arrays.deepToString(tmp));
+//                System.out.println(Arrays.deepToString(matrix));
+//                System.out.println(Arrays.deepToString(tmp));
 
 
         }return tmp;

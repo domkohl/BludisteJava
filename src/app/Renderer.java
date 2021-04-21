@@ -30,6 +30,7 @@ public class Renderer extends AbstractRenderer {
     int delkaHrany;
     int jednaHrana;
     int[][] rozlozeniBludiste;
+    int[][] rozlozeniBludisteBackUp;
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     double spawnX, spawnZ;
@@ -39,7 +40,7 @@ public class Renderer extends AbstractRenderer {
     private float dx, dy, ox, oy;
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
-    private OGLTexture2D texture1, texture2, textureFinish, textureStart;
+    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp;
 
 
     private long oldmils;
@@ -57,12 +58,14 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
+    boolean showHelp;
 
     OGLModelOBJ model;
     int shaderProgram;
 
 
     FindWayBFS findWay = new FindWayBFS();
+    int currenI, currenJ;
 
 
 
@@ -175,6 +178,20 @@ public class Renderer extends AbstractRenderer {
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
                 }
+                if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+                    showHelp = !showHelp;
+                }
+//                System.out.println("jsem tu");
+//                System.out.println(rozlozeniBludiste);
+//                System.out.println(Arrays.deepToString(rozlozeniBludisteBackUp));
+                System.out.println(currenI+"  "+currenJ);
+                int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{currenI,currenJ},new int[]{9,5});
+                for (int i = 0; i < pocetKrychli; i++) {
+                    for (int j = 0; j < pocetKrychli; j++) {
+                        rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                    }
+                }
+
             }
         };
     }
@@ -199,6 +216,7 @@ public class Renderer extends AbstractRenderer {
             texture2 = new OGLTexture2D("textures/wall.png");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
+            textureHelp = new OGLTexture2D("textures/help.png");
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
@@ -231,6 +249,10 @@ public class Renderer extends AbstractRenderer {
 
         model = new OGLModelOBJ("/obj/ducky.obj");
         shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
+
+        currenI = spawnI;
+        currenJ = spawnJ;
+
     }
 
 
@@ -384,11 +406,13 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 2;
                 }
-                if (rozlozeniBludiste[i][j] == 0) {
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
                     if (boxes[i][j].getxMin() * 0.04  <= camX && camX <= boxes[i][j].getxMax() * 0.04  &&
                             boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04  &&
-                            boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 )
-                        System.out.println("jsem i: "+i +"  a j: "+j );
+                            boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 ){
+                        currenI = i;
+                        currenJ = j;
+                    }
                 }
             }
         }
@@ -432,11 +456,11 @@ public class Renderer extends AbstractRenderer {
                     if(prechodhrana){
                         //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
                         renderEnemy(source[0],source[1]);
-                    }else{
+                    } else{
                         renderEnemy(i, j);
                     }
                 }else if (rozlozeniBludiste[i][j] == 5) {
-                    renderFinish(i, j);
+                    renderPlateHelp(i, j);
                 } else {
                     renderBox(i, j);
                 }
@@ -695,6 +719,23 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
+    private void renderPlateHelp(int x, int y) {
+        textureHelp.bind();
+        glBegin(GL_QUADS);
+        glColor3f(1f, 0f, 0f);
+
+        glTexCoord2f(0, 0);
+        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glTexCoord2f(1, 0);
+        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glTexCoord2f(1, 1);
+        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glTexCoord2f(0, 1);
+        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+
+        glEnd();
+    }
+
     //Vykresleni cile
     private void renderFinish(int x, int y) {
         textureFinish.bind();
@@ -780,9 +821,10 @@ public class Renderer extends AbstractRenderer {
     private void createMaze() {
 
         parseTxt("src/res/proportions/maze");
-
+        rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
+                rozlozeniBludisteBackUp[i][j] = rozlozeniBludiste[i][j];
                 if (rozlozeniBludiste[i][j] == 2) {
                     spawnI = i;
                     spawnJ = j;
@@ -820,7 +862,8 @@ public class Renderer extends AbstractRenderer {
         addBoxIfPossible(spawnI - 1, spawnJ);
         addBoxIfPossible(spawnI, spawnJ - 1);
 
-        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
+
+//        rozlozeniBludisteBackUp = rozlozeniBludiste;
     }
 
     //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
