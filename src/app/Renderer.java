@@ -40,7 +40,7 @@ public class Renderer extends AbstractRenderer {
     private float dx, dy, ox, oy;
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
-    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp;
+    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp,textureKing;
 
 
     private long oldmils;
@@ -68,6 +68,8 @@ public class Renderer extends AbstractRenderer {
     int currenI, currenJ;
     int enemyI, enemyJ;
 
+
+    OBJreader obj;
 
 
 
@@ -236,6 +238,7 @@ public class Renderer extends AbstractRenderer {
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.png");
+            textureKing = new OGLTexture2D("textures/king.jpg");
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
@@ -265,9 +268,10 @@ public class Renderer extends AbstractRenderer {
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
 
         //objekt
+        obj = new OBJreader();
 
-        model = new OGLModelOBJ("/obj/ducky.obj");
-        shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
+//        model = new OGLModelOBJ("/obj/ducky.obj");
+//        shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
 
         currenI = spawnI;
         currenJ = spawnJ;
@@ -308,7 +312,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        camera.setPosition(cameraFixedY.withY(0.20));
+//        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -322,8 +326,8 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
 
 
-        renderMaze();
-
+//        renderMaze();
+        renderObj();
 
 //        glUseProgram(shaderProgram);
 //        model.getBuffers().draw(model.getTopology(), shaderProgram);
@@ -1026,4 +1030,44 @@ public class Renderer extends AbstractRenderer {
             }
         }
     }
-}
+
+    public void renderObj(){
+//        glBegin(GL_TRIANGLES);
+//        for (int i = 0; i < arraycount(vertices); i++){
+//
+//            glTexCoord2f(vertices[i].texu, vertices[i].texv);
+//            //...
+//            glVertex3f(vertices[i].posx, vertices[i].posy, vertices[i].posz);
+//        }
+//        glEnd();
+
+        textureKing.bind();
+        glBegin(GL_QUADS);
+        glColor3f(1f, 1f, 1f);
+        glScalef(50f, 50f, 50f);
+
+        for (int[] indice: obj.getIndices() ) {
+            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[7]-1)[0], obj.getTextury().get(indice[7]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[6]-1)[0],obj.getVrcholy().get(indice[6]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+
+        }
+        glEnd();
+    }
+//        glTexCoord2f(0, 0);
+//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+//        glTexCoord2f(1, 0);
+//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+//        glTexCoord2f(1, 1);
+//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+//        glTexCoord2f(0, 1);
+//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+//
+//        glEnd();
+    }
+
