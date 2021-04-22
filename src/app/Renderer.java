@@ -189,13 +189,13 @@ public class Renderer extends AbstractRenderer {
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
                 if(showHelp){
-                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{1,4},new int[]{9,5});
+                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{currenI,currenJ},new int[]{9,5});
                     //prida enmyho do pole
                     tmpBludiste[enemyI][enemyJ] = 4;
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
                             if(rozlozeniBludisteBackUp[i][j]!=4)
-                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
                         }
                     }
                 }else{
@@ -205,7 +205,7 @@ public class Renderer extends AbstractRenderer {
                                 rozlozeniBludiste[i][j] = 4;
                             }else {
                                 if(rozlozeniBludisteBackUp[i][j] !=4)
-                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                                    rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                             }
                         }
                     }
@@ -308,7 +308,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        camera.setPosition(cameraFixedY.withY(0.20));
+//        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -348,13 +348,13 @@ public class Renderer extends AbstractRenderer {
         glLoadMatrixf(modelMatrixEnemy);
 
 //            glTranslatef(0,0,step);
-            switch (destiantion[2]) {
-                case 1 -> glTranslatef(0,0,step);
-                case 2 -> glTranslatef(0,0,-step);
-                case 3 ->  glTranslatef(step,0,0);
-                case 4 -> glTranslatef(-step,0,0);
-                default ->  glTranslatef(0,0,0);
-            }
+        switch (destiantion[2]) {
+            case 1 -> glTranslatef(0,0,step);
+            case 2 -> glTranslatef(0,0,-step);
+            case 3 ->  glTranslatef(step,0,0);
+            case 4 -> glTranslatef(-step,0,0);
+            default ->  glTranslatef(0,0,0);
+        }
 
         float zmenseni = jednaHrana/3f;
 //        zmenseni = 0f;
@@ -389,10 +389,8 @@ public class Renderer extends AbstractRenderer {
         //precahzim hranu nastavuji jiny papametry site
         if(startBod>=jednaHrana/2f ){
             prechodhrana = true;
-            rozlozeniBludiste[source[0]][source[1]] = source[2];
-//            source = new int[]{destiantion[0],destiantion[1],rozlozeniBludiste[destiantion[0]][destiantion[1]]};
+            rozlozeniBludiste[source[0]][source[1]] = 0;
             rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
-
         }
 //        System.out.println(startBod);
         if(startBod<finishBod)
@@ -482,8 +480,6 @@ public class Renderer extends AbstractRenderer {
                     if(prechodhrana){
                         //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
                         renderEnemy(source[0],source[1]);
-                        renderPlate(source[0],source[1]);
-
                     } else{
                         renderEnemy(i, j);
                     }
@@ -501,7 +497,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     private int[] possibleWaysEnemy(int i, int j) {
-//        source = new int[]{i, j};
+        source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
         if(j+1 < delkaHrany && j+1>=0 && isNotInsideEnemyWay(i,j+1)){
@@ -583,11 +579,6 @@ public class Renderer extends AbstractRenderer {
 //        System.out.println(possbileWays.toString());
         int randomWay = (int)(Math.random() * possbileWays.size());
 //        System.out.println(Arrays.toString(possbileWays.get(randomWay)));
-        int tmpSource = rozlozeniBludiste[i][j];
-//        if(tmpSource==4)
-//        source = new int[]{i, j,0};
-//        else
-//        source = new int[]{i, j,rozlozeniBludiste[i][j]};
 
         System.out.println(allVisitedEnemy.toString());
         allVisitedEnemy.add(possbileWays.get(randomWay));
@@ -858,8 +849,6 @@ public class Renderer extends AbstractRenderer {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 rozlozeniBludisteBackUp[i][j] = rozlozeniBludiste[i][j];
-                if(rozlozeniBludiste[i][j] == 4)
-                source = new int[]{i,j,0};
                 if (rozlozeniBludiste[i][j] == 2) {
                     spawnI = i;
                     spawnJ = j;
