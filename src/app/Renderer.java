@@ -135,6 +135,15 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
+//                if (key == GLFW_KEY_W && key == GLFW_KEY_D) {
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.forward(0.04);
+////                    tmp.right(0.04);
+//                    if (isOutside(tmp) == 0)
+//                        camera.forward(0.04);
+//                    if (isOutside(tmp) == 2)
+//                        System.out.println("Gratuluji jsi v cíli");
+//                }
 
                 if (key == GLFW_KEY_S) {
                     GLCamera tmp = new GLCamera(camera);
@@ -204,6 +213,8 @@ public class Renderer extends AbstractRenderer {
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
                 if(showHelp){
+                    enemyJ = -1;
+                    enemyI = -1;
                     int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy,new int[]{currenI,currenJ},new int[]{9,5});
                     //prida enmyho do pole
 //                    tmpBludiste[enemyI][enemyJ] = 4;
@@ -247,7 +258,7 @@ public class Renderer extends AbstractRenderer {
         textureCube = new OGLTexture2D[6];
         try {
             texture1 = new OGLTexture2D("textures/floor.jpg");
-            texture2 = new OGLTexture2D("textures/wall.png");
+            texture2 = new OGLTexture2D("textures/wall.jpg");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.png");
@@ -323,7 +334,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        camera.setPosition(cameraFixedY.withY(0.20));
+//        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -337,8 +348,11 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
 
 
-        renderMaze();
-//        renderObj();
+//        renderMaze();
+        renderObj();
+        if(currenI == enemyI && currenJ == enemyJ){
+            System.out.println("jsi mrtvy");
+        }
 
     }
 
@@ -1052,25 +1066,37 @@ public class Renderer extends AbstractRenderer {
 //        }
 //        glEnd();
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         textureKing.bind();
-        glBegin(GL_QUADS);
+        glBegin(GL_TRIANGLES);
 //        glBegin(GL_QUAD_STRIP);
         glColor3f(1f, 1f, 1f);
 //        glScalef(0.04f, 0.04f, 0.04f);
 
+
         for (int[] indice: obj.getIndices() ) {
+//            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
+//            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
+//            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+//            glTexCoord2f(obj.getTextury().get(indice[7]-1)[0], obj.getTextury().get(indice[7]-1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[6]-1)[0],obj.getVrcholy().get(indice[6]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+
             glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
             glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
             glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[7]-1)[0], obj.getTextury().get(indice[7]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[6]-1)[0],obj.getVrcholy().get(indice[6]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
-
         }
         glEnd();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     }
+
 //        glTexCoord2f(0, 0);
 //        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
 //        glTexCoord2f(1, 0);

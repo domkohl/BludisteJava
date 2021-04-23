@@ -20,7 +20,11 @@ public class OBJreader {
         this.vrcholy =  new ArrayList<>();
         this.textury = new ArrayList<>();
         this.indices =  new ArrayList<>();
-        loadObj("src/res/obj/ducky");
+        loadObj("src/res/obj/chess");
+//        loadObj("src/res/obj/woodentets1");
+//        loadObj("src/res/obj/fdfsfs");
+//        loadObj("src/res/obj/testchecss");
+//        loadObj("src/res/obj/woodenchess");
     }
 
     public static String readFromFile(String filename, String extension) {
@@ -42,15 +46,15 @@ public class OBJreader {
         for (String s:lines ){
 //            System.out.println(s);
 
-            System.out.println(linenumb++);
+//            System.out.println(linenumb++);
 
             String[] curretnLine = s.split(" ");
             //vrchol
             if(s.startsWith("v ")){
 //                System.out.println(Float.parseFloat(curretnLine[1]));
                 //kdyz nejde pidat jedna u prvniho modelu
-                float[] vertex = new float[]{Float.parseFloat(curretnLine[1]),Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3])};
-//                float[] vertex = new float[]{Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3]),Float.parseFloat(curretnLine[4])};
+//                float[] vertex = new float[]{Float.parseFloat(curretnLine[1]),Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3])};
+                float[] vertex = new float[]{Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3]),Float.parseFloat(curretnLine[4])};
                 vrcholy.add(vertex);
                 //terxtura
             }else if(s.startsWith("vt ")){
@@ -66,20 +70,30 @@ public class OBJreader {
 //                System.out.println(Arrays.toString(vertex1));
                 //vrchol, textura  ....... 4x pro 4 vrcholy polygon
                 ///old prvni verze
-                int[] indice = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
+//                int[] indice = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
+//                                        Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),
+//                                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1]),
+//                                        Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
+                // z quadu na trojuhelniky
+                int[] indice1 = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
                                         Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),
+                                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1])};
+
+                int[] indice2 = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
                                         Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1]),
                                         Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
-                indices.add(indice);
+
+                indices.add(indice1);
+                indices.add(indice2);
 
             }
 
 
 
         }
-        System.out.println(Arrays.toString(vrcholy.get(0)));
-        System.out.println(Arrays.toString(textury.get(0)));
-        System.out.println(Arrays.toString(indices.get(0)));
+//        System.out.println(Arrays.toString(vrcholy.get(0)));
+//        System.out.println(Arrays.toString(textury.get(0)));
+//        System.out.println(Arrays.toString(indices.get(0)));
 
     }
 
