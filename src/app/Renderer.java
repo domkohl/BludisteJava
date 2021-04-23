@@ -113,7 +113,7 @@ public class Renderer extends AbstractRenderer {
                     dy = 0;
 //                    System.out.println("Zenith: "+camera.getZenith());
 //                    System.out.println("Azimtuh: "+camera.getAzimuth());
-                    System.out.println("VpX "+Math.cos(camera.getAzimuth())*Math.cos(camera.getZenith()));
+//                    System.out.println("VpX "+Math.cos(camera.getAzimuth())*Math.cos(camera.getZenith()));
                 }
 
             }
@@ -130,7 +130,9 @@ public class Renderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS) {
+                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+                //W
+                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
                     System.out.println("rovne");
                     GLCamera tmp = new GLCamera(camera);
                     tmp.forward(0.04);
@@ -139,38 +141,8 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                //W+D
-                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
-                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-                    System.out.println("sikmo");
-                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.move(new Vec3D(0.0004,0,0.0004).mul(camera.getEyeVector()));
-//                    System.out.println(camera.getEyeVector());
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                            .mul(-0.04));
-                    if (isOutside(tmp) == 0)
-//                        camera.move(new Vec3D(0.0004,0,0.0004).mul(camera.getEyeVector()));
-//                        camera.move(new Vec3D(
-//                                Math.sin(camera.getAzimuth()) * Math.cos(camera.getZenith()),
-//                                Math.sin(camera.getZenith()),
-//                                -Math.cos(camera.getAzimuth()) * Math.cos(camera.getZenith()))
-//                                .mul(new Vec3D(0.1,0,0.1)));
-//                        camera.forward(0.04);
-
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                                .mul(-0.04));
-                    if (isOutside(tmp) == 2)
-
-                        System.out.println("Gratuluji jsi v cíli");
-                }
-
-                if (key == GLFW_KEY_S) {
+                //S
+                if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.backward(0.04);
                     if (isOutside(tmp) == 0)
@@ -178,8 +150,8 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-
-                if (key == GLFW_KEY_A) {
+                //A
+                if (key == GLFW_KEY_A && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
                     GLCamera tmp = new GLCamera(camera);
                     tmp.left(0.04);
                     if (isOutside(tmp) == 0)
@@ -187,12 +159,85 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
+                //D
+                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
                     System.out.println("doprava");
                     GLCamera tmp = new GLCamera(camera);
                     tmp.right(0.04);
                     if (isOutside(tmp) == 0)
                         camera.right(0.04);
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
+                }
+                //W+D
+                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.move( new Vec3D(
+                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                            0.0f,
+                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                            .mul(0.04));
+                    if (isOutside(tmp) == 0)
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                                .mul(0.04));
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
+                }
+                //W+A
+                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.move( new Vec3D(
+                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                            0.0f,
+                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                            .mul(-0.04));
+                    if (isOutside(tmp) == 0)
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                                .mul(-0.04));
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
+                }
+                //S+A
+                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
+                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.move( new Vec3D(
+                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                            0.0f,
+                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                            .mul(-0.04));
+                    if (isOutside(tmp) == 0)
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                                .mul(-0.04));
+                    if (isOutside(tmp) == 2)
+                        System.out.println("Gratuluji jsi v cíli");
+                }
+                //S+D
+                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
+                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS){
+                    GLCamera tmp = new GLCamera(camera);
+                    tmp.move( new Vec3D(
+                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                            0.0f,
+                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                            .mul(0.04));
+                    if (isOutside(tmp) == 0)
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                                .mul(0.04));
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
@@ -318,7 +363,7 @@ public class Renderer extends AbstractRenderer {
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
 
         //objekt
-        obj = new OBJreader();
+//        obj = new OBJreader();
 
 
         currenI = spawnI;
@@ -375,7 +420,7 @@ public class Renderer extends AbstractRenderer {
 
 
         renderMaze();
-        renderObj();
+//        renderObj();
         if(currenI == enemyI && currenJ == enemyJ){
             System.out.println("jsi mrtvy");
         }

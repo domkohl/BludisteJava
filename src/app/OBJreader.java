@@ -76,12 +76,12 @@ public class OBJreader {
 //                                        Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
                 // z quadu na trojuhelniky
                 int[] indice1 = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
-                                        Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),
-                                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1])};
+                        Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),
+                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1])};
 
                 int[] indice2 = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
-                                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1]),
-                                        Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
+                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1]),
+                        Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
 
                 indices.add(indice1);
                 indices.add(indice2);
