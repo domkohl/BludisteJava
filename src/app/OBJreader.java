@@ -53,8 +53,8 @@ public class OBJreader {
             if(s.startsWith("v ")){
 //                System.out.println(Float.parseFloat(curretnLine[1]));
                 //kdyz nejde pidat jedna u prvniho modelu
-//                float[] vertex = new float[]{Float.parseFloat(curretnLine[1]),Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3])};
-                float[] vertex = new float[]{Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3]),Float.parseFloat(curretnLine[4])};
+                float[] vertex = new float[]{Float.parseFloat(curretnLine[1]),Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3])};
+//                float[] vertex = new float[]{Float.parseFloat(curretnLine[2]),Float.parseFloat(curretnLine[3]),Float.parseFloat(curretnLine[4])};
                 vrcholy.add(vertex);
                 //terxtura
             }else if(s.startsWith("vt ")){

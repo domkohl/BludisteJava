@@ -257,7 +257,7 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
         textureCube = new OGLTexture2D[6];
         try {
-            texture1 = new OGLTexture2D("textures/floor.jpg");
+            texture1 = new OGLTexture2D("textures/floor.png");
             texture2 = new OGLTexture2D("textures/wall.jpg");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
@@ -274,7 +274,7 @@ public class Renderer extends AbstractRenderer {
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -348,7 +348,7 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
 
 
-//        renderMaze();
+        renderMaze();
         renderObj();
         if(currenI == enemyI && currenJ == enemyJ){
             System.out.println("jsi mrtvy");
@@ -1065,9 +1065,17 @@ public class Renderer extends AbstractRenderer {
 //            glVertex3f(vertices[i].posx, vertices[i].posy, vertices[i].posz);
 //        }
 //        glEnd();
-
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+        glScalef(0.04f, 0.04f, 0.04f);
+//        glRotatef(270,1,0,0);
+//        glTranslatef(8.4f,1.1f,0);
+        glTranslatef(10f,0f,10f);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         textureKing.bind();
         glBegin(GL_TRIANGLES);
 //        glBegin(GL_QUAD_STRIP);
@@ -1095,7 +1103,10 @@ public class Renderer extends AbstractRenderer {
         glEnd();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glPopMatrix();
     }
+
+
 
 //        glTexCoord2f(0, 0);
 //        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
