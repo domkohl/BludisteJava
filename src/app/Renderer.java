@@ -31,6 +31,7 @@ public class Renderer extends AbstractRenderer {
     int jednaHrana;
     int[][] rozlozeniBludiste;
     int[][] rozlozeniBludisteBackUp;
+    int[][] rozlozeniBludisteNoEnemy;
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     double spawnX, spawnZ;
@@ -180,6 +181,21 @@ public class Renderer extends AbstractRenderer {
                 }
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
+                    if (!showHelp){
+                        Arrays.fill(modelMatrixEnemy, 1);
+                        firstTimeRenderEnemy = true;
+                        animaceRun = false;
+
+                        for (int i = 0; i < pocetKrychli; i++) {
+                            for (int j = 0; j < pocetKrychli; j++) {
+//                            if(rozlozeniBludiste[i][j] ==4){
+//                                rozlozeniBludiste[i][j] = 4;
+//                            }else {
+//                                if(rozlozeniBludisteBackUp[i][j] !=4)
+                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                            }
+                        }
+                    }
                 }
 //                System.out.println("jsem tu");
 //                System.out.println(rozlozeniBludiste);
@@ -188,26 +204,26 @@ public class Renderer extends AbstractRenderer {
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
                 if(showHelp){
-                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteBackUp,new int[]{currenI,currenJ},new int[]{9,5});
+                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy,new int[]{currenI,currenJ},new int[]{9,5});
                     //prida enmyho do pole
-                    tmpBludiste[enemyI][enemyJ] = 4;
+//                    tmpBludiste[enemyI][enemyJ] = 4;
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
-                            if(rozlozeniBludisteBackUp[i][j]!=4)
+//                            if(rozlozeniBludisteBackUp[i][j]!=4)
                                 rozlozeniBludiste[i][j] = tmpBludiste[i][j];
                         }
                     }
-                }else{
-                    for (int i = 0; i < pocetKrychli; i++) {
-                        for (int j = 0; j < pocetKrychli; j++) {
-                            if(rozlozeniBludiste[i][j] ==4){
-                                rozlozeniBludiste[i][j] = 4;
-                            }else {
-                                if(rozlozeniBludisteBackUp[i][j] !=4)
-                                    rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
-                            }
-                        }
-                    }
+//                }else{
+//                    for (int i = 0; i < pocetKrychli; i++) {
+//                        for (int j = 0; j < pocetKrychli; j++) {
+////                            if(rozlozeniBludiste[i][j] ==4){
+////                                rozlozeniBludiste[i][j] = 4;
+////                            }else {
+////                                if(rozlozeniBludisteBackUp[i][j] !=4)
+//                                    rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+//                            }
+//                        }
+//                    }
                 }
 
             }
@@ -307,7 +323,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-//        camera.setPosition(cameraFixedY.withY(0.20));
+        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -321,8 +337,8 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
 
 
-//        renderMaze();
-        renderObj();
+        renderMaze();
+//        renderObj();
 
     }
 
@@ -382,7 +398,7 @@ public class Renderer extends AbstractRenderer {
         //precahzim hranu nastavuji jiny papametry site
         if(startBod>=jednaHrana/2f ){
             prechodhrana = true;
-            rozlozeniBludiste[source[0]][source[1]] = allVisitedEnemy.get(allVisitedEnemy.size()-1)[3];
+            rozlozeniBludiste[source[0]][source[1]] = 0;
             rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
         }
 //        System.out.println(startBod);
@@ -837,8 +853,14 @@ public class Renderer extends AbstractRenderer {
 
         parseTxt("src/res/proportions/maze");
         rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
+        rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
+                if(rozlozeniBludiste[i][j] ==4)
+                    rozlozeniBludisteNoEnemy[i][j] = 0;
+                    else
+                rozlozeniBludisteNoEnemy[i][j] = rozlozeniBludiste[i][j];
+
                 rozlozeniBludisteBackUp[i][j] = rozlozeniBludiste[i][j];
                 if (rozlozeniBludiste[i][j] == 2) {
                     spawnI = i;
