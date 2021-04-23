@@ -2,7 +2,7 @@ package app;
 
 import lwjglutils.OGLModelOBJ;
 import lwjglutils.OGLTexture2D;
-import lwjglutils.ShaderUtils;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Vec3D;
@@ -59,9 +59,6 @@ public class Renderer extends AbstractRenderer {
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
     boolean showHelp;
-
-    OGLModelOBJ model;
-    int shaderProgram;
 
 
     FindWayBFS findWay = new FindWayBFS();
@@ -270,8 +267,6 @@ public class Renderer extends AbstractRenderer {
         //objekt
         obj = new OBJreader();
 
-//        model = new OGLModelOBJ("/obj/ducky.obj");
-//        shaderProgram = ShaderUtils.loadProgram("/shaders/ducky");
 
         currenI = spawnI;
         currenJ = spawnJ;
@@ -329,10 +324,6 @@ public class Renderer extends AbstractRenderer {
 //        renderMaze();
         renderObj();
 
-//        glUseProgram(shaderProgram);
-//        model.getBuffers().draw(model.getTopology(), shaderProgram);
-//        glDeleteProgram(shaderProgram);
-
     }
 
     private void renderEnemy(int x,int y) {
@@ -383,8 +374,6 @@ public class Renderer extends AbstractRenderer {
         glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
         glTexCoord2f(0, 1);
         glVertex3f((float) boxes[x][y].getB4().getX()+zmenseni, (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ()-zmenseni);
-//        glUseProgram(shaderProgram);
-//        model.getBuffers().draw(model.getTopology(), shaderProgram);
 
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
@@ -1043,8 +1032,9 @@ public class Renderer extends AbstractRenderer {
 
         textureKing.bind();
         glBegin(GL_QUADS);
+//        glBegin(GL_QUAD_STRIP);
         glColor3f(1f, 1f, 1f);
-        glScalef(50f, 50f, 50f);
+//        glScalef(0.04f, 0.04f, 0.04f);
 
         for (int[] indice: obj.getIndices() ) {
             glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
