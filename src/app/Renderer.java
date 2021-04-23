@@ -111,6 +111,9 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(Math.toRadians(zenit));
                     dx = 0;
                     dy = 0;
+//                    System.out.println("Zenith: "+camera.getZenith());
+//                    System.out.println("Azimtuh: "+camera.getAzimuth());
+                    System.out.println("VpX "+Math.cos(camera.getAzimuth())*Math.cos(camera.getZenith()));
                 }
 
             }
@@ -127,7 +130,8 @@ public class Renderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW_KEY_W) {
+                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS) {
+                    System.out.println("rovne");
                     GLCamera tmp = new GLCamera(camera);
                     tmp.forward(0.04);
                     if (isOutside(tmp) == 0)
@@ -135,15 +139,36 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-//                if (key == GLFW_KEY_W && key == GLFW_KEY_D) {
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.forward(0.04);
-////                    tmp.right(0.04);
-//                    if (isOutside(tmp) == 0)
+                //W+D
+                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                    System.out.println("sikmo");
+                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.move(new Vec3D(0.0004,0,0.0004).mul(camera.getEyeVector()));
+//                    System.out.println(camera.getEyeVector());
+                    tmp.move( new Vec3D(
+                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                            0.0f,
+                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                            .mul(-0.04));
+                    if (isOutside(tmp) == 0)
+//                        camera.move(new Vec3D(0.0004,0,0.0004).mul(camera.getEyeVector()));
+//                        camera.move(new Vec3D(
+//                                Math.sin(camera.getAzimuth()) * Math.cos(camera.getZenith()),
+//                                Math.sin(camera.getZenith()),
+//                                -Math.cos(camera.getAzimuth()) * Math.cos(camera.getZenith()))
+//                                .mul(new Vec3D(0.1,0,0.1)));
 //                        camera.forward(0.04);
-//                    if (isOutside(tmp) == 2)
-//                        System.out.println("Gratuluji jsi v cíli");
-//                }
+
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+                                .mul(-0.04));
+                    if (isOutside(tmp) == 2)
+
+                        System.out.println("Gratuluji jsi v cíli");
+                }
 
                 if (key == GLFW_KEY_S) {
                     GLCamera tmp = new GLCamera(camera);
@@ -162,7 +187,8 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (key == GLFW_KEY_D) {
+                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
+                    System.out.println("doprava");
                     GLCamera tmp = new GLCamera(camera);
                     tmp.right(0.04);
                     if (isOutside(tmp) == 0)
@@ -334,7 +360,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-//        camera.setPosition(cameraFixedY.withY(0.20));
+        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
