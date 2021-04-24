@@ -131,10 +131,11 @@ public class Renderer extends AbstractRenderer {
 //                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
                 if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
 
-                    if(!isPlayerDead)
-                        countOfDeads =0;
-                    else
+                    if(isPlayerDead)
                         countOfDeads++;
+                    if (inFinish)
+                        countOfDeads = 0;
+
 
                     Arrays.fill(modelMatrixEnemy, 1);
                     firstTimeRenderEnemy = true;
@@ -248,6 +249,14 @@ public class Renderer extends AbstractRenderer {
                         pauseGame = true;
                         inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
+                    if (isOutside(tmp) == 1){
+                        camera.backward(0.04);
+                        camera.move( new Vec3D(
+                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                                0.0f,
+                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                                .mul(0.04));
                     }
 
                 }
@@ -506,17 +515,14 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void display() {
 
-        if(!inFinish){
-            texturePause.bind();
-        } else{
-            if(isPlayerDead)
-                textureIsDead.bind();
-            else
-                texturePauseFinish.bind();
-            pauseGame = true;
-        }
+
 
         if(pauseGame){
+            texturePause.bind();
+            if(isPlayerDead)
+                textureIsDead.bind();
+            if(inFinish)
+                texturePauseFinish.bind();
 //            System.out.println(height);
             glViewport(0, 0, width, height);
 
@@ -602,8 +608,9 @@ public class Renderer extends AbstractRenderer {
         renderMaze();
         renderObj();
         if(currenI == enemyI && currenJ == enemyJ){
-            inFinish = true;
+//            inFinish = true;
             isPlayerDead = true;
+            pauseGame = true;
             System.out.println("jsi mrtvy");
         }
 
