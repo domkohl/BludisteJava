@@ -253,10 +253,10 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 1){
                         camera.backward(0.04);
                         camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+                                -Math.sin(camera.getAzimuth()),
                                 0.0f,
-                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                                .mul(0.04));
+                                Math.cos(camera.getAzimuth()))
+                                .mul(-0.04));
                     }
 
                 }
