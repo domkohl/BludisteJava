@@ -404,9 +404,9 @@ public class Renderer extends AbstractRenderer {
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.png");
             textureKing = new OGLTexture2D("textures/king.jpg");
-            texturePause = new OGLTexture2D("textures/pause.jpg");
-            texturePauseFinish = new OGLTexture2D("textures/pauseFinish.jpg");
-            textureIsDead = new OGLTexture2D("textures/youDied.jpg");
+            texturePause = new OGLTexture2D("textures/pause.png");
+            texturePauseFinish = new OGLTexture2D("textures/pauseFinish.png");
+            textureIsDead = new OGLTexture2D("textures/youDied.png");
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
