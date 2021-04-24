@@ -47,6 +47,7 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
     private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp,textureKing,texturePause,texturePauseFinish,textureIsDead;
+    private int countOfDeads;
 
 
     private long oldmils;
@@ -130,6 +131,11 @@ public class Renderer extends AbstractRenderer {
 //                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
                 if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
 
+                    if(!isPlayerDead)
+                        countOfDeads =0;
+                    else
+                        countOfDeads++;
+
                     Arrays.fill(modelMatrixEnemy, 1);
                     firstTimeRenderEnemy = true;
                     animaceRun = false;
@@ -166,6 +172,7 @@ public class Renderer extends AbstractRenderer {
                     ox = (float) x;
                     oy = (float) y;
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
                 }
                 if (key == GLFW_KEY_K && action == GLFW_PRESS && pauseGame) {
                     glfwSetWindowShouldClose(window, true);
@@ -491,6 +498,7 @@ public class Renderer extends AbstractRenderer {
         textRenderer = new OGLTextRenderer(width, height);
 //        textureViewer = new OGLTexture2D.Viewer();
 
+        countOfDeads = 0;
     }
 
 
@@ -510,8 +518,8 @@ public class Renderer extends AbstractRenderer {
 
         if(pauseGame){
 //            System.out.println(height);
-
             glViewport(0, 0, width, height);
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
@@ -533,6 +541,11 @@ public class Renderer extends AbstractRenderer {
             glTexCoord2f(0, 1);
             glVertex2f(-1, 1);
             glEnd();
+
+            textRenderer.resize(width,height);
+            textRenderer.clear();
+            textRenderer.addStr2D(2, 17, "Počet smrtí: "+countOfDeads);
+            textRenderer.draw();
             return;
         }
 
@@ -597,6 +610,7 @@ public class Renderer extends AbstractRenderer {
         textRenderer.resize(width,height);
         textRenderer.clear();
         textRenderer.addStr2D(2, 17, textInfo);
+        textRenderer.addStr2D(2, 38, "Počet smrtí: "+countOfDeads);
         if(savedTeleportPosition)
             textRenderer.addStr2D(2, height - 3,"Pozice pro teleport nastavena.");
         if(loadedTeleportPosition)
