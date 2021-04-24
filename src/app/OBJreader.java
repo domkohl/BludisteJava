@@ -46,7 +46,7 @@ public class OBJreader {
         for (String s:lines ){
 //            System.out.println(s);
 
-//            System.out.println(linenumb++);
+            System.out.println(linenumb++);
 
             String[] curretnLine = s.split(" ");
             //vrchol
@@ -74,6 +74,12 @@ public class OBJreader {
 //                                        Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),
 //                                        Integer.parseInt(vertex3[0]),Integer.parseInt(vertex3[1]),
 //                                        Integer.parseInt(vertex4[0]),Integer.parseInt(vertex4[1])};
+                System.out.println(vertex4[0]);
+                System.out.println(vertex4[1]);
+//                System.out.println(Arrays.toString(vertex1));
+//                System.out.println(Arrays.toString(vertex2));
+//                System.out.println(Arrays.toString(vertex3));
+//                System.out.println(Arrays.toString(vertex4));
                 // z quadu na trojuhelniky
                 int[] indice1 = new int[]{Integer.parseInt(vertex1[0]),Integer.parseInt(vertex1[1]),
                         Integer.parseInt(vertex2[0]),Integer.parseInt(vertex2[1]),

@@ -70,6 +70,7 @@ public class Renderer extends AbstractRenderer {
     OBJreader obj;
 
 
+    OGLTexture2D.Viewer textureViewer;
 
     public Renderer() {
         super();
@@ -130,7 +131,7 @@ public class Renderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+//                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
                 //W
                 if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
                     System.out.println("rovne");
@@ -140,6 +141,9 @@ public class Renderer extends AbstractRenderer {
                         camera.forward(0.04);
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
+                }
+                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE){
+                    checkKey(window,key);
                 }
                 //S
                 if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
@@ -311,6 +315,17 @@ public class Renderer extends AbstractRenderer {
             }
         };
     }
+    public void checkKey(long window,int key ){
+        if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
+            System.out.println("rovne");
+            GLCamera tmp = new GLCamera(camera);
+            tmp.forward(0.04);
+            if (isOutside(tmp) == 0)
+                camera.forward(0.04);
+            if (isOutside(tmp) == 2)
+                System.out.println("Gratuluji jsi v cíli");
+        }
+    }
 
     //Inicializace bludiste
     @Override
@@ -363,12 +378,13 @@ public class Renderer extends AbstractRenderer {
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
 
         //objekt
-//        obj = new OBJreader();
+        obj = new OBJreader();
 
 
         currenI = spawnI;
         currenJ = spawnJ;
 
+        textureViewer = new OGLTexture2D.Viewer();
 
     }
 
@@ -417,7 +433,7 @@ public class Renderer extends AbstractRenderer {
 
 
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
-
+        textureViewer.view(texture1, 0, 0);
 
         renderMaze();
 //        renderObj();
