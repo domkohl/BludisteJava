@@ -40,6 +40,8 @@ public class Renderer extends AbstractRenderer {
     int spawnI, spawnJ;
     boolean showCursor = true;
     private GLCamera camera;
+    private GLCamera cameraTeleport;
+    private float azimutTeport, zenitTeleport;
     private float dx, dy, ox, oy;
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
@@ -165,8 +167,26 @@ public class Renderer extends AbstractRenderer {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 }
                 if (key == GLFW_KEY_K && action == GLFW_PRESS && pauseGame) {
-                glfwFreeCallbacks(window);
-                glfwDestroyWindow(window);
+                    glfwSetWindowShouldClose(window, true);
+                    glfwFreeCallbacks(window);
+                    glfwDestroyWindow(window);
+//                    glfwTerminate();
+                    dispose();
+                    // Free the window callbacks and destroy the window
+                    glfwFreeCallbacks(window);
+                    glfwDestroyWindow(window);
+//                try{
+//                    // Free the window callbacks and destroy the window
+//                    glfwFreeCallbacks(window);
+//                    glfwDestroyWindow(window);
+//
+//                } catch (Throwable t) {
+//                    t.printStackTrace();
+//                } finally {
+//                    // Terminate GLFW and free the error callback
+//                    glfwTerminate();
+//                    glfwSetErrorCallback(null).free();
+//                }
                 }
                 if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
                     pauseGame = !pauseGame;
@@ -186,6 +206,23 @@ public class Renderer extends AbstractRenderer {
                 }
 
                 if(pauseGame) return;
+
+                //ulozeni pozice pro teleport
+                if (key == GLFW_KEY_U && action == GLFW_PRESS) {
+                    System.out.println("pozice ulozena");
+                    azimutTeport = azimut;
+                    zenitTeleport = zenit;
+                    cameraTeleport = new GLCamera(camera);
+                }
+                //ulozeni pozice pro teleport
+                if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+                    System.out.println("byl jsi teleportovan");
+                    azimut = azimutTeport;
+                    zenit = zenitTeleport;
+                    camera = new GLCamera(cameraTeleport);
+                }
+
+
                 //W
                 if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
                     System.out.println("rovne");
@@ -1293,16 +1330,5 @@ public class Renderer extends AbstractRenderer {
     }
 
 
-
-//        glTexCoord2f(0, 0);
-//        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
-//        glTexCoord2f(1, 0);
-//        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
-//        glTexCoord2f(1, 1);
-//        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
-//        glTexCoord2f(0, 1);
-//        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
-//
-//        glEnd();
     }
 
