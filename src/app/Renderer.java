@@ -216,10 +216,14 @@ public class Renderer extends AbstractRenderer {
                 }
                 //ulozeni pozice pro teleport
                 if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+                    if(cameraTeleport != null){
                     System.out.println("byl jsi teleportovan");
                     azimut = azimutTeport;
                     zenit = zenitTeleport;
                     camera = new GLCamera(cameraTeleport);
+                    }else {
+                        System.out.println("Nejdrive nastav misto pro teleport");
+                    }
                 }
 
 
@@ -386,8 +390,8 @@ public class Renderer extends AbstractRenderer {
 //                System.out.println("jsem tu");
 //                System.out.println(rozlozeniBludiste);
 //                System.out.println(Arrays.deepToString(rozlozeniBludisteBackUp));
-                System.out.println(currenI+"  "+currenJ);
-                System.out.println(enemyI+"  "+enemyJ);
+//                System.out.println(currenI+"  "+currenJ);
+//                System.out.println(enemyI+"  "+enemyJ);
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
                 if(showHelp){
