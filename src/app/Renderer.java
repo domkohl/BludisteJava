@@ -19,6 +19,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glDeleteProgram;
 import static org.lwjgl.opengl.GL20.glUseProgram;
+import static utils.GluUtils.gluLookAt;
 import static utils.GluUtils.gluPerspective;
 
 
@@ -59,7 +60,7 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
-    boolean showHelp;
+    boolean showHelp,pauseGame;
 
 
     FindWayBFS findWay = new FindWayBFS();
@@ -120,13 +121,6 @@ public class Renderer extends AbstractRenderer {
             }
         };
 
-
-        glfwScrollCallback = new GLFWScrollCallback() {
-            @Override
-            public void invoke(long window, double dx, double dy) {
-                //do nothing
-            }
-        };
         //Pohyb
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
@@ -142,9 +136,9 @@ public class Renderer extends AbstractRenderer {
                     if (isOutside(tmp) == 2)
                         System.out.println("Gratuluji jsi v cíli");
                 }
-                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE){
-                    checkKey(window,key);
-                }
+//                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE){
+//                    checkKey(window,key);
+//                }
                 //S
                 if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
                     GLCamera tmp = new GLCamera(camera);
@@ -262,6 +256,9 @@ public class Renderer extends AbstractRenderer {
                 }
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
+                }
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+                    pauseGame = !pauseGame;
                 }
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
@@ -392,6 +389,32 @@ public class Renderer extends AbstractRenderer {
     //Funkce pro neustale vykreslovani
     @Override
     public void display() {
+
+        if(pauseGame){
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluLookAt(
+                    0, 0, 1,
+                    0, 1, 0,
+                    0, 0, 1
+            );
+            glViewport(0, 0, width, height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+            // Rendering triangle by fixed pipeline
+            glBegin(GL_TRIANGLES);
+            glColor3f(1f, 0f, 0f);
+            glVertex2f(-1f, -1);
+            glColor3f(0f, 1f, 0f);
+            glVertex2f(1, 0);
+            glColor3f(0f, 0f, 1f);
+            glVertex2f(0, 1);
+            glEnd();
+            return;
+        }
+
         // vypocet fps, nastaveni rychlosti otaceni podle rychlosti prekresleni
         long mils = System.currentTimeMillis();
         if ((mils - oldFPSmils) > 300) {
@@ -433,10 +456,10 @@ public class Renderer extends AbstractRenderer {
 
 
 //        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
-        textureViewer.view(texture1, 0, 0);
+//        textureViewer.view(texture1, 0, 0);
 
         renderMaze();
-//        renderObj();
+        renderObj();
         if(currenI == enemyI && currenJ == enemyJ){
             System.out.println("jsi mrtvy");
         }
@@ -1159,10 +1182,10 @@ public class Renderer extends AbstractRenderer {
 //        glRotatef(270,1,0,0);
 //        glTranslatef(8.4f,1.1f,0);
         glTranslatef(10f,0f,10f);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glEnable(GL_TEXTURE_2D);
+//        glEnable(GL_LIGHTING);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         textureKing.bind();
         glBegin(GL_TRIANGLES);
 //        glBegin(GL_QUAD_STRIP);
