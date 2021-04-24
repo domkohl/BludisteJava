@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glDeleteProgram;
@@ -42,7 +43,7 @@ public class Renderer extends AbstractRenderer {
     private float dx, dy, ox, oy;
     private OGLTexture2D[] textureCube;
     private float azimut, zenit;
-    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp,textureKing;
+    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp,textureKing,texturePause,texturePauseFinish,textureIsDead;
 
 
     private long oldmils;
@@ -60,7 +61,7 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
-    boolean showHelp,pauseGame;
+    boolean showHelp,pauseGame,inFinish,isPlayerDead;
 
 
     FindWayBFS findWay = new FindWayBFS();
@@ -85,17 +86,12 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         };
-        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
-            @Override
-            public void invoke(long window, int button, int action, int mods) {
-                //TODO
-            }
-        };
 
         //rozhlizeni
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
+                if(pauseGame) return;
                 if (!showCursor) {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     dx = (float) x - ox;
@@ -120,12 +116,76 @@ public class Renderer extends AbstractRenderer {
 
             }
         };
+        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {}};
 
         //Pohyb
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
 //                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+                if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
+
+                    Arrays.fill(modelMatrixEnemy, 1);
+                    firstTimeRenderEnemy = true;
+                    animaceRun = false;
+
+                    for (int i = 0; i < pocetKrychli; i++) {
+                        for (int j = 0; j < pocetKrychli; j++) {
+//                            if(rozlozeniBludiste[i][j] ==4){
+//                                rozlozeniBludiste[i][j] = 4;
+//                            }else {
+//                                if(rozlozeniBludisteBackUp[i][j] !=4)
+                            rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                        }
+                    }
+
+                    camera.setAzimuth(0);
+                    camera.setZenith(0);
+                    azimut = 0;
+                    zenit = 0;
+                    camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+                    showHelp = false;
+
+                    pauseGame = false;
+                    isPlayerDead = false;
+                    inFinish = false;
+
+                    showCursor = false;
+                    currenI = spawnI;
+                    currenJ = spawnJ;
+                    DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                    DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                    glfwGetCursorPos(window, xBuffer, yBuffer);
+                    double x = xBuffer.get(0);
+                    double y = yBuffer.get(0);
+                    ox = (float) x;
+                    oy = (float) y;
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                }
+                if (key == GLFW_KEY_K && action == GLFW_PRESS && pauseGame) {
+                glfwFreeCallbacks(window);
+                glfwDestroyWindow(window);
+                }
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+                    pauseGame = !pauseGame;
+                    showCursor = !showCursor;
+                    if (showCursor) {
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                    } else {
+                        DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                        DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                        glfwGetCursorPos(window, xBuffer, yBuffer);
+                        double x = xBuffer.get(0);
+                        double y = yBuffer.get(0);
+                        ox = (float) x;
+                        oy = (float) y;
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    }
+                }
+
+                if(pauseGame) return;
                 //W
                 if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
                     System.out.println("rovne");
@@ -133,8 +193,12 @@ public class Renderer extends AbstractRenderer {
                     tmp.forward(0.04);
                     if (isOutside(tmp) == 0)
                         camera.forward(0.04);
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
+
                 }
 //                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE){
 //                    checkKey(window,key);
@@ -145,8 +209,11 @@ public class Renderer extends AbstractRenderer {
                     tmp.backward(0.04);
                     if (isOutside(tmp) == 0)
                         camera.backward(0.04);
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //A
                 if (key == GLFW_KEY_A && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
@@ -154,8 +221,11 @@ public class Renderer extends AbstractRenderer {
                     tmp.left(0.04);
                     if (isOutside(tmp) == 0)
                         camera.left(0.04);
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //D
                 if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
@@ -164,8 +234,11 @@ public class Renderer extends AbstractRenderer {
                     tmp.right(0.04);
                     if (isOutside(tmp) == 0)
                         camera.right(0.04);
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //W+D
                 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
@@ -182,8 +255,11 @@ public class Renderer extends AbstractRenderer {
                                 0.0f,
                                 +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
                                 .mul(0.04));
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //W+A
                 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
@@ -200,8 +276,11 @@ public class Renderer extends AbstractRenderer {
                                 0.0f,
                                 +Math.cos(camera.getAzimuth() - Math.PI/4 ))
                                 .mul(-0.04));
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //S+A
                 if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
@@ -218,8 +297,11 @@ public class Renderer extends AbstractRenderer {
                                 0.0f,
                                 +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
                                 .mul(-0.04));
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
+                    }
                 }
                 //S+D
                 if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
@@ -236,30 +318,16 @@ public class Renderer extends AbstractRenderer {
                                 0.0f,
                                 +Math.cos(camera.getAzimuth() - Math.PI/4 ))
                                 .mul(0.04));
-                    if (isOutside(tmp) == 2)
+                    if (isOutside(tmp) == 2){
+                        pauseGame = true;
+                        inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
-                }
-                if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-                    showCursor = !showCursor;
-                    if (showCursor) {
-                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                    } else {
-                        DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
-                        DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
-                        glfwGetCursorPos(window, xBuffer, yBuffer);
-                        double x = xBuffer.get(0);
-                        double y = yBuffer.get(0);
-                        ox = (float) x;
-                        oy = (float) y;
-                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     }
                 }
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
                 }
-                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-                    pauseGame = !pauseGame;
-                }
+
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
                     if (!showHelp){
@@ -282,6 +350,7 @@ public class Renderer extends AbstractRenderer {
 //                System.out.println(rozlozeniBludiste);
 //                System.out.println(Arrays.deepToString(rozlozeniBludisteBackUp));
                 System.out.println(currenI+"  "+currenJ);
+                System.out.println(enemyI+"  "+enemyJ);
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
                 if(showHelp){
@@ -312,17 +381,6 @@ public class Renderer extends AbstractRenderer {
             }
         };
     }
-    public void checkKey(long window,int key ){
-        if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-            System.out.println("rovne");
-            GLCamera tmp = new GLCamera(camera);
-            tmp.forward(0.04);
-            if (isOutside(tmp) == 0)
-                camera.forward(0.04);
-            if (isOutside(tmp) == 2)
-                System.out.println("Gratuluji jsi v cíli");
-        }
-    }
 
     //Inicializace bludiste
     @Override
@@ -346,6 +404,9 @@ public class Renderer extends AbstractRenderer {
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.png");
             textureKing = new OGLTexture2D("textures/king.jpg");
+            texturePause = new OGLTexture2D("textures/pause.jpg");
+            texturePauseFinish = new OGLTexture2D("textures/pauseFinish.jpg");
+            textureIsDead = new OGLTexture2D("textures/youDied.jpg");
             textureCube[0] = new OGLTexture2D("textures/right.png");
             textureCube[1] = new OGLTexture2D("textures/left.png");
             textureCube[2] = new OGLTexture2D("textures/top.png");
@@ -381,7 +442,9 @@ public class Renderer extends AbstractRenderer {
         currenI = spawnI;
         currenJ = spawnJ;
 
-        textureViewer = new OGLTexture2D.Viewer();
+        pauseGame = true;
+
+//        textureViewer = new OGLTexture2D.Viewer();
 
     }
 
@@ -390,27 +453,38 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void display() {
 
+        if(!inFinish){
+            texturePause.bind();
+        } else{
+            if(isPlayerDead)
+                textureIsDead.bind();
+            else
+                texturePauseFinish.bind();
+            pauseGame = true;
+        }
+
         if(pauseGame){
+            glViewport(0, 0, width, height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluLookAt(
-                    0, 0, 1,
-                    0, 1, 0,
-                    0, 0, 1
-            );
-            glViewport(0, 0, width, height);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-            // Rendering triangle by fixed pipeline
-            glBegin(GL_TRIANGLES);
-            glColor3f(1f, 0f, 0f);
-            glVertex2f(-1f, -1);
-            glColor3f(0f, 1f, 0f);
-            glVertex2f(1, 0);
-            glColor3f(0f, 0f, 1f);
-            glVertex2f(0, 1);
+//            glOrtho(1,1,1,1,0.1,20);
+//            gluLookAt(
+//                    1, 0, 5,
+//                    0, 0,0,
+//                    0, 0, 1
+//            );
+            glBegin(GL_QUADS);
+            glTexCoord2f(0, 0);
+            glVertex2f(-1f, -1f);
+            glTexCoord2f(1, 0);
+            glVertex2f(1, -1);
+            glTexCoord2f(1, 1);
+            glVertex2f(1, 1);
+            glTexCoord2f(0, 1);
+            glVertex2f(-1, 1);
             glEnd();
             return;
         }
@@ -461,6 +535,8 @@ public class Renderer extends AbstractRenderer {
         renderMaze();
         renderObj();
         if(currenI == enemyI && currenJ == enemyJ){
+            inFinish = true;
+            isPlayerDead = true;
             System.out.println("jsi mrtvy");
         }
 
@@ -561,7 +637,7 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 2;
                 }
-                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 ||rozlozeniBludiste[i][j] == 2 ) {
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 ||rozlozeniBludiste[i][j] == 2 ||rozlozeniBludiste[i][j] == 4 ) {
                     if (boxes[i][j].getxMin() * 0.04  <= camX && camX <= boxes[i][j].getxMax() * 0.04  &&
                             boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04  &&
                             boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 ){
