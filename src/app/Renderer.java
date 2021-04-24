@@ -1,6 +1,7 @@
 package app;
 
 import lwjglutils.OGLModelOBJ;
+import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLTexture2D;
 
 import org.lwjgl.BufferUtils;
@@ -63,8 +64,8 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
-    boolean showHelp,pauseGame,inFinish,isPlayerDead;
-
+    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition;
+    long milsSave,millsTeleport;
 
     FindWayBFS findWay = new FindWayBFS();
     int currenI, currenJ;
@@ -209,7 +210,8 @@ public class Renderer extends AbstractRenderer {
 
                 //ulozeni pozice pro teleport
                 if (key == GLFW_KEY_U && action == GLFW_PRESS) {
-                    System.out.println("pozice ulozena");
+                    milsSave =System.currentTimeMillis();
+                    savedTeleportPosition = true;
                     azimutTeport = azimut;
                     zenitTeleport = zenit;
                     cameraTeleport = new GLCamera(camera);
@@ -217,10 +219,11 @@ public class Renderer extends AbstractRenderer {
                 //ulozeni pozice pro teleport
                 if (key == GLFW_KEY_T && action == GLFW_PRESS) {
                     if(cameraTeleport != null){
-                    System.out.println("byl jsi teleportovan");
-                    azimut = azimutTeport;
-                    zenit = zenitTeleport;
-                    camera = new GLCamera(cameraTeleport);
+                        millsTeleport = System.currentTimeMillis();
+                        loadedTeleportPosition = true;
+                        azimut = azimutTeport;
+                        zenit = zenitTeleport;
+                        camera = new GLCamera(cameraTeleport);
                     }else {
                         System.out.println("Nejdrive nastav misto pro teleport");
                     }
@@ -426,7 +429,7 @@ public class Renderer extends AbstractRenderer {
     //Inicializace bludiste
     @Override
     public void init() {
-
+//        super.init();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glFrontFace(GL_CCW);
@@ -485,6 +488,7 @@ public class Renderer extends AbstractRenderer {
 
         pauseGame = true;
 
+        textRenderer = new OGLTextRenderer(width, height);
 //        textureViewer = new OGLTexture2D.Viewer();
 
     }
@@ -505,6 +509,8 @@ public class Renderer extends AbstractRenderer {
         }
 
         if(pauseGame){
+//            System.out.println(height);
+
             glViewport(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
             glMatrixMode(GL_MODELVIEW);
@@ -532,16 +538,23 @@ public class Renderer extends AbstractRenderer {
 
         // vypocet fps, nastaveni rychlosti otaceni podle rychlosti prekresleni
         long mils = System.currentTimeMillis();
+        System.out.println(mils);
         if ((mils - oldFPSmils) > 300) {
             fps = 1000 / (double) (mils - oldmils + 1);
             oldFPSmils = mils;
         }
         String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
 
-        //System.out.println(fps);
+//        System.out.println(fps);
         float speed = 20; // pocet stupnu rotace za vterinu
+//        System.out.println(step);
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
+
+        if(savedTeleportPosition && (mils - milsSave)>1000)
+            savedTeleportPosition=false;
+        if(loadedTeleportPosition &&(mils - millsTeleport)>1000)
+            loadedTeleportPosition = false;
 
 
         glViewport(0, 0, width, height);
@@ -580,6 +593,16 @@ public class Renderer extends AbstractRenderer {
             isPlayerDead = true;
             System.out.println("jsi mrtvy");
         }
+
+        textRenderer.resize(width,height);
+        textRenderer.clear();
+        textRenderer.addStr2D(2, 17, textInfo);
+        if(savedTeleportPosition)
+            textRenderer.addStr2D(2, height - 3,"Pozice pro teleport nastavena.");
+        if(loadedTeleportPosition)
+            textRenderer.addStr2D(2, height - 3, "Byl jsi teleportován.");
+        textRenderer.addStr2D(width -315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
+        textRenderer.draw();
 
     }
 
