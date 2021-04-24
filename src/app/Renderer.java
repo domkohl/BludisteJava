@@ -594,6 +594,7 @@ public class Renderer extends AbstractRenderer {
         if(newMove){
             glLoadIdentity();
             glScalef(0.04f, 0.04f, 0.04f);
+            glTranslatef(jednaHrana/2f+x*jednaHrana,0f,jednaHrana/2f+y*jednaHrana);
             glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
             newMove = false;
         }
@@ -610,27 +611,18 @@ public class Renderer extends AbstractRenderer {
 
         float zmenseni = jednaHrana/3f;
 //        zmenseni = 0f;
-        textureFinish.bind();
+        textureKing.bind();
 
-        glBegin(GL_QUADS);
+        glBegin(GL_TRIANGLES);
 
-        glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX()-zmenseni, (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ()-zmenseni);
-        glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp2().getX()-zmenseni, (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ()+zmenseni);
-        glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX()+zmenseni, (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ()+zmenseni);
-        glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
-
-        glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX()-zmenseni, (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ()-zmenseni);
-        glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX()-zmenseni, (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ()-zmenseni);
-        glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX()+zmenseni, (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ()-zmenseni);
-        glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX()+zmenseni, (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ()-zmenseni);
+        for (int[] indice: obj.getIndices() ) {
+            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+        }
 
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
@@ -1284,14 +1276,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     public void renderObj(){
-//        glBegin(GL_TRIANGLES);
-//        for (int i = 0; i < arraycount(vertices); i++){
-//
-//            glTexCoord2f(vertices[i].texu, vertices[i].texv);
-//            //...
-//            glVertex3f(vertices[i].posx, vertices[i].posy, vertices[i].posz);
-//        }
-//        glEnd();
+
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
@@ -1311,15 +1296,6 @@ public class Renderer extends AbstractRenderer {
 
 
         for (int[] indice: obj.getIndices() ) {
-//            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
-//            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
-//            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
-//            glTexCoord2f(obj.getTextury().get(indice[7]-1)[0], obj.getTextury().get(indice[7]-1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[6]-1)[0],obj.getVrcholy().get(indice[6]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
-
             glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
             glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
@@ -1334,5 +1310,5 @@ public class Renderer extends AbstractRenderer {
     }
 
 
-    }
+}
 
