@@ -517,7 +517,7 @@ public class Renderer extends AbstractRenderer {
 
 
 
-        if(pauseGame){
+        if(pauseGame || inFinish || isPlayerDead){
             texturePause.bind();
             if(isPlayerDead)
                 textureIsDead.bind();
