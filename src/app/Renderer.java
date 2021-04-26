@@ -76,7 +76,7 @@ public class Renderer extends AbstractRenderer {
 
 
     //Klavesnice
-    boolean isPressedW;
+    boolean isPressedW,isPressedA,isPressedS,isPressedD;
 
 
     public Renderer() {
@@ -240,142 +240,162 @@ public class Renderer extends AbstractRenderer {
                 }
 
 
+
+
+                //vice ifu kvuli tomu ze press se resetuje asi po chbyli a zacne hlasit flase
                 //W
-                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.forward(0.04);
-                    if (isOutside(tmp) == 0)
-                        camera.forward(0.04);
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
+                if (key == GLFW_KEY_W && action == GLFW_PRESS)
+                    isPressedW = true;
+                if (key == GLFW_KEY_W && action == GLFW_RELEASE)
+                    isPressedW = false;
                 //S
-                if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.backward(0.04);
-                    if (isOutside(tmp) == 0)
-                        camera.backward(0.04);
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
+                if (key == GLFW_KEY_S && action == GLFW_PRESS)
+                    isPressedS = true;
+                if (key == GLFW_KEY_S && action == GLFW_RELEASE)
+                    isPressedS = false;
                 //A
-                if (key == GLFW_KEY_A && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.left(0.04);
-                    if (isOutside(tmp) == 0)
-                        camera.left(0.04);
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                //D
-                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-                    System.out.println("doprava");
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.right(0.04);
-                    if (isOutside(tmp) == 0)
-                        camera.right(0.04);
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                //W+D
-                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
-                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                            .mul(0.04));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                                .mul(0.04));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                //W+A
-                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
-                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                            .mul(-0.04));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                                .mul(-0.04));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                //S+A
-                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
-                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS){
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                            .mul(-0.04));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                                .mul(-0.04));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                //S+D
-                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
-                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS){
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                            .mul(0.04));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                                .mul(0.04));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
-                }
-                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-                    animateStart = !animateStart;
-                }
+                if (key == GLFW_KEY_A && action == GLFW_PRESS)
+                    isPressedA = true;
+                if (key == GLFW_KEY_A && action == GLFW_RELEASE)
+                    isPressedA = false;
+
+
+                //W
+//                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.forward(0.04);
+//                    if (isOutside(tmp) == 0)
+//                        camera.forward(0.04);
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+                //S
+//                if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.backward(0.04);
+//                    if (isOutside(tmp) == 0)
+//                        camera.backward(0.04);
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //A
+//                if (key == GLFW_KEY_A && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.left(0.04);
+//                    if (isOutside(tmp) == 0)
+//                        camera.left(0.04);
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //D
+//                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
+//                    System.out.println("doprava");
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.right(0.04);
+//                    if (isOutside(tmp) == 0)
+//                        camera.right(0.04);
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //W+D
+//                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+//                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.move( new Vec3D(
+//                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+//                            0.0f,
+//                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+//                            .mul(0.04));
+//                    if (isOutside(tmp) == 0)
+//                        camera.move( new Vec3D(
+//                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+//                                0.0f,
+//                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+//                                .mul(0.04));
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //W+A
+//                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+//                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.move( new Vec3D(
+//                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+//                            0.0f,
+//                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+//                            .mul(-0.04));
+//                    if (isOutside(tmp) == 0)
+//                        camera.move( new Vec3D(
+//                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+//                                0.0f,
+//                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+//                                .mul(-0.04));
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //S+A
+//                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
+//                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS){
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.move( new Vec3D(
+//                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+//                            0.0f,
+//                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+//                            .mul(-0.04));
+//                    if (isOutside(tmp) == 0)
+//                        camera.move( new Vec3D(
+//                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+//                                0.0f,
+//                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+//                                .mul(-0.04));
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                //S+D
+//                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
+//                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS){
+//                    GLCamera tmp = new GLCamera(camera);
+//                    tmp.move( new Vec3D(
+//                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+//                            0.0f,
+//                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+//                            .mul(0.04));
+//                    if (isOutside(tmp) == 0)
+//                        camera.move( new Vec3D(
+//                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
+//                                0.0f,
+//                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
+//                                .mul(0.04));
+//                    if (isOutside(tmp) == 2){
+//                        pauseGame = true;
+//                        inFinish= true;
+//                        System.out.println("Gratuluji jsi v cíli");
+//                    }
+//                }
+//                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+//                    animateStart = !animateStart;
+//                }
 
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
@@ -546,7 +566,7 @@ public class Renderer extends AbstractRenderer {
 
         // vypocet fps, nastaveni rychlosti otaceni podle rychlosti prekresleni
         long mils = System.currentTimeMillis();
-        System.out.println(mils);
+//        System.out.println(mils);
         if ((mils - oldFPSmils) > 300) {
             fps = 1000 / (double) (mils - oldmils + 1);
             oldFPSmils = mils;
@@ -602,6 +622,58 @@ public class Renderer extends AbstractRenderer {
             pauseGame = true;
             System.out.println("jsi mrtvy");
         }
+
+
+
+        //Ovládani klávesnice zda kvůli lepší simulaci ovládání jako ve hře
+        System.out.println("W stiskle "+isPressedW);
+//        System.out.println("W realisle "+isReleasedW);
+        if(isPressedW){
+            GLCamera tmp = new GLCamera(camera);
+            tmp.forward(0.01);
+            if (isOutside(tmp) == 0)
+                camera.forward(0.01);
+            if (isOutside(tmp) == 2){
+                pauseGame = true;
+                inFinish= true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
+        }
+
+        if(isPressedS){
+            GLCamera tmp = new GLCamera(camera);
+            tmp.backward(0.01);
+            if (isOutside(tmp) == 0)
+                camera.backward(0.01);
+            if (isOutside(tmp) == 2){
+                pauseGame = true;
+                inFinish= true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
+        }
+
+        if(isPressedA){
+            GLCamera tmp = new GLCamera(camera);
+            tmp.left(0.01);
+            if (isOutside(tmp) == 0)
+                camera.left(0.01);
+            if (isOutside(tmp) == 2){
+                pauseGame = true;
+                inFinish= true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         textRenderer.resize(width,height);
         textRenderer.clear();
