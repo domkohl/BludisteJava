@@ -72,11 +72,12 @@ public class Renderer extends AbstractRenderer {
     int currenI, currenJ;
     int enemyI, enemyJ;
 
-
     OBJreader obj;
 
 
-    OGLTexture2D.Viewer textureViewer;
+    //Klavesnice
+    boolean isPressedW;
+
 
     public Renderer() {
         super();
@@ -177,13 +178,14 @@ public class Renderer extends AbstractRenderer {
                 }
                 if (key == GLFW_KEY_K && action == GLFW_PRESS && pauseGame) {
                     glfwSetWindowShouldClose(window, true);
-                    glfwFreeCallbacks(window);
-                    glfwDestroyWindow(window);
-//                    glfwTerminate();
-                    dispose();
-                    // Free the window callbacks and destroy the window
-                    glfwFreeCallbacks(window);
-                    glfwDestroyWindow(window);
+//                    glfwFreeCallbacks(window);
+//                    glfwDestroyWindow(window);
+////                    glfwTerminate();
+//                    dispose();
+//                    // Free the window callbacks and destroy the window
+//                    glfwFreeCallbacks(window);
+//                    glfwDestroyWindow(window);
+                    System.exit(0);
 //                try{
 //                    // Free the window callbacks and destroy the window
 //                    glfwFreeCallbacks(window);
@@ -240,7 +242,6 @@ public class Renderer extends AbstractRenderer {
 
                 //W
                 if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-                    System.out.println("rovne");
                     GLCamera tmp = new GLCamera(camera);
                     tmp.forward(0.04);
                     if (isOutside(tmp) == 0)
@@ -250,19 +251,7 @@ public class Renderer extends AbstractRenderer {
                         inFinish= true;
                         System.out.println("Gratuluji jsi v cíli");
                     }
-                    if (isOutside(tmp) == 1){
-                        camera.backward(0.04);
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth()),
-                                0.0f,
-                                Math.cos(camera.getAzimuth()))
-                                .mul(-0.04));
-                    }
-
                 }
-//                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE){
-//                    checkKey(window,key);
-//                }
                 //S
                 if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
                     GLCamera tmp = new GLCamera(camera);
