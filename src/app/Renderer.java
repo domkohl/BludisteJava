@@ -270,21 +270,6 @@ public class Renderer extends AbstractRenderer {
                         }
                     }
                 }
-//                //zapiani a vypinani pomoci
-//                //nahrani bludiscte pok akzdem kliku
-//                // TODO mzenit na kliku ale pohybu
-//                if (showHelp) {
-//                    enemyJ = -1;
-//                    enemyI = -1;
-////                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
-//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
-//                    for (int i = 0; i < pocetKrychli; i++) {
-//                        for (int j = 0; j < pocetKrychli; j++) {
-//                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
-//                        }
-//                    }
-//                }
-
             }
         };
     }
@@ -293,12 +278,10 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void init() {
 //        super.init();
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glEnable(GL_DEPTH_TEST);
-        glFrontFace(GL_CCW);
-        glPolygonMode(GL_FRONT, GL_FILL);
-        glPolygonMode(GL_BACK, GL_FILL);
-        glDisable(GL_CULL_FACE);
+//        glPolygonMode(GL_FRONT, GL_FILL);
+//        glPolygonMode(GL_BACK, GL_FILL);
         glEnable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
         glMatrixMode(GL_MODELVIEW);
@@ -329,7 +312,13 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-
+//        glFrontFace(GL_CCW);
+        glEnable(GL_DEPTH_TEST);
+        glPolygonMode(GL_FRONT, GL_FILL);
+        glPolygonMode(GL_BACK, GL_POINT);
+//        glEnable(GL_CULL_FACE);
+//        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
         maze = new MazeLoader();
 
