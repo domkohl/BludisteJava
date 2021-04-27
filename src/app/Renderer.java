@@ -68,7 +68,6 @@ public class Renderer extends AbstractRenderer {
     long milsSave,millsTeleport;
 
     FindWayBFS findWay = new FindWayBFS();
-    int currenI, currenJ;
     int enemyI, enemyJ;
 
     OBJreader obj;
@@ -155,8 +154,11 @@ public class Renderer extends AbstractRenderer {
                     inFinish = false;
 
                     showCursor = false;
-                    currenI = spawnI;
-                    currenJ = spawnJ;
+
+//                    currenI = spawnI;
+//                    currenJ = spawnJ;
+                    maze.setCurrenI(maze.getSpawnI());
+                    maze.setCurrenJ(maze.getSpawnJ());
                     DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
                     DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
                     glfwGetCursorPos(window, xBuffer, yBuffer);
@@ -265,7 +267,8 @@ public class Renderer extends AbstractRenderer {
                 if (showHelp) {
                     enemyJ = -1;
                     enemyI = -1;
-                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
+//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
+                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
                             rozlozeniBludiste[i][j] = tmpBludiste[i][j];
@@ -354,8 +357,9 @@ public class Renderer extends AbstractRenderer {
 
 //        currenI = spawnI;
 ////        currenJ = spawnJ;
-        currenI = maze.getSpawnI();
-        currenJ = maze.getSpawnJ();
+        //poprve jsem ve spawnu
+//        currenI = maze.getCurrenI();
+//        currenJ = maze.getCurrenJ();
 
         pauseGame = true;
 
@@ -465,7 +469,7 @@ public class Renderer extends AbstractRenderer {
         renderObj();
 
         //zjisteni zda me zasahlo np kdyz ano zareaguji
-        if (currenI == enemyI && currenJ == enemyJ) {
+        if (maze.getCurrenI() == enemyI && maze.getCurrenJ() == enemyJ) {
 //            inFinish = true;
             isPlayerDead = true;
             pauseGame = true;
@@ -484,9 +488,9 @@ public class Renderer extends AbstractRenderer {
 //            System.out.println(step);
             GLCamera tmp = new GLCamera(camera);
             tmp.forward(0.03);
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.forward(0.03);
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -497,9 +501,9 @@ public class Renderer extends AbstractRenderer {
         if (isPressedS && !isPressedD && !isPressedA && !isPressedW) {
             GLCamera tmp = new GLCamera(camera);
             tmp.backward(0.03);
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.backward(0.03);
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -509,9 +513,9 @@ public class Renderer extends AbstractRenderer {
         if (isPressedA && !isPressedD && !isPressedW && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
             tmp.left(0.03);
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.left(0.03);
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -522,9 +526,9 @@ public class Renderer extends AbstractRenderer {
             System.out.println("doprava");
             GLCamera tmp = new GLCamera(camera);
             tmp.right(0.03);
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.right(0.03);
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -538,13 +542,13 @@ public class Renderer extends AbstractRenderer {
                     0.0f,
                     +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
                     .mul(0.03));
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.move(new Vec3D(
                         -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
                         0.0f,
                         +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
                         .mul(0.03));
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -559,13 +563,13 @@ public class Renderer extends AbstractRenderer {
                     0.0f,
                     +Math.cos(camera.getAzimuth() - Math.PI / 4))
                     .mul(-0.03));
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.move(new Vec3D(
                         -Math.sin(camera.getAzimuth() - Math.PI / 4),
                         0.0f,
                         +Math.cos(camera.getAzimuth() - Math.PI / 4))
                         .mul(-0.03));
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -580,13 +584,13 @@ public class Renderer extends AbstractRenderer {
                     0.0f,
                     +Math.cos(camera.getAzimuth() - Math.PI / 4))
                     .mul(0.03));
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.move(new Vec3D(
                         -Math.sin(camera.getAzimuth() - Math.PI / 4),
                         0.0f,
                         +Math.cos(camera.getAzimuth() - Math.PI / 4))
                         .mul(0.03));
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -600,13 +604,13 @@ public class Renderer extends AbstractRenderer {
                     0.0f,
                     +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
                     .mul(-0.03));
-            if (isOutside(tmp) == 0)
+            if (maze.isOutside(tmp) == 0)
                 camera.move(new Vec3D(
                         -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
                         0.0f,
                         +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
                         .mul(-0.03));
-            if (isOutside(tmp) == 2) {
+            if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
@@ -685,48 +689,6 @@ public class Renderer extends AbstractRenderer {
             animaceRun = false;
             prechodhrana = false;
         }
-    }
-
-    //Funkce pro kolize
-    // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
-    //TODo pridat do maze
-    private int isOutside(GLCamera cam) {
-        double camX = cam.getPosition().getX();
-        double camY = cam.getPosition().getY();
-        double camZ = cam.getPosition().getZ();
-        //TODO optimalizovat do funkci if statmenty
-        for (int i = 0; i < pocetKrychli; i++) {
-            for (int j = 0; j < pocetKrychli; j++) {
-                if (rozlozeniBludiste[i][j] == 1) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-                        return 1;
-                }
-                if (rozlozeniBludiste[i][j] == 3) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
-                        return 2;
-                }
-                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 || rozlozeniBludiste[i][j] == 2 || rozlozeniBludiste[i][j] == 4) {
-                    if (boxes[i][j].getxMin() * 0.04 <= camX && camX <= boxes[i][j].getxMax() * 0.04 &&
-                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04 &&
-                            boxes[i][j].getzMin() * 0.04 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04) {
-                        currenI = i;
-                        currenJ = j;
-                    }
-                }
-            }
-        }
-        for (Box box : spawnHelpBoxes) {
-            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
-                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
-                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
-                return 1;
-
-        }
-        return 0;
     }
 
     //Vykresleni bludiste

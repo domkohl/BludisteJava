@@ -1,5 +1,7 @@
 package app;
 
+import utils.GLCamera;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,12 +15,15 @@ public class MazeLoader {
         //TODo mzenit na double/float vsude ?
         private int jednaHrana;
         private int spawnI,spawnJ;
+        private int currenI,currenJ;
         private double spawnX,spawnZ;
         private ArrayList<Box> helpBoxes;
 
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
         createMaze();
+        currenI = spawnI;
+        currenJ = spawnJ;
     }
 
     //Funkce vytvoreni bludiste
@@ -131,6 +136,50 @@ public class MazeLoader {
         }
     }
 
+    //Funkce pro kolize
+    // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
+    //TODo pridat do maze
+    public int isOutside(GLCamera cam) {
+        double camX = cam.getPosition().getX();
+        double camY = cam.getPosition().getY();
+        double camZ = cam.getPosition().getZ();
+        //TODO optimalizovat do funkci if statmenty
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                if (rozlozeniBludiste[i][j] == 1) {
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                        return 1;
+                }
+                if (rozlozeniBludiste[i][j] == 3) {
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                        return 2;
+                }
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 || rozlozeniBludiste[i][j] == 2 || rozlozeniBludiste[i][j] == 4) {
+                    if (boxes[i][j].getxMin() * 0.04 <= camX && camX <= boxes[i][j].getxMax() * 0.04 &&
+                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04 &&
+                            boxes[i][j].getzMin() * 0.04 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04) {
+                        currenI = i;
+                        currenJ = j;
+                    }
+                }
+            }
+        }
+        for (Box box : helpBoxes) {
+            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
+                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
+                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
+                return 1;
+
+        }
+        return 0;
+    }
+
+
+
     public void setPocetKrychli(int pocetKrychli) {
         this.pocetKrychli = pocetKrychli;
     }
@@ -177,6 +226,14 @@ public class MazeLoader {
 
     public void setHelpBoxes(ArrayList<Box> helpBoxes) {
         this.helpBoxes = helpBoxes;
+    }
+
+    public void setCurrenI(int currenI) {
+        this.currenI = currenI;
+    }
+
+    public void setCurrenJ(int currenJ) {
+        this.currenJ = currenJ;
     }
 
     public int getPocetKrychli() {
@@ -229,5 +286,13 @@ public class MazeLoader {
 
     public int[][] getRozlozeniBludiste() {
         return rozlozeniBludiste;
+    }
+
+    public int getCurrenI() {
+        return currenI;
+    }
+
+    public int getCurrenJ() {
+        return currenJ;
     }
 }
