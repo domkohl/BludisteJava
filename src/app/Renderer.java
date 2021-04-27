@@ -258,22 +258,32 @@ public class Renderer extends AbstractRenderer {
                                 rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                             }
                         }
-                    }
-                }
-                //zapiani a vypinani pomoci
-                //nahrani bludiscte pok akzdem kliku
-                // TODO mzenit na kliku ale pohybu
-                if (showHelp) {
-                    enemyJ = -1;
-                    enemyI = -1;
+                    }else{
+                        enemyJ = -1;
+                        enemyI = -1;
 //                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
-                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
-                    for (int i = 0; i < pocetKrychli; i++) {
-                        for (int j = 0; j < pocetKrychli; j++) {
-                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                        int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+                        for (int i = 0; i < pocetKrychli; i++) {
+                            for (int j = 0; j < pocetKrychli; j++) {
+                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                            }
                         }
                     }
                 }
+//                //zapiani a vypinani pomoci
+//                //nahrani bludiscte pok akzdem kliku
+//                // TODO mzenit na kliku ale pohybu
+//                if (showHelp) {
+//                    enemyJ = -1;
+//                    enemyI = -1;
+////                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
+//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+//                    for (int i = 0; i < pocetKrychli; i++) {
+//                        for (int j = 0; j < pocetKrychli; j++) {
+//                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+//                        }
+//                    }
+//                }
 
             }
         };
@@ -613,6 +623,20 @@ public class Renderer extends AbstractRenderer {
                 pauseGame = true;
                 inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
+            }
+        }
+
+        //zapiani a vypinani pomoci
+        //nahrani bludiscte pok akzdem kliku
+        if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
+            enemyJ = -1;
+            enemyI = -1;
+//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
+            int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+            for (int i = 0; i < pocetKrychli; i++) {
+                for (int j = 0; j < pocetKrychli; j++) {
+                    rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                }
             }
         }
 
