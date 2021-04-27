@@ -1,11 +1,12 @@
 package app;
 
-import lwjglutils.OGLModelOBJ;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLTexture2D;
-
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import transforms.Vec3D;
 import utils.AbstractRenderer;
 import utils.GLCamera;
@@ -14,14 +15,12 @@ import java.io.IOException;
 import java.nio.DoubleBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glDeleteProgram;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-import static utils.GluUtils.gluLookAt;
 import static utils.GluUtils.gluPerspective;
 
 
@@ -81,7 +80,7 @@ public class Renderer extends AbstractRenderer {
 
     public Renderer() {
         super();
-        //Zakladni ovladani prostredi
+        //Základni ovladaní prostredi - zmensovani zvetsovani okna
         glfwWindowSizeCallback = new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
@@ -96,7 +95,7 @@ public class Renderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
-                if(pauseGame) return;
+                if (pauseGame) return;
                 if (!showCursor) {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     dx = (float) x - ox;
@@ -114,40 +113,30 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(Math.toRadians(zenit));
                     dx = 0;
                     dy = 0;
-//                    System.out.println("Zenith: "+camera.getZenith());
-//                    System.out.println("Azimtuh: "+camera.getAzimuth());
-//                    System.out.println("VpX "+Math.cos(camera.getAzimuth())*Math.cos(camera.getZenith()));
                 }
-
             }
         };
         glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
             @Override
-            public void invoke(long window, int button, int action, int mods) {}};
+            public void invoke(long window, int button, int action, int mods) {
+            }
+        };
 
         //Pohyb
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-//                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
                 if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
-
-                    if(isPlayerDead)
+                    if (isPlayerDead)
                         countOfDeads++;
                     if (inFinish)
                         countOfDeads = 0;
-
-
                     Arrays.fill(modelMatrixEnemy, 1);
                     firstTimeRenderEnemy = true;
                     animaceRun = false;
 
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
-//                            if(rozlozeniBludiste[i][j] ==4){
-//                                rozlozeniBludiste[i][j] = 4;
-//                            }else {
-//                                if(rozlozeniBludisteBackUp[i][j] !=4)
                             rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                         }
                     }
@@ -176,29 +165,12 @@ public class Renderer extends AbstractRenderer {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
                 }
+                // Vypnutí hry, když je hra pozastavena
                 if (key == GLFW_KEY_K && action == GLFW_PRESS && pauseGame) {
                     glfwSetWindowShouldClose(window, true);
-//                    glfwFreeCallbacks(window);
-//                    glfwDestroyWindow(window);
-////                    glfwTerminate();
-//                    dispose();
-//                    // Free the window callbacks and destroy the window
-//                    glfwFreeCallbacks(window);
-//                    glfwDestroyWindow(window);
                     System.exit(0);
-//                try{
-//                    // Free the window callbacks and destroy the window
-//                    glfwFreeCallbacks(window);
-//                    glfwDestroyWindow(window);
-//
-//                } catch (Throwable t) {
-//                    t.printStackTrace();
-//                } finally {
-//                    // Terminate GLFW and free the error callback
-//                    glfwTerminate();
-//                    glfwSetErrorCallback(null).free();
-//                }
                 }
+                // Pozastavení hry
                 if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
                     pauseGame = !pauseGame;
                     showCursor = !showCursor;
@@ -216,32 +188,34 @@ public class Renderer extends AbstractRenderer {
                     }
                 }
 
-                if(pauseGame) return;
+                // Kontrola, zda je hra pozastavena, když ano vracím se a dále nic nekontroluji
+                if (pauseGame) return;
 
-                //ulozeni pozice pro teleport
+                // Uložení pozice kamery pro teleport
                 if (key == GLFW_KEY_U && action == GLFW_PRESS) {
-                    milsSave =System.currentTimeMillis();
+                    milsSave = System.currentTimeMillis();
                     savedTeleportPosition = true;
                     azimutTeport = azimut;
                     zenitTeleport = zenit;
                     cameraTeleport = new GLCamera(camera);
                 }
-                //ulozeni pozice pro teleport
+
+                // Teleportace - nahraní uložené kamery
                 if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-                    if(cameraTeleport != null){
+                    if (cameraTeleport != null) {
                         millsTeleport = System.currentTimeMillis();
                         loadedTeleportPosition = true;
                         azimut = azimutTeport;
                         zenit = zenitTeleport;
                         camera = new GLCamera(cameraTeleport);
-                    }else {
+                    } else {
+                        //TODO
                         System.out.println("Nejdrive nastav misto pro teleport");
                     }
                 }
 
 
-
-
+                // Pohyb hráče
                 //vice ifu kvuli tomu ze press se resetuje asi po chbyli a zacne hlasit flase
                 //W
                 if (key == GLFW_KEY_W && action == GLFW_PRESS)
@@ -259,197 +233,42 @@ public class Renderer extends AbstractRenderer {
                 if (key == GLFW_KEY_A && action == GLFW_RELEASE)
                     isPressedA = false;
                 //D
-                if (key == GLFW_KEY_D&& action == GLFW_PRESS)
+                if (key == GLFW_KEY_D && action == GLFW_PRESS)
                     isPressedD = true;
                 if (key == GLFW_KEY_D && action == GLFW_RELEASE)
                     isPressedD = false;
 
-
-                //W
-//                if (key == GLFW_KEY_W && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.forward(0.04);
-//                    if (isOutside(tmp) == 0)
-//                        camera.forward(0.04);
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-                //S
-//                if (key == GLFW_KEY_S && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.backward(0.04);
-//                    if (isOutside(tmp) == 0)
-//                        camera.backward(0.04);
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //A
-//                if (key == GLFW_KEY_A && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS) {
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.left(0.04);
-//                    if (isOutside(tmp) == 0)
-//                        camera.left(0.04);
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //D
-//                if (key == GLFW_KEY_D && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS) {
-//                    System.out.println("doprava");
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.right(0.04);
-//                    if (isOutside(tmp) == 0)
-//                        camera.right(0.04);
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //W+D
-//                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
-//                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.move( new Vec3D(
-//                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-//                            0.0f,
-//                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-//                            .mul(0.04));
-//                    if (isOutside(tmp) == 0)
-//                        camera.move( new Vec3D(
-//                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-//                                0.0f,
-//                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-//                                .mul(0.04));
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //W+A
-//                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
-//                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) != GLFW_PRESS){
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.move( new Vec3D(
-//                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-//                            0.0f,
-//                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-//                            .mul(-0.04));
-//                    if (isOutside(tmp) == 0)
-//                        camera.move( new Vec3D(
-//                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-//                                0.0f,
-//                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-//                                .mul(-0.04));
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //S+A
-//                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
-//                        glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) != GLFW_PRESS){
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.move( new Vec3D(
-//                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-//                            0.0f,
-//                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-//                            .mul(-0.04));
-//                    if (isOutside(tmp) == 0)
-//                        camera.move( new Vec3D(
-//                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-//                                0.0f,
-//                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-//                                .mul(-0.04));
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
-//                //S+D
-//                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS &&
-//                        glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) != GLFW_PRESS){
-//                    GLCamera tmp = new GLCamera(camera);
-//                    tmp.move( new Vec3D(
-//                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-//                            0.0f,
-//                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-//                            .mul(0.04));
-//                    if (isOutside(tmp) == 0)
-//                        camera.move( new Vec3D(
-//                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-//                                0.0f,
-//                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-//                                .mul(0.04));
-//                    if (isOutside(tmp) == 2){
-//                        pauseGame = true;
-//                        inFinish= true;
-//                        System.out.println("Gratuluji jsi v cíli");
-//                    }
-//                }
+                // Vypnutí NPC -- dočasné
+                // TODO
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
                 }
-
+                // Přepínání mezi režimem s nápovědou a s NPC
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
-                    if (!showHelp){
+                    if (!showHelp) {
                         Arrays.fill(modelMatrixEnemy, 1);
                         firstTimeRenderEnemy = true;
                         animaceRun = false;
-
                         for (int i = 0; i < pocetKrychli; i++) {
                             for (int j = 0; j < pocetKrychli; j++) {
-//                            if(rozlozeniBludiste[i][j] ==4){
-//                                rozlozeniBludiste[i][j] = 4;
-//                            }else {
-//                                if(rozlozeniBludisteBackUp[i][j] !=4)
                                 rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                             }
                         }
                     }
                 }
-//                System.out.println("jsem tu");
-//                System.out.println(rozlozeniBludiste);
-//                System.out.println(Arrays.deepToString(rozlozeniBludisteBackUp));
-//                System.out.println(currenI+"  "+currenJ);
-//                System.out.println(enemyI+"  "+enemyJ);
                 //zapiani a vypinani pomoci
                 //nahrani bludiscte pok akzdem kliku
-                if(showHelp){
+                // TODO mzenit na kliku ale pohybu
+                if (showHelp) {
                     enemyJ = -1;
                     enemyI = -1;
-                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy,new int[]{currenI,currenJ},new int[]{9,5});
-                    //prida enmyho do pole
-//                    tmpBludiste[enemyI][enemyJ] = 4;
+                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
-//                            if(rozlozeniBludisteBackUp[i][j]!=4)
-                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                            rozlozeniBludiste[i][j] = tmpBludiste[i][j];
                         }
                     }
-//                }else{
-//                    for (int i = 0; i < pocetKrychli; i++) {
-//                        for (int j = 0; j < pocetKrychli; j++) {
-////                            if(rozlozeniBludiste[i][j] ==4){
-////                                rozlozeniBludiste[i][j] = 4;
-////                            }else {
-////                                if(rozlozeniBludisteBackUp[i][j] !=4)
-//                                    rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
-//                            }
-//                        }
-//                    }
                 }
 
             }
@@ -492,7 +311,7 @@ public class Renderer extends AbstractRenderer {
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -507,7 +326,7 @@ public class Renderer extends AbstractRenderer {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glScalef(0.04f, 0.04f, 0.04f);
-        glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+        glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
 
         //objekt
         obj = new OBJreader();
@@ -519,7 +338,6 @@ public class Renderer extends AbstractRenderer {
         pauseGame = true;
 
         textRenderer = new OGLTextRenderer(width, height);
-//        textureViewer = new OGLTexture2D.Viewer();
 
         countOfDeads = 0;
         animateStart = true;
@@ -530,15 +348,13 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void display() {
 
-
-
-        if(pauseGame || inFinish || isPlayerDead){
+        // kontroluji stavy hry a podle toho se chovám
+        if (pauseGame || inFinish || isPlayerDead) {
             texturePause.bind();
-            if(isPlayerDead)
+            if (isPlayerDead)
                 textureIsDead.bind();
-            if(inFinish)
+            if (inFinish)
                 texturePauseFinish.bind();
-//            System.out.println(height);
             glViewport(0, 0, width, height);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -546,6 +362,7 @@ public class Renderer extends AbstractRenderer {
             glLoadIdentity();
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
+            // TODO zeptat se ?
 //            glOrtho(1,1,1,1,0.1,20);
 //            gluLookAt(
 //                    1, 0, 5,
@@ -563,14 +380,14 @@ public class Renderer extends AbstractRenderer {
             glVertex2f(-1, 1);
             glEnd();
 
-            textRenderer.resize(width,height);
+            textRenderer.resize(width, height);
             textRenderer.clear();
-            textRenderer.addStr2D(2, 17, "Počet smrtí: "+countOfDeads);
+            textRenderer.addStr2D(2, 17, "Počet smrtí: " + countOfDeads);
             textRenderer.draw();
             return;
         }
 
-        // vypocet fps, nastaveni rychlosti otaceni podle rychlosti prekresleni
+        // vypocet fps, nastaveni rychlosti animace podle rychlosti prekresleni
         long mils = System.currentTimeMillis();
 //        System.out.println(mils);
         if ((mils - oldFPSmils) > 300) {
@@ -586,9 +403,10 @@ public class Renderer extends AbstractRenderer {
         float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
-        if(savedTeleportPosition && (mils - milsSave)>1000)
-            savedTeleportPosition=false;
-        if(loadedTeleportPosition &&(mils - millsTeleport)>1000)
+        // zmizení textu po 1s pro oznaméní informace o teleportu
+        if (savedTeleportPosition && (mils - milsSave) > 1000)
+            savedTeleportPosition = false;
+        if (loadedTeleportPosition && (mils - millsTeleport) > 1000)
             loadedTeleportPosition = false;
 
 
@@ -623,7 +441,9 @@ public class Renderer extends AbstractRenderer {
 
         renderMaze();
         renderObj();
-        if(currenI == enemyI && currenJ == enemyJ){
+
+        //zjisteni zda me zasahlo np kdyz ano zareaguji
+        if (currenI == enemyI && currenJ == enemyJ) {
 //            inFinish = true;
             isPlayerDead = true;
             pauseGame = true;
@@ -631,221 +451,212 @@ public class Renderer extends AbstractRenderer {
         }
 
 
-
         //Ovládani klávesnice zda kvůli lepší simulaci ovládání jako ve hře
-//        System.out.println("W stiskle "+isPressedW);
-//        System.out.println("W realisle "+isReleasedW);
         //W
-        if(isPressedW && !isPressedD && !isPressedA && !isPressedS){
+        if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
             System.out.println(step);
             GLCamera tmp = new GLCamera(camera);
             tmp.forward(0.03);
             if (isOutside(tmp) == 0)
                 camera.forward(0.03);
-            if (isOutside(tmp) == 2){
+            if (isOutside(tmp) == 2) {
                 pauseGame = true;
-                inFinish= true;
+                inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
             }
         }
 //
         //S
-        if(isPressedS && !isPressedD && !isPressedA && !isPressedW){
+        if (isPressedS && !isPressedD && !isPressedA && !isPressedW) {
             GLCamera tmp = new GLCamera(camera);
             tmp.backward(0.03);
             if (isOutside(tmp) == 0)
                 camera.backward(0.03);
-            if (isOutside(tmp) == 2){
+            if (isOutside(tmp) == 2) {
                 pauseGame = true;
-                inFinish= true;
+                inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
             }
         }
         //A
-        if(isPressedA && !isPressedD && !isPressedW && !isPressedS){
+        if (isPressedA && !isPressedD && !isPressedW && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
             tmp.left(0.03);
             if (isOutside(tmp) == 0)
                 camera.left(0.03);
-            if (isOutside(tmp) == 2){
+            if (isOutside(tmp) == 2) {
                 pauseGame = true;
-                inFinish= true;
+                inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
             }
         }
         //D
-        if(isPressedD && !isPressedW && !isPressedA && !isPressedS){
+        if (isPressedD && !isPressedW && !isPressedA && !isPressedS) {
             System.out.println("doprava");
             GLCamera tmp = new GLCamera(camera);
             tmp.right(0.03);
             if (isOutside(tmp) == 0)
                 camera.right(0.03);
-            if (isOutside(tmp) == 2){
+            if (isOutside(tmp) == 2) {
                 pauseGame = true;
-                inFinish= true;
+                inFinish = true;
                 System.out.println("Gratuluji jsi v cíli");
             }
         }
         //W+D
-        if(isPressedW && isPressedD && !isPressedA && !isPressedS){
+        if (isPressedW && isPressedD && !isPressedA && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
-            tmp.move( new Vec3D(
-                    -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
+            tmp.move(new Vec3D(
+                    -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
                     0.0f,
-                    +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
+                    +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
                     .mul(0.03));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                                .mul(0.03));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
+            if (isOutside(tmp) == 0)
+                camera.move(new Vec3D(
+                        -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
+                        0.0f,
+                        +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
+                        .mul(0.03));
+            if (isOutside(tmp) == 2) {
+                pauseGame = true;
+                inFinish = true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
         }
 
         //W+A
-        if(isPressedW && isPressedA && !isPressedD && !isPressedS){
+        if (isPressedW && isPressedA && !isPressedD && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                            .mul(-0.03));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                                .mul(-0.03));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
+            tmp.move(new Vec3D(
+                    -Math.sin(camera.getAzimuth() - Math.PI / 4),
+                    0.0f,
+                    +Math.cos(camera.getAzimuth() - Math.PI / 4))
+                    .mul(-0.03));
+            if (isOutside(tmp) == 0)
+                camera.move(new Vec3D(
+                        -Math.sin(camera.getAzimuth() - Math.PI / 4),
+                        0.0f,
+                        +Math.cos(camera.getAzimuth() - Math.PI / 4))
+                        .mul(-0.03));
+            if (isOutside(tmp) == 2) {
+                pauseGame = true;
+                inFinish = true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
         }
 
         //S+D
-        if(isPressedS && isPressedD && !isPressedW && !isPressedA){
+        if (isPressedS && isPressedD && !isPressedW && !isPressedA) {
             GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                            .mul(0.03));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - Math.PI/4 ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - Math.PI/4 ))
-                                .mul(0.03));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
+            tmp.move(new Vec3D(
+                    -Math.sin(camera.getAzimuth() - Math.PI / 4),
+                    0.0f,
+                    +Math.cos(camera.getAzimuth() - Math.PI / 4))
+                    .mul(0.03));
+            if (isOutside(tmp) == 0)
+                camera.move(new Vec3D(
+                        -Math.sin(camera.getAzimuth() - Math.PI / 4),
+                        0.0f,
+                        +Math.cos(camera.getAzimuth() - Math.PI / 4))
+                        .mul(0.03));
+            if (isOutside(tmp) == 2) {
+                pauseGame = true;
+                inFinish = true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
         }
         //S+A
-        if(isPressedS && isPressedA && !isPressedW && !isPressedD){
-                    GLCamera tmp = new GLCamera(camera);
-                    tmp.move( new Vec3D(
-                            -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                            0.0f,
-                            +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                            .mul(-0.03));
-                    if (isOutside(tmp) == 0)
-                        camera.move( new Vec3D(
-                                -Math.sin(camera.getAzimuth() - 3f/4*Math.PI ),
-                                0.0f,
-                                +Math.cos(camera.getAzimuth() - 3f/4*Math.PI ))
-                                .mul(-0.03));
-                    if (isOutside(tmp) == 2){
-                        pauseGame = true;
-                        inFinish= true;
-                        System.out.println("Gratuluji jsi v cíli");
-                    }
+        if (isPressedS && isPressedA && !isPressedW && !isPressedD) {
+            GLCamera tmp = new GLCamera(camera);
+            tmp.move(new Vec3D(
+                    -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
+                    0.0f,
+                    +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
+                    .mul(-0.03));
+            if (isOutside(tmp) == 0)
+                camera.move(new Vec3D(
+                        -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
+                        0.0f,
+                        +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
+                        .mul(-0.03));
+            if (isOutside(tmp) == 2) {
+                pauseGame = true;
+                inFinish = true;
+                System.out.println("Gratuluji jsi v cíli");
+            }
         }
 
-        textRenderer.resize(width,height);
+        // Zobrazováni textu na obrazovce
+        textRenderer.resize(width, height);
         textRenderer.clear();
         textRenderer.addStr2D(2, 17, textInfo);
-        textRenderer.addStr2D(2, 38, "Počet smrtí: "+countOfDeads);
-        if(savedTeleportPosition)
-            textRenderer.addStr2D(2, height - 3,"Pozice pro teleport nastavena.");
-        if(loadedTeleportPosition)
+        textRenderer.addStr2D(2, 38, "Počet smrtí: " + countOfDeads);
+        if (savedTeleportPosition)
+            textRenderer.addStr2D(2, height - 3, "Pozice pro teleport nastavena.");
+        if (loadedTeleportPosition)
             textRenderer.addStr2D(2, height - 3, "Byl jsi teleportován.");
-        textRenderer.addStr2D(width -315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
+        textRenderer.addStr2D(width - 315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
         textRenderer.draw();
 
     }
 
-    private void renderEnemy(int x,int y) {
-//        enemyI = x;
-//        enemyJ =y;
+
+    // Funkce pro vykreslení NPC - funkce se stará o to aby se npc pohybovalo ve spravném směru
+    private void renderEnemy(int x, int y) {
+
         if (!animateStart) return;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
 
         //zajisteni naharani matice pro npc
-        if(newMove){
+        if (newMove) {
             glLoadIdentity();
             glScalef(0.04f, 0.04f, 0.04f);
-            glTranslatef(jednaHrana/2f+x*jednaHrana,0f,jednaHrana/2f+y*jednaHrana);
-            glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+            glTranslatef(jednaHrana / 2f + x * jednaHrana, 0f, jednaHrana / 2f + y * jednaHrana);
+            glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
             newMove = false;
         }
         glLoadMatrixf(modelMatrixEnemy);
 
 //            glTranslatef(0,0,step);
-        System.out.println(step);
+//        System.out.println(step);
         switch (destiantion[2]) {
-            case 1 -> glTranslatef(0,0,step);
-            case 2 -> glTranslatef(0,0,-step);
-            case 3 ->  glTranslatef(step,0,0);
-            case 4 -> glTranslatef(-step,0,0);
-            default ->  glTranslatef(0,0,0);
+            case 1 -> glTranslatef(0, 0, step);
+            case 2 -> glTranslatef(0, 0, -step);
+            case 3 -> glTranslatef(step, 0, 0);
+            case 4 -> glTranslatef(-step, 0, 0);
+            default -> glTranslatef(0, 0, 0);
         }
 
-        float zmenseni = jednaHrana/3f;
-//        zmenseni = 0f;
         textureKing.bind();
 
         glBegin(GL_TRIANGLES);
 
-        for (int[] indice: obj.getIndices() ) {
-            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+        for (int[] indice : obj.getIndices()) {
+            glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[2] - 1)[0], obj.getVrcholy().get(indice[2] - 1)[1], obj.getVrcholy().get(indice[2] - 1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
         }
 
         glEnd();
-        glGetFloatv(GL_MODELVIEW_MATRIX,modelMatrixEnemy);
+        glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
         glPopMatrix();
 
         //precahzim hranu nastavuji jiny papametry site
-        if(startBod>=jednaHrana/2f ){
+        if (startBod >= jednaHrana / 2f) {
             prechodhrana = true;
             rozlozeniBludiste[source[0]][source[1]] = 0;
             rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
         }
-//        System.out.println(startBod);
-        if(startBod<finishBod)
-            startBod = startBod+step;
-//        System.out.println(startBod);
-        if(startBod >= finishBod){
-            System.out.println(startBod);
+        if (startBod < finishBod)
+            startBod = startBod + step;
+
+        if (startBod >= finishBod) {
             animaceRun = false;
-//            animaceStop = true;
             prechodhrana = false;
-//            source = destiantion;
-//            destiantion = possibleWaysEnemy(x,y);
-//            animateStart = false;
         }
     }
 
@@ -870,10 +681,10 @@ public class Renderer extends AbstractRenderer {
                             boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 2;
                 }
-                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 ||rozlozeniBludiste[i][j] == 2 ||rozlozeniBludiste[i][j] == 4 ) {
-                    if (boxes[i][j].getxMin() * 0.04  <= camX && camX <= boxes[i][j].getxMax() * 0.04  &&
-                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04  &&
-                            boxes[i][j].getzMin() * 0.04  <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 ){
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 || rozlozeniBludiste[i][j] == 2 || rozlozeniBludiste[i][j] == 4) {
+                    if (boxes[i][j].getxMin() * 0.04 <= camX && camX <= boxes[i][j].getxMax() * 0.04 &&
+                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04 &&
+                            boxes[i][j].getzMin() * 0.04 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04) {
                         currenI = i;
                         currenJ = j;
                     }
@@ -905,25 +716,25 @@ public class Renderer extends AbstractRenderer {
 //                    System.out.println("Animace RUN"+animaceRun);
 //                    System.out.println(""animaceStop);
                     enemyI = i;
-                    enemyJ =j;
-                    if(firstTimeRenderEnemy){
-                        allVisitedEnemy.add(new int[]{i,j,rozlozeniBludiste[i][j]});
+                    enemyJ = j;
+                    if (firstTimeRenderEnemy) {
+                        allVisitedEnemy.add(new int[]{i, j, rozlozeniBludiste[i][j]});
                         firstTimeRenderEnemy = false;
                     }
-                    if(!animaceRun){
-                        destiantion = possibleWaysEnemy(i,j);
+                    if (!animaceRun) {
+                        destiantion = possibleWaysEnemy(i, j);
                         startBod = 0f;
                         finishBod = jednaHrana;
                         animaceRun = true;
-                        newMove =true;
+                        newMove = true;
                     }
-                    if(prechodhrana){
+                    if (prechodhrana) {
                         //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
-                        renderEnemy(source[0],source[1]);
-                    } else{
+                        renderEnemy(source[0], source[1]);
+                    } else {
                         renderEnemy(i, j);
                     }
-                }else if (rozlozeniBludiste[i][j] == 5) {
+                } else if (rozlozeniBludiste[i][j] == 5) {
                     renderPlateHelp(i, j);
                 } else {
                     renderBox(i, j);
@@ -936,102 +747,85 @@ public class Renderer extends AbstractRenderer {
 
     }
 
+    // TODo- dat do tridy s obj
     private int[] possibleWaysEnemy(int i, int j) {
         source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
-        if(j+1 < delkaHrany && j+1>=0 && isNotInsideEnemyWay(i,j+1)){
-            if((rozlozeniBludiste[i][j+1] == 0 || rozlozeniBludiste[i][j+1] == 5)){
-                int[] tmp = {i,j+1,1,rozlozeniBludiste[i][j+1]};
+        if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
+            if ((rozlozeniBludiste[i][j + 1] == 0 || rozlozeniBludiste[i][j + 1] == 5)) {
+                int[] tmp = {i, j + 1, 1, rozlozeniBludiste[i][j + 1]};
                 possbileWays.add(tmp);
             }
         }
 
-        if(j-1 < delkaHrany && j-1>=0 && isNotInsideEnemyWay(i,j-1)){
-            if(rozlozeniBludiste[i][j-1] == 0 || rozlozeniBludiste[i][j-1] == 5){
-                int[] tmp = {i,j-1,2,rozlozeniBludiste[i][j-1]};
+        if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
+            if (rozlozeniBludiste[i][j - 1] == 0 || rozlozeniBludiste[i][j - 1] == 5) {
+                int[] tmp = {i, j - 1, 2, rozlozeniBludiste[i][j - 1]};
                 possbileWays.add(tmp);
             }
         }
-        if(i+1 < delkaHrany && i+1>=0 && isNotInsideEnemyWay(i+1,j)){
-            if(rozlozeniBludiste[i+1][j] == 0 || rozlozeniBludiste[i+1][j] == 5){
-                int[] tmp = {i+1,j,3,rozlozeniBludiste[i+1][j]};
+        if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
+            if (rozlozeniBludiste[i + 1][j] == 0 || rozlozeniBludiste[i + 1][j] == 5) {
+                int[] tmp = {i + 1, j, 3, rozlozeniBludiste[i + 1][j]};
                 possbileWays.add(tmp);
             }
         }
-        if(i-1 < delkaHrany && i-1>=0 && isNotInsideEnemyWay(i-1,j)){
-            if(rozlozeniBludiste[i-1][j] == 0 || rozlozeniBludiste[i-1][j] == 5){
-                int[] tmp = {i-1,j,4,rozlozeniBludiste[i-1][j]};
+        if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
+            if (rozlozeniBludiste[i - 1][j] == 0 || rozlozeniBludiste[i - 1][j] == 5) {
+                int[] tmp = {i - 1, j, 4, rozlozeniBludiste[i - 1][j]};
                 possbileWays.add(tmp);
             }
         }
 
-        if(possbileWays.size() == 0 && allVisitedEnemy.size() != 0){
-//            possbileWays.add(allVisitedEnemy.get(allVisitedEnemy.size()-1));
-//            int tmpPosun = 0;
-//            int[] tmp = allVisitedEnemy.get(allVisitedEnemy.size()-1);
-//                if(tmp[2] == 1)
-//                    tmpPosun = 2;
-//                if(tmp[2] == 2)
-//                    tmpPosun = 1;
-//                if(tmp[2] == 3)
-//                    tmpPosun = 4;
-//                if(tmp[2] == 4)
-//                    tmpPosun = 3;
-//
-//            possbileWays.add(new int[]{tmp[0],tmp[1],tmpPosun});
-//            allVisitedEnemy.clear();
-//            source = new int[]{tmp[0], tmp[1]};
+        if (possbileWays.size() == 0 && allVisitedEnemy.size() != 0) {
             allVisitedEnemy.clear();
-            allVisitedEnemy.add(new int[]{i,j,0,rozlozeniBludiste[i][j]});
+            allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludiste[i][j]});
             //TODO optimazilovat dat if do funcki a vratit list
-            if(j+1 < delkaHrany && j+1>=0 && isNotInsideEnemyWay(i,j+1)){
-                if(rozlozeniBludiste[i][j+1] == 0 || rozlozeniBludiste[i][j+1] == 5){
-                    int[] tmp = {i,j+1,1,rozlozeniBludiste[i][j+1]};
+            if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
+                if (rozlozeniBludiste[i][j + 1] == 0 || rozlozeniBludiste[i][j + 1] == 5) {
+                    int[] tmp = {i, j + 1, 1, rozlozeniBludiste[i][j + 1]};
                     possbileWays.add(tmp);
                 }
             }
-
-            if(j-1 < delkaHrany && j-1>=0 && isNotInsideEnemyWay(i,j-1)){
-                if(rozlozeniBludiste[i][j-1] == 0 || rozlozeniBludiste[i][j-1] == 5){
-                    int[] tmp = {i,j-1,2,rozlozeniBludiste[i][j]};
+            if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
+                if (rozlozeniBludiste[i][j - 1] == 0 || rozlozeniBludiste[i][j - 1] == 5) {
+                    int[] tmp = {i, j - 1, 2, rozlozeniBludiste[i][j]};
                     possbileWays.add(tmp);
                 }
             }
-            if(i+1 < delkaHrany && i+1>=0 && isNotInsideEnemyWay(i+1,j)){
-                if(rozlozeniBludiste[i+1][j] == 0 || rozlozeniBludiste[i+1][j] == 5){
-                    int[] tmp = {i+1,j,3,rozlozeniBludiste[i+1][j]};
+            if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
+                if (rozlozeniBludiste[i + 1][j] == 0 || rozlozeniBludiste[i + 1][j] == 5) {
+                    int[] tmp = {i + 1, j, 3, rozlozeniBludiste[i + 1][j]};
                     possbileWays.add(tmp);
                 }
             }
-            if(i-1 < delkaHrany && i-1>=0 && isNotInsideEnemyWay(i-1,j)){
-                if(rozlozeniBludiste[i-1][j] == 0 || rozlozeniBludiste[i-1][j] == 5){
-                    int[] tmp = {i-1,j,4,rozlozeniBludiste[i-1][j]};
+            if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
+                if (rozlozeniBludiste[i - 1][j] == 0 || rozlozeniBludiste[i - 1][j] == 5) {
+                    int[] tmp = {i - 1, j, 4, rozlozeniBludiste[i - 1][j]};
                     possbileWays.add(tmp);
                 }
             }
 
         }
 
-        if(possbileWays.size() == 0)
-            possbileWays.add(new int[]{i,j,0,rozlozeniBludiste[i][j]});
+        if (possbileWays.size() == 0)
+            possbileWays.add(new int[]{i, j, 0, rozlozeniBludiste[i][j]});
 
-//        System.out.println(possbileWays.toString());
-        int randomWay = (int)(Math.random() * possbileWays.size());
-//        System.out.println(Arrays.toString(possbileWays.get(randomWay)));
+        int randomWay = (int) (Math.random() * possbileWays.size());
 
-        System.out.println(allVisitedEnemy.toString());
+//        System.out.println(allVisitedEnemy.toString());
         allVisitedEnemy.add(possbileWays.get(randomWay));
         return possbileWays.get(randomWay);
 
     }
-
+    // TODo --taky driva enmy nebo smaostana obj enemy ?
     private boolean isNotInsideEnemyWay(int i, int j) {
-        if(allVisitedEnemy.size() <=0){
+        if (allVisitedEnemy.size() <= 0) {
             return true;
-        }else{
-            for (int[] blok: allVisitedEnemy) {
-                if(blok[0] == i && blok[1] == j)
+        } else {
+            for (int[] blok : allVisitedEnemy) {
+                if (blok[0] == i && blok[1] == j)
                     return false;
             }
         }
@@ -1282,6 +1076,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     //Funkce vytvoreni bludiste
+    //TODO vyvorit tridu pro nacitani bludiste
     private void createMaze() {
 
         parseTxt("src/res/proportions/maze");
@@ -1289,10 +1084,10 @@ public class Renderer extends AbstractRenderer {
         rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
-                if(rozlozeniBludiste[i][j] ==4)
+                if (rozlozeniBludiste[i][j] == 4)
                     rozlozeniBludisteNoEnemy[i][j] = 0;
-                    else
-                rozlozeniBludisteNoEnemy[i][j] = rozlozeniBludiste[i][j];
+                else
+                    rozlozeniBludisteNoEnemy[i][j] = rozlozeniBludiste[i][j];
 
                 rozlozeniBludisteBackUp[i][j] = rozlozeniBludiste[i][j];
                 if (rozlozeniBludiste[i][j] == 2) {
@@ -1332,11 +1127,10 @@ public class Renderer extends AbstractRenderer {
         addBoxIfPossible(spawnI - 1, spawnJ);
         addBoxIfPossible(spawnI, spawnJ - 1);
 
-
-//        rozlozeniBludisteBackUp = rozlozeniBludiste;
     }
 
     //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
+    //TODO vyvorit tridu pro nacitani bludiste
     private void addBoxIfPossible(int i, int j) {
         try {
             double tmp = boxes[i][j].getxMax();
@@ -1437,6 +1231,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     //Pomocna funkce pro cteni ze souboru
+    //TODO vyvorit tridu pro nacitani bludiste
     public String readFromFile(String filename, String extension) {
         String data = "";
         try {
@@ -1448,6 +1243,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     //Nacteni bludiste ze souboru
+    //TODO vyvorit tridu pro nacitani bludiste
     public void parseTxt(String filename) {
         String data = readFromFile(filename, "txt");
         String[] lines = data.split("\n");
@@ -1474,16 +1270,15 @@ public class Renderer extends AbstractRenderer {
             }
         }
     }
-
-    public void renderObj(){
-
+    //TODO odstranit
+    public void renderObj() {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
         glScalef(0.04f, 0.04f, 0.04f);
 //        glRotatef(270,1,0,0);
 //        glTranslatef(8.4f,1.1f,0);
-        glTranslatef(10f,0f,10f);
+        glTranslatef(10f, 0f, 10f);
         glEnable(GL_TEXTURE_2D);
 //        glEnable(GL_LIGHTING);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -1495,13 +1290,13 @@ public class Renderer extends AbstractRenderer {
 //        glScalef(0.04f, 0.04f, 0.04f);
 
 
-        for (int[] indice: obj.getIndices() ) {
-            glTexCoord2f(obj.getTextury().get(indice[1]-1)[0], obj.getTextury().get(indice[1]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[0]-1)[0],obj.getVrcholy().get(indice[0]-1)[1],obj.getVrcholy().get(indice[0]-1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[3]-1)[0], obj.getTextury().get(indice[3]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[2]-1)[0],obj.getVrcholy().get(indice[2]-1)[1],obj.getVrcholy().get(indice[2]-1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[5]-1)[0], obj.getTextury().get(indice[5]-1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[4]-1)[0],obj.getVrcholy().get(indice[4]-1)[1],obj.getVrcholy().get(indice[4]-1)[2]);
+        for (int[] indice : obj.getIndices()) {
+            glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[2] - 1)[0], obj.getVrcholy().get(indice[2] - 1)[1], obj.getVrcholy().get(indice[2] - 1)[2]);
+            glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
+            glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
         }
         glEnd();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

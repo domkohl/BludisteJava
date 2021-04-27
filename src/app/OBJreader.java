@@ -21,10 +21,6 @@ public class OBJreader {
         this.textury = new ArrayList<>();
         this.indices =  new ArrayList<>();
         loadObj("src/res/obj/chess");
-//        loadObj("src/res/obj/woodentets1");
-//        loadObj("src/res/obj/fdfsfs");
-//        loadObj("src/res/obj/testchecss");
-//        loadObj("src/res/obj/woodenchess");
     }
 
     public static String readFromFile(String filename, String extension) {
