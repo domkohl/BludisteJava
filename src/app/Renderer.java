@@ -398,9 +398,9 @@ public class Renderer extends AbstractRenderer {
 //                        System.out.println("Gratuluji jsi v cíli");
 //                    }
 //                }
-//                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-//                    animateStart = !animateStart;
-//                }
+                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+                    animateStart = !animateStart;
+                }
 
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
@@ -522,6 +522,7 @@ public class Renderer extends AbstractRenderer {
 //        textureViewer = new OGLTexture2D.Viewer();
 
         countOfDeads = 0;
+        animateStart = true;
     }
 
 
@@ -582,6 +583,7 @@ public class Renderer extends AbstractRenderer {
         float speed = 20; // pocet stupnu rotace za vterinu
 //        System.out.println(step);
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
+        float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
         if(savedTeleportPosition && (mils - milsSave)>1000)
@@ -635,6 +637,7 @@ public class Renderer extends AbstractRenderer {
 //        System.out.println("W realisle "+isReleasedW);
         //W
         if(isPressedW && !isPressedD && !isPressedA && !isPressedS){
+            System.out.println(step);
             GLCamera tmp = new GLCamera(camera);
             tmp.forward(0.03);
             if (isOutside(tmp) == 0)
@@ -645,7 +648,7 @@ public class Renderer extends AbstractRenderer {
                 System.out.println("Gratuluji jsi v cíli");
             }
         }
-
+//
         //S
         if(isPressedS && !isPressedD && !isPressedA && !isPressedW){
             GLCamera tmp = new GLCamera(camera);
@@ -766,11 +769,6 @@ public class Renderer extends AbstractRenderer {
                     }
         }
 
-
-
-
-
-
         textRenderer.resize(width,height);
         textRenderer.clear();
         textRenderer.addStr2D(2, 17, textInfo);
@@ -802,6 +800,7 @@ public class Renderer extends AbstractRenderer {
         glLoadMatrixf(modelMatrixEnemy);
 
 //            glTranslatef(0,0,step);
+        System.out.println(step);
         switch (destiantion[2]) {
             case 1 -> glTranslatef(0,0,step);
             case 2 -> glTranslatef(0,0,-step);
