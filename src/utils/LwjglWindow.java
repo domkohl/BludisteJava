@@ -135,7 +135,7 @@ public class LwjglWindow {
 	                delegate.free();
 	            }
 	        });
-		//TODO
+		//
 		/*other debug modes, some may have a very negative impact on performance
 		 * see https://github.com/LWJGL/lwjgl3-wiki/wiki/2.5.-Troubleshooting
 		 

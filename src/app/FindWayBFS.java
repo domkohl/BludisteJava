@@ -1,16 +1,15 @@
 package app;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 
 public class FindWayBFS {
 
-    //Pomocná trida pro kazdy blok
+    //Pomocná trida pro kazdy blok v matici
     private static class Cell  {
         int x;
         int y;
-        int dist;  	//vzdalenost od zacatku
-        Cell prev;  //  rodicovsky minuly blok
+        int dist;  	//vzdalenost od zacatku(pocet bloku)
+        Cell prev;  // rodicovsky minuly blok
 
         Cell(int x, int y, int dist, Cell prev) {
             this.x = x;

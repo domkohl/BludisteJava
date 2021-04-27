@@ -56,7 +56,7 @@ public class Renderer extends AbstractRenderer {
     private float[] modelMatrixEnemy = new float[16];
     boolean animateStart;
     boolean animaceRun;
-    boolean animaceStop;
+
     boolean prechodhrana;
     private float startBod,finishBod;
     private int[] destiantion;
@@ -76,6 +76,8 @@ public class Renderer extends AbstractRenderer {
 
     //Klavesnice
     boolean isPressedW,isPressedA,isPressedS,isPressedD;
+
+    MazeLoader maze;
 
 
     public Renderer() {
@@ -209,7 +211,7 @@ public class Renderer extends AbstractRenderer {
                         zenit = zenitTeleport;
                         camera = new GLCamera(cameraTeleport);
                     } else {
-                        //TODO
+                        //TODO vykresli obrazovka
                         System.out.println("Nejdrive nastav misto pro teleport");
                     }
                 }
@@ -239,7 +241,7 @@ public class Renderer extends AbstractRenderer {
                     isPressedD = false;
 
                 // Vypnutí NPC -- dočasné
-                // TODO
+                // TODO odstranit
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
                 }
@@ -315,10 +317,28 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+
+
+        maze = new MazeLoader();
+
+        spawnX = maze.getSpawnX();
+        spawnZ = maze.getSpawnZ();
+
         camera = new GLCamera();
         skyBox();
-        createMaze();
+//        createMaze();
         camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+
+
+
+        rozlozeniBludisteBackUp = maze.getRozlozeniBludisteBackUp();
+        rozlozeniBludisteNoEnemy = maze.getRozlozeniBludisteNoEnemy();
+        rozlozeniBludiste = maze.getRozlozeniBludiste();
+        spawnHelpBoxes = maze.getHelpBoxes();
+        pocetKrychli = maze.getPocetKrychli();
+        delkaHrany = maze.getDelkaHrany();
+        jednaHrana = maze.getJednaHrana();
+        boxes = maze.getBoxes();
 
         //vytvorim jednotkovou matici
         Arrays.fill(modelMatrixEnemy, 1);
@@ -332,8 +352,10 @@ public class Renderer extends AbstractRenderer {
         obj = new OBJreader();
 
 
-        currenI = spawnI;
-        currenJ = spawnJ;
+//        currenI = spawnI;
+////        currenJ = spawnJ;
+        currenI = maze.getSpawnI();
+        currenJ = maze.getSpawnJ();
 
         pauseGame = true;
 
@@ -454,7 +476,12 @@ public class Renderer extends AbstractRenderer {
         //Ovládani klávesnice zda kvůli lepší simulaci ovládání jako ve hře
         //W
         if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
-            System.out.println(step);
+//            rozlozeniBludiste[0][0] = 70;
+//            maze.getRozlozeniBludiste()[0][0] = 68;
+//            rozlozeniBludiste[0][0] = 71;
+//            System.out.println("promena"+Arrays.deepToString(rozlozeniBludiste));
+//            System.out.println("trida"+Arrays.deepToString(maze.getRozlozeniBludiste()));
+//            System.out.println(step);
             GLCamera tmp = new GLCamera(camera);
             tmp.forward(0.03);
             if (isOutside(tmp) == 0)
@@ -662,6 +689,7 @@ public class Renderer extends AbstractRenderer {
 
     //Funkce pro kolize
     // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
+    //TODo pridat do maze
     private int isOutside(GLCamera cam) {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
@@ -1075,74 +1103,6 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
-    //Funkce vytvoreni bludiste
-    //TODO vyvorit tridu pro nacitani bludiste
-    private void createMaze() {
-
-        parseTxt("src/res/proportions/maze");
-        rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
-        rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
-        for (int i = 0; i < pocetKrychli; i++) {
-            for (int j = 0; j < pocetKrychli; j++) {
-                if (rozlozeniBludiste[i][j] == 4)
-                    rozlozeniBludisteNoEnemy[i][j] = 0;
-                else
-                    rozlozeniBludisteNoEnemy[i][j] = rozlozeniBludiste[i][j];
-
-                rozlozeniBludisteBackUp[i][j] = rozlozeniBludiste[i][j];
-                if (rozlozeniBludiste[i][j] == 2) {
-                    spawnI = i;
-                    spawnJ = j;
-                    spawnX = (boxes[i][j].getbH().getX() +
-                            boxes[i][j].getB2().getX() +
-                            boxes[i][j].getB3().getX() +
-                            boxes[i][j].getB4().getX() +
-                            boxes[i][j].getbUp4().getX() +
-                            boxes[i][j].getbUp3().getX() +
-                            boxes[i][j].getbUp2().getX() +
-                            boxes[i][j].getbUp1().getX()
-                    ) / 8;
-
-                    spawnZ = (boxes[i][j].getbH().getZ() +
-                            boxes[i][j].getB2().getZ() +
-                            boxes[i][j].getB3().getZ() +
-                            boxes[i][j].getB4().getZ() +
-                            boxes[i][j].getbUp4().getZ() +
-                            boxes[i][j].getbUp3().getZ() +
-                            boxes[i][j].getbUp2().getZ() +
-                            boxes[i][j].getbUp1().getZ()
-                    ) / 8;
-                }
-
-                if (rozlozeniBludiste[i][j] == 0) {
-                    addBoxIfPossible(i, j + 1);
-                    addBoxIfPossible(i + 1, j);
-                    addBoxIfPossible(i - 1, j);
-                    addBoxIfPossible(i, j - 1);
-                }
-            }
-        }
-        addBoxIfPossible(spawnI, spawnJ + 1);
-        addBoxIfPossible(spawnI + 1, spawnJ);
-        addBoxIfPossible(spawnI - 1, spawnJ);
-        addBoxIfPossible(spawnI, spawnJ - 1);
-
-    }
-
-    //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
-    //TODO vyvorit tridu pro nacitani bludiste
-    private void addBoxIfPossible(int i, int j) {
-        try {
-            double tmp = boxes[i][j].getxMax();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            //mimo-vytvorim novy box
-            Box tmp = new Box(i, j, jednaHrana);
-            spawnHelpBoxes.add(tmp);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-    }
-
     //Vykresleni skyboxu
     private void skyBox() {
 
@@ -1229,47 +1189,6 @@ public class Renderer extends AbstractRenderer {
 
         glEndList();
     }
-
-    //Pomocna funkce pro cteni ze souboru
-    //TODO vyvorit tridu pro nacitani bludiste
-    public String readFromFile(String filename, String extension) {
-        String data = "";
-        try {
-            data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
-
-    //Nacteni bludiste ze souboru
-    //TODO vyvorit tridu pro nacitani bludiste
-    public void parseTxt(String filename) {
-        String data = readFromFile(filename, "txt");
-        String[] lines = data.split("\n");
-        String[] velikostString = lines[0].split("!");
-        String[] velikostString2 = lines[1].split("!");
-        pocetKrychli = Integer.parseInt(velikostString[1]);
-        delkaHrany = Integer.parseInt(velikostString2[1]);
-        rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
-        boxes = new Box[pocetKrychli][pocetKrychli];
-        jednaHrana = delkaHrany / pocetKrychli;
-
-        for (int i = 0; i < pocetKrychli; i++) {
-            // rozdeleni radku na jednotlive segmenty
-            String[] attributes = lines[i + 2].split(" ! ");
-            for (int j = 0; j < pocetKrychli; j++) {
-                switch (attributes[j]) {
-                    case "c" -> rozlozeniBludiste[i][j] = 0;
-                    case "S" -> rozlozeniBludiste[i][j] = 2;
-                    case "K" -> rozlozeniBludiste[i][j] = 3;
-                    case "E" -> rozlozeniBludiste[i][j] = 4;
-                    default -> rozlozeniBludiste[i][j] = 1;
-                }
-                boxes[i][j] = new Box(i, j, jednaHrana);
-            }
-        }
-    }
     //TODO odstranit
     public void renderObj() {
         glMatrixMode(GL_MODELVIEW);
@@ -1303,7 +1222,6 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glPopMatrix();
     }
-
 
 }
 
