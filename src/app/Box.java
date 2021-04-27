@@ -41,6 +41,9 @@ public class Box {
         double min = pole[0];
         for (int i = 1; i < 8; i++)
             min = Math.min(min, pole[i]);
+//        if(min <=0)
+//            System.out.println("mesni");
+//            min = -1;
         return min;
     }
 
@@ -48,6 +51,9 @@ public class Box {
         double max = pole[0];
         for (int i = 1; i < 8; i++)
             max = Math.max(max, pole[i]);
+
+        if(max <= 0)
+            max = 1;
         return max;
     }
 

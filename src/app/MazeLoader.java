@@ -166,10 +166,13 @@ public class MazeLoader {
                 }
             }
         }
+//        System.out.println(helpBoxes.toString());
         for (Box box : helpBoxes) {
-            if (box.getxMin() * 0.04 * 0.98 <= camX && camX <= box.getxMax() * 0.04 * 1.02 &&
-                    box.getyMin() * 0.04 * 0.98 <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
-                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04 * 1.02)
+            // TODo konmtrola zda funfiji kolize s help a i vsevhny
+//            System.out.println(box.getxMin());
+            if (box.getxMin() * 0.04  * 0.98 <= camX && camX <= box.getxMax() * 0.04  * 1.02 &&
+                    box.getyMin() * 0.04 * 0.98  <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
+                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04* 1.02 )
                 return 1;
 
         }
