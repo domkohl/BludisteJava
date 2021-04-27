@@ -137,7 +137,8 @@ public class Renderer extends AbstractRenderer {
 
                     for (int i = 0; i < pocetKrychli; i++) {
                         for (int j = 0; j < pocetKrychli; j++) {
-                            rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+//                            rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                            maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                         }
                     }
 
@@ -255,17 +256,21 @@ public class Renderer extends AbstractRenderer {
                         animaceRun = false;
                         for (int i = 0; i < pocetKrychli; i++) {
                             for (int j = 0; j < pocetKrychli; j++) {
-                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+//                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
+                                maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                             }
                         }
                     }else{
                         enemyJ = -1;
                         enemyI = -1;
 //                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
-                        int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+//                        int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+                        //TODo pridat konecfinish
+                        int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
                         for (int i = 0; i < pocetKrychli; i++) {
                             for (int j = 0; j < pocetKrychli; j++) {
-                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+//                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                                maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
                             }
                         }
                     }
@@ -332,9 +337,9 @@ public class Renderer extends AbstractRenderer {
 
 
 
-        rozlozeniBludisteBackUp = maze.getRozlozeniBludisteBackUp();
-        rozlozeniBludisteNoEnemy = maze.getRozlozeniBludisteNoEnemy();
-        rozlozeniBludiste = maze.getRozlozeniBludiste();
+//        rozlozeniBludisteBackUp = maze.getRozlozeniBludisteBackUp();
+//        rozlozeniBludisteNoEnemy = maze.getRozlozeniBludisteNoEnemy();
+//        rozlozeniBludiste = maze.getRozlozeniBludiste();
         spawnHelpBoxes = maze.getHelpBoxes();
         pocetKrychli = maze.getPocetKrychli();
         delkaHrany = maze.getDelkaHrany();
@@ -621,10 +626,11 @@ public class Renderer extends AbstractRenderer {
             enemyJ = -1;
             enemyI = -1;
 //                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
-            int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+            int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
             for (int i = 0; i < pocetKrychli; i++) {
                 for (int j = 0; j < pocetKrychli; j++) {
-                    rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+//                    rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                    maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
                 }
             }
         }
@@ -691,8 +697,10 @@ public class Renderer extends AbstractRenderer {
         //precahzim hranu nastavuji jiny papametry site
         if (startBod >= jednaHrana / 2f) {
             prechodhrana = true;
-            rozlozeniBludiste[source[0]][source[1]] = 0;
-            rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
+//            rozlozeniBludiste[source[0]][source[1]] = 0;
+            maze.setRozlozeniBludiste(source[0],source[1],0);
+//            rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
+            maze.setRozlozeniBludiste(destiantion[0],destiantion[1],4);
         }
         if (startBod < finishBod)
             startBod = startBod + step;
@@ -708,23 +716,24 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste[3][7] = 3;
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
-                if (rozlozeniBludiste[i][j] == 0) {
+//                if (rozlozeniBludiste[i][j] == 0) {
+                if (maze.getRozlozeniBludiste(i,j) == 0) {
                     renderPlate(i, j);
-                } else if (rozlozeniBludiste[i][j] == 3) {
+                } else if (maze.getRozlozeniBludiste(i,j) == 3) {
                     renderFinish(i, j);
-                } else if (rozlozeniBludiste[i][j] == 2) {
+                } else if (maze.getRozlozeniBludiste(i,j) == 2) {
                     renderStart(i, j);
-                } else if (rozlozeniBludiste[i][j] == 4) {
+                } else if (maze.getRozlozeniBludiste(i,j) == 4) {
 //                    System.out.println("Animace RUN"+animaceRun);
 //                    System.out.println(""animaceStop);
                     enemyI = i;
                     enemyJ = j;
                     if (firstTimeRenderEnemy) {
-                        allVisitedEnemy.add(new int[]{i, j, rozlozeniBludiste[i][j]});
+                        allVisitedEnemy.add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
                         firstTimeRenderEnemy = false;
                     }
                     if (!animaceRun) {
-                        destiantion = possibleWaysEnemy(i, j);
+                        destiantion = possibleWaysEnemy(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
                         finishBod = jednaHrana;
                         animaceRun = true;
@@ -736,7 +745,7 @@ public class Renderer extends AbstractRenderer {
                     } else {
                         renderEnemy(i, j);
                     }
-                } else if (rozlozeniBludiste[i][j] == 5) {
+                } else if (maze.getRozlozeniBludiste(i,j) == 5) {
                     renderPlateHelp(i, j);
                 } else {
                     renderBox(i, j);
@@ -750,61 +759,61 @@ public class Renderer extends AbstractRenderer {
     }
 
     // TODo- dat do tridy s obj
-    private int[] possibleWaysEnemy(int i, int j) {
+    private int[] possibleWaysEnemy(int i, int j,int[][] rozlozeniBludisteF) {
         source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
         if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-            if ((rozlozeniBludiste[i][j + 1] == 0 || rozlozeniBludiste[i][j + 1] == 5)) {
-                int[] tmp = {i, j + 1, 1, rozlozeniBludiste[i][j + 1]};
+            if ((rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5)) {
+                int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
                 possbileWays.add(tmp);
             }
         }
 
         if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-            if (rozlozeniBludiste[i][j - 1] == 0 || rozlozeniBludiste[i][j - 1] == 5) {
-                int[] tmp = {i, j - 1, 2, rozlozeniBludiste[i][j - 1]};
+            if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
+                int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j - 1]};
                 possbileWays.add(tmp);
             }
         }
         if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-            if (rozlozeniBludiste[i + 1][j] == 0 || rozlozeniBludiste[i + 1][j] == 5) {
-                int[] tmp = {i + 1, j, 3, rozlozeniBludiste[i + 1][j]};
+            if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
+                int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
                 possbileWays.add(tmp);
             }
         }
         if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-            if (rozlozeniBludiste[i - 1][j] == 0 || rozlozeniBludiste[i - 1][j] == 5) {
-                int[] tmp = {i - 1, j, 4, rozlozeniBludiste[i - 1][j]};
+            if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
+                int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
                 possbileWays.add(tmp);
             }
         }
 
         if (possbileWays.size() == 0 && allVisitedEnemy.size() != 0) {
             allVisitedEnemy.clear();
-            allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludiste[i][j]});
+            allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
             //TODO optimazilovat dat if do funcki a vratit list
             if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-                if (rozlozeniBludiste[i][j + 1] == 0 || rozlozeniBludiste[i][j + 1] == 5) {
-                    int[] tmp = {i, j + 1, 1, rozlozeniBludiste[i][j + 1]};
+                if (rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5) {
+                    int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
                     possbileWays.add(tmp);
                 }
             }
             if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-                if (rozlozeniBludiste[i][j - 1] == 0 || rozlozeniBludiste[i][j - 1] == 5) {
-                    int[] tmp = {i, j - 1, 2, rozlozeniBludiste[i][j]};
+                if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
+                    int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j]};
                     possbileWays.add(tmp);
                 }
             }
             if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-                if (rozlozeniBludiste[i + 1][j] == 0 || rozlozeniBludiste[i + 1][j] == 5) {
-                    int[] tmp = {i + 1, j, 3, rozlozeniBludiste[i + 1][j]};
+                if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
+                    int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
                     possbileWays.add(tmp);
                 }
             }
             if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-                if (rozlozeniBludiste[i - 1][j] == 0 || rozlozeniBludiste[i - 1][j] == 5) {
-                    int[] tmp = {i - 1, j, 4, rozlozeniBludiste[i - 1][j]};
+                if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
+                    int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
                     possbileWays.add(tmp);
                 }
             }
@@ -812,7 +821,7 @@ public class Renderer extends AbstractRenderer {
         }
 
         if (possbileWays.size() == 0)
-            possbileWays.add(new int[]{i, j, 0, rozlozeniBludiste[i][j]});
+            possbileWays.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
 
         int randomWay = (int) (Math.random() * possbileWays.size());
 

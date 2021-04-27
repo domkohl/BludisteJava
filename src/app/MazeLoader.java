@@ -193,6 +193,10 @@ public class MazeLoader {
         this.rozlozeniBludiste = rozlozeniBludiste;
     }
 
+    public void setRozlozeniBludiste(int i, int j, int value) {
+        this.rozlozeniBludiste[i][j] = value;
+    }
+
     public void setRozlozeniBludisteBackUp(int[][] rozlozeniBludisteBackUp) {
         this.rozlozeniBludisteBackUp = rozlozeniBludisteBackUp;
     }
@@ -251,6 +255,10 @@ public class MazeLoader {
 
     public int[][] getRozlozeniBludisteBackUp() {
         return rozlozeniBludisteBackUp;
+    }
+
+    public int getRozlozeniBludisteBackUp(int i,int j) {
+        return rozlozeniBludisteBackUp[i][j];
     }
 
     public int[][] getRozlozeniBludisteNoEnemy() {
