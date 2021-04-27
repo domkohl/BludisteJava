@@ -37,7 +37,6 @@ public class Renderer extends AbstractRenderer {
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     double spawnX, spawnZ;
-    int spawnI, spawnJ;
     boolean showCursor = true;
     private GLCamera camera;
     private GLCamera cameraTeleport;

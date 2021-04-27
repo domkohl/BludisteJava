@@ -12,7 +12,6 @@ public class MazeLoader {
         private int delkaHrany;
         private int[][] rozlozeniBludiste,rozlozeniBludisteBackUp,rozlozeniBludisteNoEnemy;
         Box[][] boxes;
-        //TODo mzenit na double/float vsude ?
         private int jednaHrana;
         private int spawnI,spawnJ;
         private int currenI,currenJ;
@@ -138,7 +137,6 @@ public class MazeLoader {
 
     //Funkce pro kolize
     // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
-    //TODo pridat do maze
     public int isOutside(GLCamera cam) {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
