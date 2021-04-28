@@ -1,6 +1,7 @@
 package app.npc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Enemy {
     private int[] source;
@@ -10,70 +11,41 @@ public class Enemy {
 
     private final int[] currentDestinationBlock;
 
+    private ArrayList<int[]> possbileWays;
+
     public Enemy(int delkaHrany) {
         currentDestinationBlock = new int[3];
         allVisitedEnemy = new ArrayList<>();
         this.delkaHrany = delkaHrany;
+        possbileWays = new ArrayList<>();
     }
 
     public void possibleWaysEnemyGetDestination(int i, int j, int[][] rozlozeniBludisteF) {
         source = new int[]{i, j};
-        ArrayList<int[]> possbileWays = new ArrayList<>();
+        possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
-        if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-            if ((rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5)) {
-                int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
-                possbileWays.add(tmp);
-            }
-        }
 
-        if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-            if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
-                int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j - 1]};
-                possbileWays.add(tmp);
-            }
-        }
-        if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-            if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
-                int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
-                possbileWays.add(tmp);
-            }
-        }
-        if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-            if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
-                int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
-                possbileWays.add(tmp);
-            }
-        }
+        helpAddPossibleWay(i,j+1,1,rozlozeniBludisteF);
 
+        helpAddPossibleWay(i,j-1,2,rozlozeniBludisteF);
+
+        helpAddPossibleWay(i+1,j,3,rozlozeniBludisteF);
+
+        helpAddPossibleWay(i-1,j,4,rozlozeniBludisteF);
+
+        //kdyz uz nemuze npc nikam jit jede znovu
         if (possbileWays.size() == 0 && allVisitedEnemy.size() != 0) {
             allVisitedEnemy.clear();
             allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
             //TODO optimazilovat dat if do funcki a vratit list
-            if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-                if (rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5) {
-                    int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-                if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
-                    int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-                if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
-                    int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-                if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
-                    int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
-                    possbileWays.add(tmp);
-                }
-            }
+
+            helpAddPossibleWay(i,j+1,1,rozlozeniBludisteF);
+
+            helpAddPossibleWay(i,j-1,2,rozlozeniBludisteF);
+
+            helpAddPossibleWay(i+1,j,3,rozlozeniBludisteF);
+
+            helpAddPossibleWay(i-1,j,4,rozlozeniBludisteF);
 
         }
 
@@ -87,6 +59,16 @@ public class Enemy {
         setCurrentDestinationBlock(possbileWays.get(randomWay)[0],possbileWays.get(randomWay)[1],possbileWays.get(randomWay)[2]);
 
     }
+
+    private void helpAddPossibleWay(int i, int j, int direction, int[][] rozlozeniBludiste) {
+        if (j < delkaHrany && j >= 0 && isNotInsideEnemyWay(i, j)) {
+            if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
+                int[] tmp = {i, j, direction, rozlozeniBludiste[i][j]};
+                possbileWays.add(tmp);
+            }
+        }
+    }
+
 
     private boolean isNotInsideEnemyWay(int i, int j) {
         if (allVisitedEnemy.size() <= 0) {
