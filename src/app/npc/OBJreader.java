@@ -1,13 +1,11 @@
 package app.npc;
 
-import org.lwjgl.ovr.OVRVector2f;
-import org.lwjgl.ovr.OVRVector3f;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OBJreader {
@@ -23,6 +21,7 @@ public class OBJreader {
         loadObj("src/res/obj/chess");
     }
 
+    // TODo pridat abstrakti tridu i na load ?
     public static String readFromFile(String filename, String extension) {
         String data = "";
         try {

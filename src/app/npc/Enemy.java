@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 public class Enemy {
     private int[] source;
-    private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
+    private final ArrayList<int[]> allVisitedEnemy;
     int delkaHrany;
     private int enemyPosI,enemyPosJ;
 
-    private int[] currentDestinationBlock;
+    private final int[] currentDestinationBlock;
 
     public Enemy(int delkaHrany) {
         currentDestinationBlock = new int[3];
-
+        allVisitedEnemy = new ArrayList<>();
         this.delkaHrany = delkaHrany;
     }
 

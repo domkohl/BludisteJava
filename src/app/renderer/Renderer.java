@@ -139,11 +139,9 @@ public class Renderer extends AbstractRenderer {
 
                     for (int i = 0; i < maze.getPocetKrychli(); i++) {
                         for (int j = 0; j < maze.getPocetKrychli(); j++) {
-//                            rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                             maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                         }
                     }
-
                     camera.setAzimuth(0);
                     camera.setZenith(0);
                     azimut = 0;
@@ -157,8 +155,6 @@ public class Renderer extends AbstractRenderer {
 
                     showCursor = false;
 
-//                    currenI = spawnI;
-//                    currenJ = spawnJ;
                     maze.setCurrenI(maze.getSpawnI());
                     maze.setCurrenJ(maze.getSpawnJ());
                     DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
@@ -319,6 +315,7 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+        //TODO zeptat se
 //        glFrontFace(GL_CCW);
         glEnable(GL_DEPTH_TEST);
         glPolygonMode(GL_FRONT, GL_FILL);
@@ -330,8 +327,7 @@ public class Renderer extends AbstractRenderer {
         maze = new MazeLoader();
 
         camera = new GLCamera();
-        skyBox();
-//        createMaze();
+
         camera.setPosition(new Vec3D(maze.getSpawnX() * 0.04, 5 * 0.04, maze.getSpawnZ() * 0.04));
 
         boxes = maze.getBoxes();
@@ -444,10 +440,6 @@ public class Renderer extends AbstractRenderer {
 
         skyBox();
 
-
-//        rozlozeniBludiste = findWay.shortestPath(rozlozeniBludiste,new int[]{1,4},new int[]{9,5});
-//        textureViewer.view(texture1, 0, 0);
-
         renderMaze();
         if(renderObjV)
 //            Executors.newSingleThreadExecutor().execute(new Runnable() {
@@ -474,12 +466,6 @@ public class Renderer extends AbstractRenderer {
         //Ovládani klávesnice zda kvůli lepší simulaci ovládání jako ve hře
         //W
         if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
-//            rozlozeniBludiste[0][0] = 70;
-//            maze.getRozlozeniBludiste()[0][0] = 68;
-//            rozlozeniBludiste[0][0] = 71;
-//            System.out.println("promena"+Arrays.deepToString(rozlozeniBludiste));
-//            System.out.println("trida"+Arrays.deepToString(maze.getRozlozeniBludiste()));
-//            System.out.println(step);
             GLCamera tmp = new GLCamera(camera);
             tmp.forward(0.03);
             if (maze.isOutside(tmp) == 0)
@@ -517,8 +503,6 @@ public class Renderer extends AbstractRenderer {
         }
         //D
         if (isPressedD && !isPressedW && !isPressedA && !isPressedS) {
-//            System.out.println(obj.getIndices().size());
-//            System.out.println("doprava");
             GLCamera tmp = new GLCamera(camera);
             tmp.right(0.03);
             if (maze.isOutside(tmp) == 0)
@@ -613,9 +597,9 @@ public class Renderer extends AbstractRenderer {
         }
 
         //zapiani a vypinani pomoci
-        //nahrani bludiscte pok akzdem kliku
+        //nahrani bludiscte pok akzdem kliku/drzeni klavesy
         if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
-            int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
+            int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
             for (int i = 0; i < maze.getPocetKrychli(); i++) {
                 for (int j = 0; j < maze.getPocetKrychli(); j++) {
                     maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
@@ -649,7 +633,7 @@ public class Renderer extends AbstractRenderer {
     }
 
 
-    // Funkce pro vykreslení NPC - funkce se stará o to aby se npc pohybovalo ve spravném směru
+    // Funkce pro vykreslení NPC - funkce se stará o to aby se npc(obj) pohybovalo ve spravném směru
     private void renderEnemy(int x, int y) {
 //        System.out.println( "vlakno");
         if (!animateStart) return;
@@ -666,8 +650,6 @@ public class Renderer extends AbstractRenderer {
         }
         glLoadMatrixf(modelMatrixEnemy);
 
-//            glTranslatef(0,0,step);
-//        System.out.println(step);
         //ptám se jaký smerem ma npc jit hodnota je uloze jako posledni v poli
         switch (enemy.getCurrentDestinationBlock()[2]) {
             case 1 -> glTranslatef(0, 0, step);
@@ -715,6 +697,7 @@ public class Renderer extends AbstractRenderer {
         if (startBod < finishBod)
             startBod = startBod + step;
 
+        //vim ze animace skoncila a muzu najit  dalsi mozny blok pro pohyb
         if (startBod >= finishBod) {
             animaceRun = false;
             prechodhrana = false;
@@ -733,13 +716,16 @@ public class Renderer extends AbstractRenderer {
                 } else if (maze.getRozlozeniBludiste(i,j) == 2) {
                     renderStart(i, j);
                 } else if (maze.getRozlozeniBludiste(i,j) == 4) {
+                    //ulozeni hodnot kde se nachazi enemy
                     enemy.setEnemyPosI(i);
                     enemy.setEnemyPosJ(j);
 
+                    //kdyz renderuji enmy poprve v kazdem novem pohybbu nastavim mu prvni blok v poli puvodni aby se nemohol vratit ani tma od kud zacal
                     if (firstTimeRenderEnemy) {
                         enemy.getAllVisitedEnemy().add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
                         firstTimeRenderEnemy = false;
                     }
+                    //nove zapnuti pohybu vyhleadm blok a resetuji hodnoty pro poybu pro funkci kterea ho vykresluje
                     if (!animaceRun) {
                         enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
