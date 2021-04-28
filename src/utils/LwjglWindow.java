@@ -20,7 +20,8 @@ public class LwjglWindow {
     public static int HEIGHT = 400;
 
     // The window handle
-	private long window;
+	//TODO zmenit na private
+	public long window;
 	private AbstractRenderer renderer;
 
     private static boolean DEBUG = false;
@@ -190,6 +191,8 @@ public class LwjglWindow {
 		// Run the rendering loop until the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		while (!glfwWindowShouldClose(window)) {
+			//todo odstranit
+			renderer.setWinndow(window);
 
 			renderer.display();
 

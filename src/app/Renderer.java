@@ -7,10 +7,13 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import org.lwjgl.system.MemoryUtil;
 import transforms.Vec3D;
 import utils.AbstractRenderer;
 import utils.GLCamera;
+import utils.LwjglWindow;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.DoubleBuffer;
 import java.nio.file.Files;
@@ -18,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -31,9 +35,7 @@ public class Renderer extends AbstractRenderer {
     int pocetKrychli;
     int delkaHrany;
     int jednaHrana;
-    int[][] rozlozeniBludiste;
-    int[][] rozlozeniBludisteBackUp;
-    int[][] rozlozeniBludisteNoEnemy;
+
     Box[][] boxes;
     ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
     double spawnX, spawnZ;
@@ -63,13 +65,15 @@ public class Renderer extends AbstractRenderer {
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
-    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition;
-    long milsSave,millsTeleport;
+    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV;
+    long milsSave,millsTeleport,millsTeleportFailed;
 
     FindWayBFS findWay = new FindWayBFS();
     int enemyI, enemyJ;
 
     OBJreader obj;
+
+    Enemy enemy;
 
 
     //Klavesnice
@@ -80,6 +84,8 @@ public class Renderer extends AbstractRenderer {
 
     public Renderer() {
         super();
+
+
         //Základni ovladaní prostredi - zmensovani zvetsovani okna
         glfwWindowSizeCallback = new GLFWWindowSizeCallback() {
             @Override
@@ -122,11 +128,18 @@ public class Renderer extends AbstractRenderer {
             }
         };
 
+
+
         //Pohyb
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
+
+                    isPressedW = false;
+                    isPressedA = false;
+                    isPressedS= false;
+                    isPressedD = false;
                     if (isPlayerDead)
                         countOfDeads++;
                     if (inFinish)
@@ -213,7 +226,8 @@ public class Renderer extends AbstractRenderer {
                         zenit = zenitTeleport;
                         camera = new GLCamera(cameraTeleport);
                     } else {
-                        //TODO vykresli obrazovka
+                        millsTeleportFailed = System.currentTimeMillis();
+                        loadedTeleportFailed = true;
                         System.out.println("Nejdrive nastav misto pro teleport");
                     }
                 }
@@ -246,6 +260,9 @@ public class Renderer extends AbstractRenderer {
                 // TODO odstranit
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
+                }
+                if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+                    renderObjV = !renderObjV;
                 }
                 // Přepínání mezi režimem s nápovědou a s NPC
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
@@ -370,6 +387,8 @@ public class Renderer extends AbstractRenderer {
 
         countOfDeads = 0;
         animateStart = true;
+
+        enemy = new Enemy(maze.getDelkaHrany());
     }
 
 
@@ -432,11 +451,6 @@ public class Renderer extends AbstractRenderer {
         float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
-        // zmizení textu po 1s pro oznaméní informace o teleportu
-        if (savedTeleportPosition && (mils - milsSave) > 1000)
-            savedTeleportPosition = false;
-        if (loadedTeleportPosition && (mils - millsTeleport) > 1000)
-            loadedTeleportPosition = false;
 
 
         glViewport(0, 0, width, height);
@@ -469,6 +483,17 @@ public class Renderer extends AbstractRenderer {
 //        textureViewer.view(texture1, 0, 0);
 
         renderMaze();
+        if(renderObjV)
+//            Executors.newSingleThreadExecutor().execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    synchronized (this){
+//                    glfwMakeContextCurrent(window);
+//                    renderObj();
+//                    glfwMakeContextCurrent(MemoryUtil.NULL);
+//                    }
+//                }
+//            });
         renderObj();
 
         //zjisteni zda me zasahlo np kdyz ano zareaguji
@@ -526,7 +551,8 @@ public class Renderer extends AbstractRenderer {
         }
         //D
         if (isPressedD && !isPressedW && !isPressedA && !isPressedS) {
-            System.out.println("doprava");
+//            System.out.println(obj.getIndices().size());
+//            System.out.println("doprava");
             GLCamera tmp = new GLCamera(camera);
             tmp.right(0.03);
             if (maze.isOutside(tmp) == 0)
@@ -635,6 +661,14 @@ public class Renderer extends AbstractRenderer {
             }
         }
 
+        // zmizení textu po 1s pro oznaméní informace o teleportu
+        if (savedTeleportPosition && (mils - milsSave) > 1000)
+            savedTeleportPosition = false;
+        if (loadedTeleportPosition && (mils - millsTeleport) > 1000)
+            loadedTeleportPosition = false;
+        if (loadedTeleportFailed && (mils - millsTeleportFailed) > 1000)
+            loadedTeleportFailed = false;
+
         // Zobrazováni textu na obrazovce
         textRenderer.resize(width, height);
         textRenderer.clear();
@@ -644,6 +678,9 @@ public class Renderer extends AbstractRenderer {
             textRenderer.addStr2D(2, height - 3, "Pozice pro teleport nastavena.");
         if (loadedTeleportPosition)
             textRenderer.addStr2D(2, height - 3, "Byl jsi teleportován.");
+        if (loadedTeleportFailed)
+            textRenderer.addStr2D(2, height - 3, "Nejdříve nastav místo pro teleportaci.");
+
         textRenderer.addStr2D(width - 315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
         textRenderer.draw();
 
@@ -652,7 +689,7 @@ public class Renderer extends AbstractRenderer {
 
     // Funkce pro vykreslení NPC - funkce se stará o to aby se npc pohybovalo ve spravném směru
     private void renderEnemy(int x, int y) {
-
+//        System.out.println( "vlakno");
         if (!animateStart) return;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -682,6 +719,7 @@ public class Renderer extends AbstractRenderer {
         glBegin(GL_TRIANGLES);
 
         for (int[] indice : obj.getIndices()) {
+//            System.out.println("test");
             glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
             glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
@@ -689,6 +727,15 @@ public class Renderer extends AbstractRenderer {
             glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
         }
+//        for (int[] indice : obj.getIndices()) {
+////            System.out.println("test");
+//            glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
+//            glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[2] - 1)[0], obj.getVrcholy().get(indice[2] - 1)[1], obj.getVrcholy().get(indice[2] - 1)[2]);
+//            glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
+//            glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
+//        }
 
         glEnd();
         glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
@@ -698,7 +745,7 @@ public class Renderer extends AbstractRenderer {
         if (startBod >= jednaHrana / 2f) {
             prechodhrana = true;
 //            rozlozeniBludiste[source[0]][source[1]] = 0;
-            maze.setRozlozeniBludiste(source[0],source[1],0);
+            maze.setRozlozeniBludiste(enemy.getSource()[0],enemy.getSource()[1],0);
 //            rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
             maze.setRozlozeniBludiste(destiantion[0],destiantion[1],4);
         }
@@ -733,7 +780,8 @@ public class Renderer extends AbstractRenderer {
                         firstTimeRenderEnemy = false;
                     }
                     if (!animaceRun) {
-                        destiantion = possibleWaysEnemy(i, j,maze.getRozlozeniBludiste());
+//                        destiantion = possibleWaysEnemy(i, j,maze.getRozlozeniBludiste());
+                        destiantion = enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
                         finishBod = jednaHrana;
                         animaceRun = true;
@@ -741,8 +789,26 @@ public class Renderer extends AbstractRenderer {
                     }
                     if (prechodhrana) {
                         //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
-                        renderEnemy(source[0], source[1]);
+//                        Executors.newSingleThreadExecutor().execute(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                glfwMakeContextCurrent(glfwGetPrimaryMonitor());
+//                                renderEnemy(source[0], source[1]);
+//                                glfwMakeContextCurrent(MemoryUtil.NULL);
+//                            }
+//                        });
+                        renderEnemy(enemy.getSource()[0], enemy.getSource()[1]);
                     } else {
+//                        int finalI = i;
+//                        int finalJ = j;
+//                        Executors.newSingleThreadExecutor().execute(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                glfwMakeContextCurrent(glfwGetPrimaryMonitor());
+//                                renderEnemy(finalI, finalJ);
+//                                glfwMakeContextCurrent(MemoryUtil.NULL);
+//                            }
+//                        });
                         renderEnemy(i, j);
                     }
                 } else if (maze.getRozlozeniBludiste(i,j) == 5) {
@@ -757,93 +823,6 @@ public class Renderer extends AbstractRenderer {
         }
 
     }
-
-    // TODo- dat do tridy s obj
-    private int[] possibleWaysEnemy(int i, int j,int[][] rozlozeniBludisteF) {
-        source = new int[]{i, j};
-        ArrayList<int[]> possbileWays = new ArrayList<>();
-        // 1 do prava,2 do levam, 3 nahoru,4 dolu
-        if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-            if ((rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5)) {
-                int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
-                possbileWays.add(tmp);
-            }
-        }
-
-        if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-            if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
-                int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j - 1]};
-                possbileWays.add(tmp);
-            }
-        }
-        if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-            if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
-                int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
-                possbileWays.add(tmp);
-            }
-        }
-        if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-            if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
-                int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
-                possbileWays.add(tmp);
-            }
-        }
-
-        if (possbileWays.size() == 0 && allVisitedEnemy.size() != 0) {
-            allVisitedEnemy.clear();
-            allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
-            //TODO optimazilovat dat if do funcki a vratit list
-            if (j + 1 < delkaHrany && j + 1 >= 0 && isNotInsideEnemyWay(i, j + 1)) {
-                if (rozlozeniBludisteF[i][j + 1] == 0 || rozlozeniBludisteF[i][j + 1] == 5) {
-                    int[] tmp = {i, j + 1, 1, rozlozeniBludisteF[i][j + 1]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (j - 1 < delkaHrany && j - 1 >= 0 && isNotInsideEnemyWay(i, j - 1)) {
-                if (rozlozeniBludisteF[i][j - 1] == 0 || rozlozeniBludisteF[i][j - 1] == 5) {
-                    int[] tmp = {i, j - 1, 2, rozlozeniBludisteF[i][j]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (i + 1 < delkaHrany && i + 1 >= 0 && isNotInsideEnemyWay(i + 1, j)) {
-                if (rozlozeniBludisteF[i + 1][j] == 0 || rozlozeniBludisteF[i + 1][j] == 5) {
-                    int[] tmp = {i + 1, j, 3, rozlozeniBludisteF[i + 1][j]};
-                    possbileWays.add(tmp);
-                }
-            }
-            if (i - 1 < delkaHrany && i - 1 >= 0 && isNotInsideEnemyWay(i - 1, j)) {
-                if (rozlozeniBludisteF[i - 1][j] == 0 || rozlozeniBludisteF[i - 1][j] == 5) {
-                    int[] tmp = {i - 1, j, 4, rozlozeniBludisteF[i - 1][j]};
-                    possbileWays.add(tmp);
-                }
-            }
-
-        }
-
-        if (possbileWays.size() == 0)
-            possbileWays.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
-
-        int randomWay = (int) (Math.random() * possbileWays.size());
-
-//        System.out.println(allVisitedEnemy.toString());
-        allVisitedEnemy.add(possbileWays.get(randomWay));
-        return possbileWays.get(randomWay);
-
-    }
-    // TODo --taky driva enmy nebo smaostana obj enemy ?
-    private boolean isNotInsideEnemyWay(int i, int j) {
-        if (allVisitedEnemy.size() <= 0) {
-            return true;
-        } else {
-            for (int[] blok : allVisitedEnemy) {
-                if (blok[0] == i && blok[1] == j)
-                    return false;
-            }
-        }
-        return true;
-    }
-
-
     //Vykresleni boxu/zdi matice
     private void renderBox(int x, int y) {
         texture2.bind();
@@ -1205,6 +1184,7 @@ public class Renderer extends AbstractRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glPopMatrix();
     }
+
 
 }
 
