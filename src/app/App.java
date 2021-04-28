@@ -1,5 +1,6 @@
 package app;
 
+import app.renderer.Renderer;
 import utils.LwjglWindow;
 
 /**

@@ -1,4 +1,4 @@
-package app;
+package app.maze;
 
 import transforms.Point3D;
 

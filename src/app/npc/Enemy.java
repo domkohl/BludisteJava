@@ -1,4 +1,4 @@
-package app;
+package app.npc;
 
 import java.util.ArrayList;
 
@@ -6,12 +6,15 @@ public class Enemy {
     private int[] source;
     private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     int delkaHrany;
+    private int enemyPosI,enemyPosJ;
 
     public Enemy(int delkaHrany) {
         this.delkaHrany = delkaHrany;
     }
 
     public int[] possibleWaysEnemyGetDestination(int i, int j, int[][] rozlozeniBludisteF) {
+        System.out.println(allVisitedEnemy.toString());
+
         source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
@@ -105,5 +108,21 @@ public class Enemy {
 
     public int getDelkaHrany() {
         return delkaHrany;
+    }
+
+    public int getEnemyPosI() {
+        return enemyPosI;
+    }
+
+    public int getEnemyPosJ() {
+        return enemyPosJ;
+    }
+
+    public void setEnemyPosI(int enemyPosI) {
+        this.enemyPosI = enemyPosI;
+    }
+
+    public void setEnemyPosJ(int enemyPosJ) {
+        this.enemyPosJ = enemyPosJ;
     }
 }

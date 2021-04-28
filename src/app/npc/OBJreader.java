@@ -1,4 +1,4 @@
-package app;
+package app.npc;
 
 import org.lwjgl.ovr.OVRVector2f;
 import org.lwjgl.ovr.OVRVector3f;

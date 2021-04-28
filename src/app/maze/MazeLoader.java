@@ -1,4 +1,4 @@
-package app;
+package app.maze;
 
 import utils.GLCamera;
 
@@ -11,9 +11,10 @@ public class MazeLoader {
         private int pocetKrychli;
         private int delkaHrany;
         private int[][] rozlozeniBludiste,rozlozeniBludisteBackUp,rozlozeniBludisteNoEnemy;
-        Box[][] boxes;
+        private Box[][] boxes;
         private int jednaHrana;
         private int spawnI,spawnJ;
+        private int finishI,finishJ;
         private int currenI,currenJ;
         private double spawnX,spawnZ;
         private ArrayList<Box> helpBoxes;
@@ -69,6 +70,11 @@ public class MazeLoader {
                     addBoxIfPossible(i - 1, j);
                     addBoxIfPossible(i, j - 1);
                 }
+                if (rozlozeniBludiste[i][j] == 3) {
+                    finishI = i;
+                    finishJ = j;
+                }
+
             }
         }
         addBoxIfPossible(spawnI, spawnJ + 1);
@@ -145,8 +151,8 @@ public class MazeLoader {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 1) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
+                    if (boxes[i][j].getxMin() * 0.04 * 0.98<= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
+                            boxes[i][j].getyMin() * 0.04 * 0.98  <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
                             boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
                         return 1;
                 }
@@ -303,5 +309,13 @@ public class MazeLoader {
 
     public int getCurrenJ() {
         return currenJ;
+    }
+
+    public int getFinishI() {
+        return finishI;
+    }
+
+    public int getFinishJ() {
+        return finishJ;
     }
 }

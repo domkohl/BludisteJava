@@ -1,4 +1,4 @@
-package app;
+package app.maze;
 
 import java.util.LinkedList;
 

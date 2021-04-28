@@ -1,5 +1,10 @@
-package app;
+package app.renderer;
 
+import app.maze.Box;
+import app.maze.FindWayBFS;
+import app.maze.MazeLoader;
+import app.npc.Enemy;
+import app.npc.OBJreader;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLTexture2D;
 import org.lwjgl.BufferUtils;
@@ -7,21 +12,15 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
-import org.lwjgl.system.MemoryUtil;
 import transforms.Vec3D;
 import utils.AbstractRenderer;
 import utils.GLCamera;
-import utils.LwjglWindow;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.DoubleBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.concurrent.Executors;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -32,13 +31,8 @@ import static utils.GluUtils.gluPerspective;
  * Třída pro Renderování bludište a práce s ním
  */
 public class Renderer extends AbstractRenderer {
-    int pocetKrychli;
-    int delkaHrany;
-    int jednaHrana;
 
     Box[][] boxes;
-    ArrayList<Box> spawnHelpBoxes = new ArrayList<>();
-    double spawnX, spawnZ;
     boolean showCursor = true;
     private GLCamera camera;
     private GLCamera cameraTeleport;
@@ -61,15 +55,12 @@ public class Renderer extends AbstractRenderer {
     boolean prechodhrana;
     private float startBod,finishBod;
     private int[] destiantion;
-    private int[] source;
-    private ArrayList<int[]> allVisitedEnemy = new ArrayList<>();
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
     boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV;
     long milsSave,millsTeleport,millsTeleportFailed;
 
     FindWayBFS findWay = new FindWayBFS();
-    int enemyI, enemyJ;
 
     OBJreader obj;
 
@@ -148,8 +139,8 @@ public class Renderer extends AbstractRenderer {
                     firstTimeRenderEnemy = true;
                     animaceRun = false;
 
-                    for (int i = 0; i < pocetKrychli; i++) {
-                        for (int j = 0; j < pocetKrychli; j++) {
+                    for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                        for (int j = 0; j < maze.getPocetKrychli(); j++) {
 //                            rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                             maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                         }
@@ -159,7 +150,7 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(0);
                     azimut = 0;
                     zenit = 0;
-                    camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+                    camera.setPosition(new Vec3D(maze.getSpawnX() * 0.04, 5 * 0.04, maze.getSpawnZ() * 0.04));
                     showHelp = false;
 
                     pauseGame = false;
@@ -271,22 +262,18 @@ public class Renderer extends AbstractRenderer {
                         Arrays.fill(modelMatrixEnemy, 1);
                         firstTimeRenderEnemy = true;
                         animaceRun = false;
-                        for (int i = 0; i < pocetKrychli; i++) {
-                            for (int j = 0; j < pocetKrychli; j++) {
+                        for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                            for (int j = 0; j < maze.getPocetKrychli(); j++) {
 //                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
                                 maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                             }
                         }
                     }else{
-                        enemyJ = -1;
-                        enemyI = -1;
-//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
-//                        int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
-                        //TODo pridat konecfinish
-                        int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
-                        for (int i = 0; i < pocetKrychli; i++) {
-                            for (int j = 0; j < pocetKrychli; j++) {
-//                                rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+                        enemy.setEnemyPosI(-1);
+                        enemy.setEnemyPosJ(-1);
+                        int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
+                        for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                            for (int j = 0; j < maze.getPocetKrychli(); j++) {
                                 maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
                             }
                         }
@@ -344,23 +331,11 @@ public class Renderer extends AbstractRenderer {
 
         maze = new MazeLoader();
 
-        spawnX = maze.getSpawnX();
-        spawnZ = maze.getSpawnZ();
-
         camera = new GLCamera();
         skyBox();
 //        createMaze();
-        camera.setPosition(new Vec3D(spawnX * 0.04, 5 * 0.04, spawnZ * 0.04));
+        camera.setPosition(new Vec3D(maze.getSpawnX() * 0.04, 5 * 0.04, maze.getSpawnZ() * 0.04));
 
-
-
-//        rozlozeniBludisteBackUp = maze.getRozlozeniBludisteBackUp();
-//        rozlozeniBludisteNoEnemy = maze.getRozlozeniBludisteNoEnemy();
-//        rozlozeniBludiste = maze.getRozlozeniBludiste();
-        spawnHelpBoxes = maze.getHelpBoxes();
-        pocetKrychli = maze.getPocetKrychli();
-        delkaHrany = maze.getDelkaHrany();
-        jednaHrana = maze.getJednaHrana();
         boxes = maze.getBoxes();
 
         //vytvorim jednotkovou matici
@@ -373,13 +348,6 @@ public class Renderer extends AbstractRenderer {
 
         //objekt
         obj = new OBJreader();
-
-
-//        currenI = spawnI;
-////        currenJ = spawnJ;
-        //poprve jsem ve spawnu
-//        currenI = maze.getCurrenI();
-//        currenJ = maze.getCurrenJ();
 
         pauseGame = true;
 
@@ -497,7 +465,7 @@ public class Renderer extends AbstractRenderer {
         renderObj();
 
         //zjisteni zda me zasahlo np kdyz ano zareaguji
-        if (maze.getCurrenI() == enemyI && maze.getCurrenJ() == enemyJ) {
+        if (maze.getCurrenI() == enemy.getEnemyPosI() && maze.getCurrenJ() == enemy.getEnemyPosJ()) {
 //            inFinish = true;
             isPlayerDead = true;
             pauseGame = true;
@@ -649,13 +617,9 @@ public class Renderer extends AbstractRenderer {
         //zapiani a vypinani pomoci
         //nahrani bludiscte pok akzdem kliku
         if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
-            enemyJ = -1;
-            enemyI = -1;
-//                    int[][] tmpBludiste = findWay.shortestPath(rozlozeniBludisteNoEnemy, new int[]{currenI, currenJ}, new int[]{9, 5});
             int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{9, 5});
-            for (int i = 0; i < pocetKrychli; i++) {
-                for (int j = 0; j < pocetKrychli; j++) {
-//                    rozlozeniBludiste[i][j] = tmpBludiste[i][j];
+            for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                for (int j = 0; j < maze.getPocetKrychli(); j++) {
                     maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
                 }
             }
@@ -698,7 +662,7 @@ public class Renderer extends AbstractRenderer {
         if (newMove) {
             glLoadIdentity();
             glScalef(0.04f, 0.04f, 0.04f);
-            glTranslatef(jednaHrana / 2f + x * jednaHrana, 0f, jednaHrana / 2f + y * jednaHrana);
+            glTranslatef(maze.getJednaHrana() / 2f + x * maze.getJednaHrana(), 0f, maze.getJednaHrana() / 2f + y * maze.getJednaHrana());
             glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
             newMove = false;
         }
@@ -742,7 +706,7 @@ public class Renderer extends AbstractRenderer {
         glPopMatrix();
 
         //precahzim hranu nastavuji jiny papametry site
-        if (startBod >= jednaHrana / 2f) {
+        if (startBod >= maze.getJednaHrana() / 2f) {
             prechodhrana = true;
 //            rozlozeniBludiste[source[0]][source[1]] = 0;
             maze.setRozlozeniBludiste(enemy.getSource()[0],enemy.getSource()[1],0);
@@ -761,8 +725,8 @@ public class Renderer extends AbstractRenderer {
     //Vykresleni bludiste
     private void renderMaze() {
 //        rozlozeniBludiste[3][7] = 3;
-        for (int i = 0; i < pocetKrychli; i++) {
-            for (int j = 0; j < pocetKrychli; j++) {
+        for (int i = 0; i < maze.getPocetKrychli(); i++) {
+            for (int j = 0; j < maze.getPocetKrychli(); j++) {
 //                if (rozlozeniBludiste[i][j] == 0) {
                 if (maze.getRozlozeniBludiste(i,j) == 0) {
                     renderPlate(i, j);
@@ -773,17 +737,18 @@ public class Renderer extends AbstractRenderer {
                 } else if (maze.getRozlozeniBludiste(i,j) == 4) {
 //                    System.out.println("Animace RUN"+animaceRun);
 //                    System.out.println(""animaceStop);
-                    enemyI = i;
-                    enemyJ = j;
+                    enemy.setEnemyPosI(i);
+                    enemy.setEnemyPosJ(j);
+
                     if (firstTimeRenderEnemy) {
-                        allVisitedEnemy.add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
+                        enemy.getAllVisitedEnemy().add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
                         firstTimeRenderEnemy = false;
                     }
                     if (!animaceRun) {
 //                        destiantion = possibleWaysEnemy(i, j,maze.getRozlozeniBludiste());
                         destiantion = enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
-                        finishBod = jednaHrana;
+                        finishBod = maze.getJednaHrana();
                         animaceRun = true;
                         newMove = true;
                     }
@@ -818,7 +783,7 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         }
-        for (Box box : spawnHelpBoxes) {
+        for (Box box : maze.getHelpBoxes()) {
             renderBox(box);
         }
 
@@ -1070,7 +1035,7 @@ public class Renderer extends AbstractRenderer {
 
         glPushMatrix();
         glColor3d(0.5, 0.5, 0.5);
-        int size = 6 * delkaHrany;
+        int size = 6 * maze.getDelkaHrany();
 
         glEnable(GL_TEXTURE_2D);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
