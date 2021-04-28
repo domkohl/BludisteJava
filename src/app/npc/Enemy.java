@@ -8,13 +8,15 @@ public class Enemy {
     int delkaHrany;
     private int enemyPosI,enemyPosJ;
 
+    private int[] currentDestinationBlock;
+
     public Enemy(int delkaHrany) {
+        currentDestinationBlock = new int[3];
+
         this.delkaHrany = delkaHrany;
     }
 
-    public int[] possibleWaysEnemyGetDestination(int i, int j, int[][] rozlozeniBludisteF) {
-        System.out.println(allVisitedEnemy.toString());
-
+    public void possibleWaysEnemyGetDestination(int i, int j, int[][] rozlozeniBludisteF) {
         source = new int[]{i, j};
         ArrayList<int[]> possbileWays = new ArrayList<>();
         // 1 do prava,2 do levam, 3 nahoru,4 dolu
@@ -82,7 +84,7 @@ public class Enemy {
 
 //        System.out.println(allVisitedEnemy.toString());
         allVisitedEnemy.add(possbileWays.get(randomWay));
-        return possbileWays.get(randomWay);
+        setCurrentDestinationBlock(possbileWays.get(randomWay)[0],possbileWays.get(randomWay)[1],possbileWays.get(randomWay)[2]);
 
     }
 
@@ -114,6 +116,10 @@ public class Enemy {
         return enemyPosI;
     }
 
+    public int[] getCurrentDestinationBlock() {
+        return currentDestinationBlock;
+    }
+
     public int getEnemyPosJ() {
         return enemyPosJ;
     }
@@ -124,5 +130,11 @@ public class Enemy {
 
     public void setEnemyPosJ(int enemyPosJ) {
         this.enemyPosJ = enemyPosJ;
+    }
+
+    public void setCurrentDestinationBlock(int i ,int j , int valueBeforeEnter) {
+        this.currentDestinationBlock[0] = i;
+        this.currentDestinationBlock[1] = j;
+        this.currentDestinationBlock[2] = valueBeforeEnter;
     }
 }

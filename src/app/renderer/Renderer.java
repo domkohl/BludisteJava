@@ -18,7 +18,6 @@ import utils.GLCamera;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -54,7 +53,6 @@ public class Renderer extends AbstractRenderer {
 
     boolean prechodhrana;
     private float startBod,finishBod;
-    private int[] destiantion;
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
     boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV;
@@ -670,7 +668,8 @@ public class Renderer extends AbstractRenderer {
 
 //            glTranslatef(0,0,step);
 //        System.out.println(step);
-        switch (destiantion[2]) {
+        //ptám se jaký smerem ma npc jit hodnota je uloze jako posledni v poli
+        switch (enemy.getCurrentDestinationBlock()[2]) {
             case 1 -> glTranslatef(0, 0, step);
             case 2 -> glTranslatef(0, 0, -step);
             case 3 -> glTranslatef(step, 0, 0);
@@ -710,8 +709,8 @@ public class Renderer extends AbstractRenderer {
             prechodhrana = true;
 //            rozlozeniBludiste[source[0]][source[1]] = 0;
             maze.setRozlozeniBludiste(enemy.getSource()[0],enemy.getSource()[1],0);
-//            rozlozeniBludiste[destiantion[0]][destiantion[1]] = 4;
-            maze.setRozlozeniBludiste(destiantion[0],destiantion[1],4);
+
+            maze.setRozlozeniBludiste(enemy.getCurrentDestinationBlock()[0],enemy.getCurrentDestinationBlock()[1],4);
         }
         if (startBod < finishBod)
             startBod = startBod + step;
@@ -727,7 +726,6 @@ public class Renderer extends AbstractRenderer {
 //        rozlozeniBludiste[3][7] = 3;
         for (int i = 0; i < maze.getPocetKrychli(); i++) {
             for (int j = 0; j < maze.getPocetKrychli(); j++) {
-//                if (rozlozeniBludiste[i][j] == 0) {
                 if (maze.getRozlozeniBludiste(i,j) == 0) {
                     renderPlate(i, j);
                 } else if (maze.getRozlozeniBludiste(i,j) == 3) {
@@ -735,8 +733,6 @@ public class Renderer extends AbstractRenderer {
                 } else if (maze.getRozlozeniBludiste(i,j) == 2) {
                     renderStart(i, j);
                 } else if (maze.getRozlozeniBludiste(i,j) == 4) {
-//                    System.out.println("Animace RUN"+animaceRun);
-//                    System.out.println(""animaceStop);
                     enemy.setEnemyPosI(i);
                     enemy.setEnemyPosJ(j);
 
@@ -745,8 +741,7 @@ public class Renderer extends AbstractRenderer {
                         firstTimeRenderEnemy = false;
                     }
                     if (!animaceRun) {
-//                        destiantion = possibleWaysEnemy(i, j,maze.getRozlozeniBludiste());
-                        destiantion = enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
+                        enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
                         finishBod = maze.getJednaHrana();
                         animaceRun = true;
