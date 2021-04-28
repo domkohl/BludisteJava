@@ -291,11 +291,11 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
         textureCube = new OGLTexture2D[6];
         try {
-            texture1 = new OGLTexture2D("textures/floor.png");
+            texture1 = new OGLTexture2D("textures/floor.jpg");
             texture2 = new OGLTexture2D("textures/wall.jpg");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
-            textureHelp = new OGLTexture2D("textures/help.png");
+            textureHelp = new OGLTexture2D("textures/help.jpgd");
             textureKing = new OGLTexture2D("textures/king.jpg");
             texturePause = new OGLTexture2D("textures/pause.png");
             texturePauseFinish = new OGLTexture2D("textures/pauseFinish.png");

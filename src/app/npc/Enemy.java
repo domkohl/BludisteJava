@@ -59,6 +59,7 @@ public class Enemy {
     }
 
     private void helpAddPossibleWay(int i, int j, int direction, int[][] rozlozeniBludiste) {
+        //TODo osetri mimo blok vyber na kraji zamezit m,inus hodnoty a davat jen ty co muzu
         if (j < delkaHrany && j >= 0 && isNotInsideEnemyWay(i, j)) {
             if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
                 int[] tmp = {i, j, direction, rozlozeniBludiste[i][j]};
