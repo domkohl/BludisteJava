@@ -2,13 +2,15 @@ package app.npc;
 
 
 
+import app.fileReader.FileReader;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OBJreader {
+public class OBJreader extends FileReader {
 
     private List<float[]> vrcholy;
     private List<float[]> textury;
@@ -18,22 +20,12 @@ public class OBJreader {
         this.vrcholy =  new ArrayList<>();
         this.textury = new ArrayList<>();
         this.indices =  new ArrayList<>();
-        loadObj("src/res/obj/chess");
-    }
-
-    // TODo pridat abstrakti tridu i na load ?
-    public static String readFromFile(String filename, String extension) {
-        String data = "";
-        try {
-            data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return data;
+        parseFile("src/res/obj/chess");
     }
 
     //Nacteni bludiste ze souboru
-    public void loadObj(String filename) {
+    @Override
+    public void parseFile(String filename) {
         String data = readFromFile(filename, "obj");
         String[] lines = data.split("\n");
 

@@ -1,5 +1,6 @@
 package app.maze;
 
+import app.fileReader.FileReader;
 import utils.GLCamera;
 
 import java.io.IOException;
@@ -7,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class MazeLoader {
+public class MazeLoader extends FileReader {
         private int pocetKrychli;
         private int delkaHrany;
         private int[][] rozlozeniBludiste,rozlozeniBludisteBackUp,rozlozeniBludisteNoEnemy;
@@ -18,18 +19,20 @@ public class MazeLoader {
         private int currenI,currenJ;
         private double spawnX,spawnZ;
         private ArrayList<Box> helpBoxes;
+        private float zmenseni;
 
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
         createMaze();
         currenI = spawnI;
         currenJ = spawnJ;
+        zmenseni = 0.04f;
     }
 
     //Funkce vytvoreni bludiste
     private void createMaze() {
 
-        parseMazeFromTxt("src/res/proportions/maze");
+        parseFile("src/res/proportions/maze");
         rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
         rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
         for (int i = 0; i < pocetKrychli; i++) {
@@ -97,24 +100,9 @@ public class MazeLoader {
         }
     }
 
-
-
-
-
-
-    //Pomocna funkce pro cteni ze souboru
-    public String readFromFile(String filename, String extension) {
-        String data = "";
-        try {
-            data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
-
     //Nacteni bludiste ze souboru
-    public void parseMazeFromTxt(String filename) {
+    @Override
+    public void parseFile(String filename) {
         String data = readFromFile(filename, "txt");
         String[] lines = data.split("\n");
         String[] velikostString = lines[0].split("!");
@@ -147,25 +135,24 @@ public class MazeLoader {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
         double camZ = cam.getPosition().getZ();
-        //TODO optimalizovat do funkci if statmenty
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 1) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98<= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98  <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                    if (boxes[i][j].getxMin() * zmenseni * 0.98<= camX && camX <= boxes[i][j].getxMax() * zmenseni * 1.02 &&
+                            boxes[i][j].getyMin() * zmenseni * 0.98  <= camY && camY <= boxes[i][j].getyMax() * zmenseni * 1.02 &&
+                            boxes[i][j].getzMin() * zmenseni * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * zmenseni * 1.02)
                         return 1;
                 }
                 if (rozlozeniBludiste[i][j] == 3) {
-                    if (boxes[i][j].getxMin() * 0.04 * 0.98 <= camX && camX <= boxes[i][j].getxMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getyMin() * 0.04 * 0.98 <= camY && camY <= boxes[i][j].getyMax() * 0.04 * 1.02 &&
-                            boxes[i][j].getzMin() * 0.04 * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04 * 1.02)
+                    if (boxes[i][j].getxMin() * zmenseni * 0.98 <= camX && camX <= boxes[i][j].getxMax() * zmenseni * 1.02 &&
+                            boxes[i][j].getyMin() * zmenseni * 0.98 <= camY && camY <= boxes[i][j].getyMax() * zmenseni * 1.02 &&
+                            boxes[i][j].getzMin() * zmenseni * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * zmenseni * 1.02)
                         return 2;
                 }
                 if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5 || rozlozeniBludiste[i][j] == 2 || rozlozeniBludiste[i][j] == 4) {
-                    if (boxes[i][j].getxMin() * 0.04 <= camX && camX <= boxes[i][j].getxMax() * 0.04 &&
-                            boxes[i][j].getyMin() * 0.04 <= camY && camY <= boxes[i][j].getyMax() * 0.04 &&
-                            boxes[i][j].getzMin() * 0.04 <= camZ && camZ <= boxes[i][j].getzMax() * 0.04) {
+                    if (boxes[i][j].getxMin() * zmenseni <= camX && camX <= boxes[i][j].getxMax() * zmenseni &&
+                            boxes[i][j].getyMin() * zmenseni <= camY && camY <= boxes[i][j].getyMax() * zmenseni &&
+                            boxes[i][j].getzMin() * zmenseni <= camZ && camZ <= boxes[i][j].getzMax() * zmenseni) {
                         currenI = i;
                         currenJ = j;
                     }
@@ -176,9 +163,9 @@ public class MazeLoader {
         for (Box box : helpBoxes) {
             // TODo konmtrola zda funfiji kolize s help a i vsevhny
 //            System.out.println(box.getxMin());
-            if (box.getxMin() * 0.04  * 0.98 <= camX && camX <= box.getxMax() * 0.04  * 1.02 &&
-                    box.getyMin() * 0.04 * 0.98  <= camY && camY <= box.getyMax() * 0.04 * 1.02 &&
-                    box.getzMin() * 0.04 * 0.98 <= camZ && camZ <= box.getzMax() * 0.04* 1.02 )
+            if (box.getxMin() * zmenseni  * 0.98 <= camX && camX <= box.getxMax() * zmenseni  * 1.02 &&
+                    box.getyMin() * zmenseni * 0.98  <= camY && camY <= box.getyMax() * zmenseni * 1.02 &&
+                    box.getzMin() * zmenseni * 0.98 <= camZ && camZ <= box.getzMax() * zmenseni* 1.02 )
                 return 1;
 
         }
@@ -317,5 +304,9 @@ public class MazeLoader {
 
     public int getFinishJ() {
         return finishJ;
+    }
+
+    public float getZmenseni() {
+        return zmenseni;
     }
 }

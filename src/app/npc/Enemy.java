@@ -37,7 +37,6 @@ public class Enemy {
         if (possbileWays.size() == 0 && allVisitedEnemy.size() != 0) {
             allVisitedEnemy.clear();
             allVisitedEnemy.add(new int[]{i, j, 0, rozlozeniBludisteF[i][j]});
-            //TODO optimazilovat dat if do funcki a vratit list
 
             helpAddPossibleWay(i,j+1,1,rozlozeniBludisteF);
 
@@ -54,7 +53,6 @@ public class Enemy {
 
         int randomWay = (int) (Math.random() * possbileWays.size());
 
-//        System.out.println(allVisitedEnemy.toString());
         allVisitedEnemy.add(possbileWays.get(randomWay));
         setCurrentDestinationBlock(possbileWays.get(randomWay)[0],possbileWays.get(randomWay)[1],possbileWays.get(randomWay)[2]);
 

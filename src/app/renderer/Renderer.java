@@ -146,7 +146,7 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(0);
                     azimut = 0;
                     zenit = 0;
-                    camera.setPosition(new Vec3D(maze.getSpawnX() * 0.04, 5 * 0.04, maze.getSpawnZ() * 0.04));
+                    camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), 5 * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
                     showHelp = false;
 
                     pauseGame = false;
@@ -328,7 +328,7 @@ public class Renderer extends AbstractRenderer {
 
         camera = new GLCamera();
 
-        camera.setPosition(new Vec3D(maze.getSpawnX() * 0.04, 5 * 0.04, maze.getSpawnZ() * 0.04));
+        camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), 5 * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
 
         boxes = maze.getBoxes();
 
@@ -337,7 +337,7 @@ public class Renderer extends AbstractRenderer {
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glScalef(0.04f, 0.04f, 0.04f);
+        glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
         glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
 
         //objekt
@@ -422,7 +422,7 @@ public class Renderer extends AbstractRenderer {
         //Modelovaci
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glScalef(0.04f, 0.04f, 0.04f);
+        glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
         //Projekcni
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -439,6 +439,7 @@ public class Renderer extends AbstractRenderer {
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
         skyBox();
+
 
         renderMaze();
         if(renderObjV)
@@ -643,7 +644,7 @@ public class Renderer extends AbstractRenderer {
         //zajisteni naharani matice pro npc
         if (newMove) {
             glLoadIdentity();
-            glScalef(0.04f, 0.04f, 0.04f);
+            glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
             glTranslatef(maze.getJednaHrana() / 2f + x * maze.getJednaHrana(), 0f, maze.getJednaHrana() / 2f + y * maze.getJednaHrana());
             glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
             newMove = false;
@@ -1102,7 +1103,7 @@ public class Renderer extends AbstractRenderer {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-        glScalef(0.04f, 0.04f, 0.04f);
+        glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
 //        glRotatef(270,1,0,0);
 //        glTranslatef(8.4f,1.1f,0);
         glTranslatef(10f, 0f, 10f);
@@ -1114,7 +1115,7 @@ public class Renderer extends AbstractRenderer {
         glBegin(GL_TRIANGLES);
 //        glBegin(GL_QUAD_STRIP);
         glColor3f(1f, 1f, 1f);
-//        glScalef(0.04f, 0.04f, 0.04f);
+
 
 
         for (int[] indice : obj.getIndices()) {
