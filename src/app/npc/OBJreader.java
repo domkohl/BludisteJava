@@ -20,7 +20,9 @@ public class OBJreader extends FileReader {
         this.vrcholy =  new ArrayList<>();
         this.textury = new ArrayList<>();
         this.indices =  new ArrayList<>();
-        parseFile("src/res/obj/chess");
+//        parseFile("src/res/obj/chess");
+        parseFile(System.getProperty("user.dir")+"/chess");
+//        System.out.println("Working Directory = " + System.getProperty("user.dir"));
     }
 
 

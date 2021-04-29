@@ -8,10 +8,7 @@ import app.npc.OBJreader;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLTexture2D;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import org.lwjgl.glfw.*;
 import transforms.Vec3D;
 import utils.AbstractRenderer;
 import utils.GLCamera;
@@ -24,6 +21,7 @@ import java.util.Locale;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static utils.GluUtils.gluPerspective;
+import static utils.GlutUtils.glutWireCube;
 
 
 /**
@@ -114,6 +112,20 @@ public class Renderer extends AbstractRenderer {
         glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
+
+//                if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && (pauseGame || inFinish || isPlayerDead)){
+//                    System.out.println("levy");
+//                    showCursor = false;
+//                    DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+//                    DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+//                    glfwGetCursorPos(window, xBuffer, yBuffer);
+//                    double x = xBuffer.get(0);
+//                    double y = yBuffer.get(0);
+//                    ox = (float) x;
+//                    oy = (float) y;
+//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//                }
+
             }
         };
 
@@ -285,6 +297,12 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         };
+        glfwScrollCallback = new GLFWScrollCallback() {
+            @Override
+            public void invoke(long window, double dx, double dy) {
+                //do nothing
+            }
+        };
     }
 
     //Inicializace bludiste
@@ -386,13 +404,7 @@ public class Renderer extends AbstractRenderer {
             glLoadIdentity();
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            // TODO zeptat se ?
-//            glOrtho(1,1,1,1,0.1,20);
-//            gluLookAt(
-//                    1, 0, 5,
-//                    0, 0,0,
-//                    0, 0, 1
-//            );
+
             glBegin(GL_QUADS);
             glTexCoord2f(0, 0);
             glVertex2f(-1f, -1f);
@@ -406,6 +418,8 @@ public class Renderer extends AbstractRenderer {
 
             textRenderer.resize(width, height);
             textRenderer.clear();
+            if (maze.isMazeLoadError())
+                textRenderer.addStr2D(width - 800, height -3, "!! Nepodařolo se náhrat ze souboru !! -> bylo nahráno základní bludiště");
             textRenderer.addStr2D(2, 17, "Počet smrtí: " + countOfDeads);
             textRenderer.draw();
             return;
@@ -453,16 +467,6 @@ public class Renderer extends AbstractRenderer {
 
         renderMaze();
         if(renderObjV)
-//            Executors.newSingleThreadExecutor().execute(new Runnable() {
-//                @Override
-//                public void run() {
-//                    synchronized (this){
-//                    glfwMakeContextCurrent(window);
-//                    renderObj();
-//                    glfwMakeContextCurrent(MemoryUtil.NULL);
-//                    }
-//                }
-//            });
         renderObj();
 
         //zjisteni zda me zasahlo np kdyz ano zareaguji
@@ -478,9 +482,9 @@ public class Renderer extends AbstractRenderer {
         //W
         if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
-            tmp.forward(0.03);
+            tmp.forward(0.3);
             if (maze.isOutside(tmp) == 0)
-                camera.forward(0.03);
+                camera.forward(0.3);
             if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
@@ -1029,12 +1033,20 @@ public class Renderer extends AbstractRenderer {
     //Vykresleni skyboxu
     private void skyBox() {
 
+        glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
+
+        glRotatef(90,1.0f,0.f,0.f);
+        glRotatef(270,0.f,1.0f,0.f);
+
         glColor3d(0.5, 0.5, 0.5);
         int size = 6 * maze.getDelkaHrany();
 
+        glutWireCube(size);
         glEnable(GL_TEXTURE_2D);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+
 
         textureCube[1].bind(); //-x  (left)
         glBegin(GL_QUADS);

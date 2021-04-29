@@ -25,7 +25,8 @@ public class MazeLoader extends FileReader {
 
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
-        parseFile("src/res/proportions/maze");
+//        parseFile("src/res/proportions/maze");
+        parseFile(System.getProperty("user.dir")+"/maze");
         if(mazeLoadError)
             loadDefaultMaze();
         createMaze();
@@ -176,7 +177,7 @@ public class MazeLoader extends FileReader {
 //            System.out.println(mazeLoadError);
         }catch(Exception e) {
             mazeLoadError = true;
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
     }
@@ -360,5 +361,13 @@ public class MazeLoader extends FileReader {
 
     public float getZmenseni() {
         return zmenseni;
+    }
+
+    public boolean isMazeLoadError() {
+        return mazeLoadError;
+    }
+
+    public String getMazeLoadErrorMessage() {
+        return mazeLoadErrorMessage;
     }
 }
