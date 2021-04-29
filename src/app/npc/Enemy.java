@@ -6,17 +6,17 @@ import java.util.Arrays;
 public class Enemy {
     private int[] source;
     private final ArrayList<int[]> allVisitedEnemy;
-    int delkaHrany;
+    int pocetKrychli;
     private int enemyPosI,enemyPosJ;
 
     private final int[] currentDestinationBlock;
 
     private ArrayList<int[]> possbileWays;
 
-    public Enemy(int delkaHrany) {
+    public Enemy(int pocetKrychli) {
         currentDestinationBlock = new int[3];
         allVisitedEnemy = new ArrayList<>();
-        this.delkaHrany = delkaHrany;
+        this.pocetKrychli = pocetKrychli;
         possbileWays = new ArrayList<>();
     }
 
@@ -60,7 +60,7 @@ public class Enemy {
 
     private void helpAddPossibleWay(int i, int j, int direction, int[][] rozlozeniBludiste) {
         //TODo osetri mimo blok vyber na kraji zamezit m,inus hodnoty a davat jen ty co muzu
-        if (j < delkaHrany && j >= 0 && isNotInsideEnemyWay(i, j)) {
+        if (j < pocetKrychli-1 && j >= 0 && i < pocetKrychli-1 && i >= 0 && isNotInsideEnemyWay(i, j)) {
             if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
                 int[] tmp = {i, j, direction, rozlozeniBludiste[i][j]};
                 possbileWays.add(tmp);
@@ -90,7 +90,7 @@ public class Enemy {
     }
 
     public int getDelkaHrany() {
-        return delkaHrany;
+        return pocetKrychli;
     }
 
     public int getEnemyPosI() {

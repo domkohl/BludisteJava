@@ -350,7 +350,7 @@ public class Renderer extends AbstractRenderer {
         countOfDeads = 0;
         animateStart = true;
 
-        enemy = new Enemy(maze.getDelkaHrany());
+        enemy = new Enemy(maze.getPocetKrychli());
     }
 
 
@@ -410,7 +410,7 @@ public class Renderer extends AbstractRenderer {
         float speed = 20; // pocet stupnu rotace za vterinu
 //        System.out.println(step);
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
-        float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
+//        float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
 
