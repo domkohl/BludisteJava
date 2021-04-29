@@ -295,7 +295,7 @@ public class Renderer extends AbstractRenderer {
             texture2 = new OGLTexture2D("textures/wall.jpg");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
-            textureHelp = new OGLTexture2D("textures/help.jpgd");
+            textureHelp = new OGLTexture2D("textures/help.jpg");
             textureKing = new OGLTexture2D("textures/king.jpg");
             texturePause = new OGLTexture2D("textures/pause.png");
             texturePauseFinish = new OGLTexture2D("textures/pauseFinish.png");
