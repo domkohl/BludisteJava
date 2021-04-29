@@ -39,7 +39,7 @@ public class MazeLoader extends FileReader {
                 {1, 0, 1, 1, 2, 1, 1, 0, 1, 1},
                 {1, 0, 0, 0, 0, 4, 0, 0, 0, 1},
                 {1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
                 {0, 1, 0, 0, 1, 0, 0, 0, 0, 1},
                 {0, 1, 0, 0, 0, 1, 1, 1, 0, 1},
@@ -144,7 +144,7 @@ public class MazeLoader extends FileReader {
 
             for (int i = 0; i < pocetKrychli; i++) {
                 // rozdeleni radku na jednotlive segmenty
-                String[] attributes = lines[i + 2].split(" ! ");
+                String[] attributes = lines[i + 2].split("!");
                 for (int j = 0; j < pocetKrychli; j++) {
                     switch (attributes[j]) {
                         case "c" -> rozlozeniBludiste[i][j] = 0;
@@ -176,7 +176,7 @@ public class MazeLoader extends FileReader {
 //            System.out.println(mazeLoadError);
         }catch(Exception e) {
             mazeLoadError = true;
-//            e.printStackTrace();
+            e.printStackTrace();
         }
 
     }

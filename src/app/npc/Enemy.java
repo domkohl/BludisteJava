@@ -56,11 +56,12 @@ public class Enemy {
         allVisitedEnemy.add(possbileWays.get(randomWay));
         setCurrentDestinationBlock(possbileWays.get(randomWay)[0],possbileWays.get(randomWay)[1],possbileWays.get(randomWay)[2]);
 
+        System.out.println(allVisitedEnemy.toString());
     }
 
     private void helpAddPossibleWay(int i, int j, int direction, int[][] rozlozeniBludiste) {
         //TODo osetri mimo blok vyber na kraji zamezit m,inus hodnoty a davat jen ty co muzu
-        if (j < pocetKrychli-1 && j >= 0 && i < pocetKrychli-1 && i >= 0 && isNotInsideEnemyWay(i, j)) {
+        if (j < pocetKrychli && j >= 0 && i < pocetKrychli && i >= 0 && isNotInsideEnemyWay(i, j)) {
             if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 5) {
                 int[] tmp = {i, j, direction, rozlozeniBludiste[i][j]};
                 possbileWays.add(tmp);
