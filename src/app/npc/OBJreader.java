@@ -23,6 +23,8 @@ public class OBJreader extends FileReader {
         parseFile("src/res/obj/chess");
     }
 
+
+
     //Nacteni bludiste ze souboru
     @Override
     public void parseFile(String filename) {

@@ -55,7 +55,7 @@ public class Renderer extends AbstractRenderer {
     private float startBod,finishBod;
     boolean newMove;
     boolean firstTimeRenderEnemy = true;
-    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV;
+    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV,wayToFinishExist;
     long milsSave,millsTeleport,millsTeleportFailed;
 
     FindWayBFS findWay = new FindWayBFS();
@@ -265,12 +265,22 @@ public class Renderer extends AbstractRenderer {
                     }else{
                         enemy.setEnemyPosI(-1);
                         enemy.setEnemyPosJ(-1);
-                        int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
-                        for (int i = 0; i < maze.getPocetKrychli(); i++) {
-                            for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                                maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
+                            int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
+                            //TODo napsat kdyz null tka neexistuje cesta z bludiste
+                            if(tmpBludiste != null){
+                                for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                                    for (int j = 0; j < maze.getPocetKrychli(); j++) {
+                                        maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
+                                    }
+                                }
+                            }else{
+                                for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                                    for (int j = 0; j < maze.getPocetKrychli(); j++) {
+                                        maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteNoEnemy()[i][j]);
+                                    }
+                                }
+                                wayToFinishExist = false;
                             }
-                        }
                     }
                 }
             }
@@ -351,6 +361,10 @@ public class Renderer extends AbstractRenderer {
         animateStart = true;
 
         enemy = new Enemy(maze.getPocetKrychli());
+
+//        if(findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()}) !=null)
+            wayToFinishExist = true;
+
     }
 
 
@@ -399,18 +413,14 @@ public class Renderer extends AbstractRenderer {
 
         // vypocet fps, nastaveni rychlosti animace podle rychlosti prekresleni
         long mils = System.currentTimeMillis();
-//        System.out.println(mils);
         if ((mils - oldFPSmils) > 300) {
             fps = 1000 / (double) (mils - oldmils + 1);
             oldFPSmils = mils;
         }
         String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
 
-//        System.out.println(fps);
-        float speed = 20; // pocet stupnu rotace za vterinu
-//        System.out.println(step);
+        float speed = 20; // pocet jednotek za vterinu
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
-//        float stepCamera = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
 
 
@@ -430,7 +440,7 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        camera.setPosition(cameraFixedY.withY(0.20));
+//        camera.setPosition(cameraFixedY.withY(0.20));
         camera.setMatrix();
 
         texture1.bind();
@@ -601,9 +611,11 @@ public class Renderer extends AbstractRenderer {
         //nahrani bludiscte pok akzdem kliku/drzeni klavesy
         if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
             int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
-            for (int i = 0; i < maze.getPocetKrychli(); i++) {
-                for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                    maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
+            if(tmpBludiste != null) {
+                for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                    for (int j = 0; j < maze.getPocetKrychli(); j++) {
+                        maze.setRozlozeniBludiste(i, j, tmpBludiste[i][j]);
+                    }
                 }
             }
         }
@@ -627,6 +639,8 @@ public class Renderer extends AbstractRenderer {
             textRenderer.addStr2D(2, height - 3, "Byl jsi teleportován.");
         if (loadedTeleportFailed)
             textRenderer.addStr2D(2, height - 3, "Nejdříve nastav místo pro teleportaci.");
+        if (!wayToFinishExist)
+            textRenderer.addStr2D(width - 800, height -3, "Z tohoto bludiště neexistuje cesta ven.");
 
         textRenderer.addStr2D(width - 315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
         textRenderer.draw();

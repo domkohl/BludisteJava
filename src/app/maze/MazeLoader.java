@@ -20,19 +20,47 @@ public class MazeLoader extends FileReader {
         private double spawnX,spawnZ;
         private ArrayList<Box> helpBoxes;
         private float zmenseni;
+        private boolean mazeLoadError;
+        private String mazeLoadErrorMessage;
 
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
+        parseFile("src/res/proportions/maze");
+        if(mazeLoadError)
+            loadDefaultMaze();
         createMaze();
         currenI = spawnI;
         currenJ = spawnJ;
         zmenseni = 0.04f;
     }
 
+    private void loadDefaultMaze() {
+        rozlozeniBludiste = new int[][]{
+                {1, 0, 1, 1, 2, 1, 1, 0, 1, 1},
+                {1, 0, 0, 0, 0, 4, 0, 0, 0, 1},
+                {1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                {0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+                {0, 1, 0, 0, 1, 0, 0, 0, 0, 1},
+                {0, 1, 0, 0, 0, 1, 1, 1, 0, 1},
+                {0, 0, 0, 1, 1, 1, 0, 0, 0, 1},
+                {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+                {1, 0, 1, 1, 1, 1, 3, 1, 1, 1}
+        };
+        pocetKrychli = 10;
+        delkaHrany = 200;
+        boxes = new Box[10][10];
+        jednaHrana = delkaHrany / pocetKrychli;
+        for (int i = 0; i < pocetKrychli; i++) {
+            for (int j = 0; j < pocetKrychli; j++) {
+                boxes[i][j] = new Box(i, j, jednaHrana);
+            }
+        }
+
+    }
+
     //Funkce vytvoreni bludiste
     private void createMaze() {
-
-        parseFile("src/res/proportions/maze");
         rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
         rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
         for (int i = 0; i < pocetKrychli; i++) {
@@ -66,8 +94,8 @@ public class MazeLoader extends FileReader {
                             boxes[i][j].getbUp1().getZ()
                     ) / 8;
                 }
-
-                if (rozlozeniBludiste[i][j] == 0) {
+                //pradni bloku kolem npc/cesty kdyz je na kraji mapy
+                if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 4) {
                     addBoxIfPossible(i, j + 1);
                     addBoxIfPossible(i + 1, j);
                     addBoxIfPossible(i - 1, j);
@@ -84,7 +112,6 @@ public class MazeLoader extends FileReader {
         addBoxIfPossible(spawnI + 1, spawnJ);
         addBoxIfPossible(spawnI - 1, spawnJ);
         addBoxIfPossible(spawnI, spawnJ - 1);
-
     }
 
     //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
@@ -103,30 +130,55 @@ public class MazeLoader extends FileReader {
     //Nacteni bludiste ze souboru
     @Override
     public void parseFile(String filename) {
-        String data = readFromFile(filename, "txt");
-        String[] lines = data.split("\n");
-        String[] velikostString = lines[0].split("!");
-        String[] velikostString2 = lines[1].split("!");
-        pocetKrychli = Integer.parseInt(velikostString[1]);
-        delkaHrany = Integer.parseInt(velikostString2[1]);
-        rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
-        boxes = new Box[pocetKrychli][pocetKrychli];
-        jednaHrana = delkaHrany / pocetKrychli;
+        try{
+//            String data = readFromFile(filename, "txt");
+            String data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, "txt"))));;
+            String[] lines = data.split("\n");
+            String[] velikostString = lines[0].split("!");
+            String[] velikostString2 = lines[1].split("!");
+            pocetKrychli = Integer.parseInt(velikostString[1]);
+            delkaHrany = Integer.parseInt(velikostString2[1]);
+            rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
+            boxes = new Box[pocetKrychli][pocetKrychli];
+            jednaHrana = delkaHrany / pocetKrychli;
 
-        for (int i = 0; i < pocetKrychli; i++) {
-            // rozdeleni radku na jednotlive segmenty
-            String[] attributes = lines[i + 2].split(" ! ");
-            for (int j = 0; j < pocetKrychli; j++) {
-                switch (attributes[j]) {
-                    case "c" -> rozlozeniBludiste[i][j] = 0;
-                    case "S" -> rozlozeniBludiste[i][j] = 2;
-                    case "K" -> rozlozeniBludiste[i][j] = 3;
-                    case "E" -> rozlozeniBludiste[i][j] = 4;
-                    default -> rozlozeniBludiste[i][j] = 1;
+            for (int i = 0; i < pocetKrychli; i++) {
+                // rozdeleni radku na jednotlive segmenty
+                String[] attributes = lines[i + 2].split(" ! ");
+                for (int j = 0; j < pocetKrychli; j++) {
+                    switch (attributes[j]) {
+                        case "c" -> rozlozeniBludiste[i][j] = 0;
+                        case "S" -> rozlozeniBludiste[i][j] = 2;
+                        case "K" -> rozlozeniBludiste[i][j] = 3;
+                        case "E" -> rozlozeniBludiste[i][j] = 4;
+                        default -> rozlozeniBludiste[i][j] = 1;
+                    }
+                    boxes[i][j] = new Box(i, j, jednaHrana);
                 }
-                boxes[i][j] = new Box(i, j, jednaHrana);
             }
+
+            int  finishCount = 0;
+            int  spawnCount = 0;
+            int  enemyCount = 0;
+            for (int i = 0; i < pocetKrychli; i++) {
+                for (int j = 0; j < pocetKrychli; j++) {
+                    if(rozlozeniBludiste[i][j] == 3)
+                        finishCount++;
+                    if(rozlozeniBludiste[i][j] == 2)
+                        spawnCount++;
+                    if(rozlozeniBludiste[i][j] == 4)
+                        enemyCount++;
+                }
+            }
+
+            mazeLoadError = enemyCount != 1 || spawnCount != 1 || finishCount < 1;
+
+//            System.out.println(mazeLoadError);
+        }catch(Exception e) {
+            mazeLoadError = true;
+//            e.printStackTrace();
         }
+
     }
 
     //Funkce pro kolize

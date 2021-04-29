@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 public abstract class FileReader {
 
     //Pomocna funkce pro cteni ze souboru
-    public String readFromFile(String filename, String extension) {
+    public String readFromFile(String filename, String extension){
         String data = "";
         try {
             data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
@@ -18,11 +18,15 @@ public abstract class FileReader {
     }
 
     public void parseFile(String filename) {
-        String data = readFromFile(filename, "obj");
-        String[] lines = data.split("\n");
+        try{
+            String data = readFromFile(filename, "obj");
+            String[] lines = data.split("\n");
 
-        for (String s:lines ){
-            System.out.println(s);
+            for (String s:lines ){
+                System.out.println(s);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
