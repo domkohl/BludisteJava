@@ -1,5 +1,5 @@
 PocetKostekHrana:!10!
-CelkovaDelkaHrana:!1000!
+CelkovaDelkaHrana:!200!
 E!c!Z!Z!S!Z!Z!c!Z!Z!
 Z!c!c!c!c!c!c!c!c!c!
 Z!Z!Z!Z!Z!Z!c!Z!c!c!
