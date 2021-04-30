@@ -35,7 +35,6 @@ public class Renderer extends AbstractRenderer {
     private float azimutTeport, zenitTeleport;
     private float dx, dy, ox, oy;
     private float azimut, zenit;
-    private boolean animateStart;
     private boolean animaceRun;
     private boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,wayToFinishExist;
     //Textury
@@ -223,12 +222,6 @@ public class Renderer extends AbstractRenderer {
                     isPressedD = true;
                 if (key == GLFW_KEY_D && action == GLFW_RELEASE)
                     isPressedD = false;
-
-                // Vypnutí NPC -- dočasné
-                // TODO odstranit
-                if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-                    animateStart = !animateStart;
-                }
                 // Přepínání mezi režimem s nápovědou a s NPC
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
@@ -332,9 +325,6 @@ public class Renderer extends AbstractRenderer {
         wayToFinishExist = true;
         showCursor = true;
         firstTimeRenderEnemy = true;
-
-        //TODo odstranit
-        animateStart = true;
     }
 
 
@@ -420,136 +410,30 @@ public class Renderer extends AbstractRenderer {
 
         //Ovládaní klávesnice zde kvůli lepší simulaci ovládání jako ve hře:
         //W
-        if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.forward(0.03);
-            if (maze.isOutside(tmp) == 0)
-                camera.forward(0.03);
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
-//
+        if (isPressedW && !isPressedD && !isPressedA && !isPressedS)
+            tryMoveSingleClick(1);
         //S
-        if (isPressedS && !isPressedD && !isPressedA && !isPressedW) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.backward(0.03);
-            if (maze.isOutside(tmp) == 0)
-                camera.backward(0.03);
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
+        if (isPressedS && !isPressedD && !isPressedA && !isPressedW)
+            tryMoveSingleClick(2);
         //A
-        if (isPressedA && !isPressedD && !isPressedW && !isPressedS) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.left(0.03);
-            if (maze.isOutside(tmp) == 0)
-                camera.left(0.03);
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
+        if (isPressedA && !isPressedD && !isPressedW && !isPressedS)
+            tryMoveSingleClick(3);
         //D
-        if (isPressedD && !isPressedW && !isPressedA && !isPressedS) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.right(0.03);
-            if (maze.isOutside(tmp) == 0)
-                camera.right(0.03);
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
+        if (isPressedD && !isPressedW && !isPressedA && !isPressedS)
+            tryMoveSingleClick(4);
         //W+D
         if (isPressedW && isPressedD && !isPressedA && !isPressedS) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.move(new Vec3D(
-                    -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
-                    0.0f,
-                    +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
-                    .mul(0.03));
-            if (maze.isOutside(tmp) == 0)
-                camera.move(new Vec3D(
-                        -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
-                        0.0f,
-                        +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
-                        .mul(0.03));
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
+            tryMoveDoubleClick(0.03,1);
         }
-
         //W+A
-        if (isPressedW && isPressedA && !isPressedD && !isPressedS) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.move(new Vec3D(
-                    -Math.sin(camera.getAzimuth() - Math.PI / 4),
-                    0.0f,
-                    +Math.cos(camera.getAzimuth() - Math.PI / 4))
-                    .mul(-0.03));
-            if (maze.isOutside(tmp) == 0)
-                camera.move(new Vec3D(
-                        -Math.sin(camera.getAzimuth() - Math.PI / 4),
-                        0.0f,
-                        +Math.cos(camera.getAzimuth() - Math.PI / 4))
-                        .mul(-0.03));
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
-
+        if (isPressedW && isPressedA && !isPressedD && !isPressedS)
+            tryMoveDoubleClick(-0.03,2);
         //S+D
-        if (isPressedS && isPressedD && !isPressedW && !isPressedA) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.move(new Vec3D(
-                    -Math.sin(camera.getAzimuth() - Math.PI / 4),
-                    0.0f,
-                    +Math.cos(camera.getAzimuth() - Math.PI / 4))
-                    .mul(0.03));
-            if (maze.isOutside(tmp) == 0)
-                camera.move(new Vec3D(
-                        -Math.sin(camera.getAzimuth() - Math.PI / 4),
-                        0.0f,
-                        +Math.cos(camera.getAzimuth() - Math.PI / 4))
-                        .mul(0.03));
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
+        if (isPressedS && isPressedD && !isPressedW && !isPressedA)
+            tryMoveDoubleClick(0.03,2);
         //S+A
-        if (isPressedS && isPressedA && !isPressedW && !isPressedD) {
-            GLCamera tmp = new GLCamera(camera);
-            tmp.move(new Vec3D(
-                    -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
-                    0.0f,
-                    +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
-                    .mul(-0.03));
-            if (maze.isOutside(tmp) == 0)
-                camera.move(new Vec3D(
-                        -Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI),
-                        0.0f,
-                        +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI))
-                        .mul(-0.03));
-            if (maze.isOutside(tmp) == 2) {
-                pauseGame = true;
-                inFinish = true;
-                System.out.println("Gratuluji jsi v cíli");
-            }
-        }
+        if (isPressedS && isPressedA && !isPressedW && !isPressedD)
+            tryMoveDoubleClick(-0.03,1);
 
         //Zapínaní a vypínaní pomoci
         //Nahraní bludiště po každém kliku/držení klávesy
@@ -590,10 +474,53 @@ public class Renderer extends AbstractRenderer {
 
     }
 
+    //Pomocná funkce pro pohyb v jednom směru
+    private void tryMoveSingleClick(int i) {
+        GLCamera tmp = new GLCamera(camera);
+        switch (i) {
+            case 1 -> tmp.forward(0.03);
+            case 2 -> tmp.backward(0.03);
+            case 3 -> tmp.left(0.03);
+            case 4 -> tmp.right(0.03);
+            default -> tmp.getPosition();
+        }
+        if (maze.isOutside(tmp) == 0){
+            switch (i) {
+                case 1 -> camera.forward(0.03);
+                case 2 -> camera.backward(0.03);
+                case 3 -> camera.left(0.03);
+                case 4 -> camera.right(0.03);
+                default -> camera.getPosition();
+            }
+        }
+        if (maze.isOutside(tmp) == 2) {
+            pauseGame = true;
+            inFinish = true;
+        }
+    }
+    //Pomocná funkce pro pohyb do stran
+    private void tryMoveDoubleClick(double v, int i) {
+        GLCamera tmp = new GLCamera(camera);
+        switch (i) {
+            case 1 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul(v));
+            case 2 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul(v));
+            default -> tmp.getPosition();
+        }
+        if (maze.isOutside(tmp) == 0){
+            switch (i) {
+                case 1 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul(v));
+                case 2 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul(v));
+                default -> camera.getPosition();
+            }
+        }
+        if (maze.isOutside(tmp) == 2) {
+            pauseGame = true;
+            inFinish = true;
+        }
+    }
+
     // Funkce pro vykreslení NPC - funkce se stará o to aby se npc(obj) pohybovalo ve spravném směru
     private void renderEnemy(int x, int y) {
-        if (!animateStart) return;
-
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         //Zajištěni nahraní nové matice pro npc na středu bloku
