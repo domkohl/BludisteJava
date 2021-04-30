@@ -4,7 +4,7 @@ import app.maze.Box;
 import app.maze.FindWayBFS;
 import app.maze.MazeLoader;
 import app.npc.Enemy;
-import app.npc.OBJreader;
+import app.npc.ObjReader;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLTexture2D;
 import org.lwjgl.BufferUtils;
@@ -58,7 +58,7 @@ public class Renderer extends AbstractRenderer {
 
     FindWayBFS findWay = new FindWayBFS();
 
-    OBJreader obj;
+    ObjReader obj;
 
     Enemy enemy;
 
@@ -369,7 +369,7 @@ public class Renderer extends AbstractRenderer {
         glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
 
         //objekt
-        obj = new OBJreader();
+        obj = new ObjReader();
 
         pauseGame = true;
 
