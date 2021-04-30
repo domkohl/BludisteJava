@@ -142,7 +142,6 @@ public class MazeLoader extends FileReader {
             rozlozeniBludiste = new int[pocetKrychli][pocetKrychli];
             boxes = new Box[pocetKrychli][pocetKrychli];
             jednaHrana = delkaHrany / pocetKrychli;
-
             for (int i = 0; i < pocetKrychli; i++) {
                 // rozdeleni radku na jednotlive segmenty
                 String[] attributes = lines[i + 2].split("!");

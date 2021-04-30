@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Pomocná abstraktní třída pro čtení a práci se soubory
+ */
+
 public abstract class FileReader {
 
-    //Pomocna funkce pro cteni ze souboru
-    public String readFromFile(String filename, String extension){
+    //Pomocná funkce pro ctěni ze souboru
+    public String readFromFile(String filename, String extension) {
         String data = "";
         try {
             data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, extension))));
@@ -17,17 +21,17 @@ public abstract class FileReader {
         return data;
     }
 
+    //Základní funkce pro analýzu dat
     public void parseFile(String filename) {
-        try{
+        try {
             String data = readFromFile(filename, "obj");
             String[] lines = data.split("\n");
 
-            for (String s:lines ){
+            for (String s : lines) {
                 System.out.println(s);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }

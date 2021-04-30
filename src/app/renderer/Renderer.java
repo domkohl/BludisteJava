@@ -320,7 +320,7 @@ public class Renderer extends AbstractRenderer {
         textureCube = new OGLTexture2D[6];
         try {
             texture1 = new OGLTexture2D("textures/floor.jpg");
-            texture2 = new OGLTexture2D("textures/wall.jpg");
+            texture2 = new OGLTexture2D("textures/wall.png");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.jpg");
@@ -454,7 +454,9 @@ public class Renderer extends AbstractRenderer {
 
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
+        // TODo otesotvat pro jine rozmery bludiste a zmenil jsem v boxech zpuisob vytvareni vysky boxu
 //        camera.setPosition(cameraFixedY.withY(0.20));
+        camera.setPosition(cameraFixedY.withY(maze.getJednaHrana()/4f* maze.getZmenseni()));
         camera.setMatrix();
 
         texture1.bind();
