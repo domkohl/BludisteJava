@@ -21,8 +21,6 @@ public abstract class AbstractRenderer {
     protected int width;
     protected int height;
     protected OGLTextRenderer textRenderer;
-    //TODo dat pryc
-    public long  window;
 
     public void init() {
         OGLUtils.printOGLparameters();
@@ -140,11 +138,6 @@ public abstract class AbstractRenderer {
 
     public GLFWScrollCallback getGlfwScrollCallback() {
         return glfwScrollCallback;
-    }
-
-    //todo odstranit
-    public void setWinndow(long window){
-        this.window = window;
     }
 
     public void dispose() {

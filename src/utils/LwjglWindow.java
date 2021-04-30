@@ -20,8 +20,7 @@ public class LwjglWindow {
     public static int HEIGHT = 400;
 
     // The window handle
-	//TODO zmenit na private
-	public long window;
+	private long window;
 	private AbstractRenderer renderer;
 
     private static boolean DEBUG = false;
@@ -85,8 +84,8 @@ public class LwjglWindow {
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
-		String text = renderer.getClass().getName();
-		text = text.substring(0, text.lastIndexOf('.'));
+		String text = "Semestrální projekt - Dominik Kohl - PGRF2 UHK 2021";
+//		text = text.substring(0, text.lastIndexOf('.'));
 		// Create the window
 		window = glfwCreateWindow(WIDTH, HEIGHT, text, NULL, NULL);
 		if (window == NULL)
@@ -191,8 +190,6 @@ public class LwjglWindow {
 		// Run the rendering loop until the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		while (!glfwWindowShouldClose(window)) {
-			//todo odstranit
-			renderer.setWinndow(window);
 
 			renderer.display();
 
