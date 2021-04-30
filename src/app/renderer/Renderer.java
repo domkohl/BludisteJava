@@ -28,52 +28,42 @@ import static utils.GlutUtils.glutWireCube;
  * Třída pro Renderování bludište a práce s ním
  */
 public class Renderer extends AbstractRenderer {
-
-    Box[][] boxes;
-    boolean showCursor = true;
+    //Ovládání
+    private boolean showCursor;
     private GLCamera camera;
     private GLCamera cameraTeleport;
     private float azimutTeport, zenitTeleport;
     private float dx, dy, ox, oy;
-    private OGLTexture2D[] textureCube;
     private float azimut, zenit;
-    private OGLTexture2D texture1, texture2, textureFinish, textureStart,textureHelp,textureKing,texturePause,texturePauseFinish,textureIsDead;
+    private boolean animateStart;
+    private boolean animaceRun;
+    private boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,wayToFinishExist;
+    //Textury
+    private OGLTexture2D[] textureCube;
+    private OGLTexture2D textureFloor, textureWall, textureFinish, textureStart,textureHelp,textureKing,texturePause,texturePauseFinish,textureIsDead;
+    //NPC+čas
     private int countOfDeads;
-
-
     private long oldmils;
     private long oldFPSmils;
     private double fps;
-    float step;
-    private float[] modelMatrixEnemy = new float[16];
-    boolean animateStart;
-    boolean animaceRun;
-
-    boolean prechodhrana;
+    private float step;
+    private float[] modelMatrixEnemy;
+    private boolean prechodHrana;
     private float startBod,finishBod;
-    boolean newMove;
-    boolean firstTimeRenderEnemy = true;
-    boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,renderObjV,wayToFinishExist;
-    long milsSave,millsTeleport,millsTeleportFailed;
-
-    FindWayBFS findWay = new FindWayBFS();
-
-    ObjReader obj;
-
-    Enemy enemy;
-
-
-    //Klavesnice
-    boolean isPressedW,isPressedA,isPressedS,isPressedD;
-
-    MazeLoader maze;
-
+    private boolean newMove;
+    private boolean firstTimeRenderEnemy;
+    private long milsSave,milsTeleport,milsTeleportFailed;
+    //Klávesnice
+    private boolean isPressedW,isPressedA,isPressedS,isPressedD;
+    //Objekty pro bludiště
+    private MazeLoader maze;
+    private FindWayBFS findWay;
+    private ObjReader obj;
+    private Enemy enemy;
 
     public Renderer() {
         super();
-
-
-        //Základni ovladaní prostredi - zmensovani zvetsovani okna
+        //Základní ovládaní prostředí – zmenšovaní/zvětšovaní okna
         glfwWindowSizeCallback = new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
@@ -84,11 +74,13 @@ public class Renderer extends AbstractRenderer {
             }
         };
 
-        //rozhlizeni
+        //Rozhlížení
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
+                //Když hra pozastavena nerozhlížím se
                 if (pauseGame) return;
+                //Rozhlížení kamery
                 if (!showCursor) {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     dx = (float) x - ox;
@@ -109,66 +101,49 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         };
-        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
-            @Override
-            public void invoke(long window, int button, int action, int mods) {
 
-//                if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && (pauseGame || inFinish || isPlayerDead)){
-//                    System.out.println("levy");
-//                    showCursor = false;
-//                    DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
-//                    DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
-//                    glfwGetCursorPos(window, xBuffer, yBuffer);
-//                    double x = xBuffer.get(0);
-//                    double y = yBuffer.get(0);
-//                    ox = (float) x;
-//                    oy = (float) y;
-//                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-//                }
-
-            }
-        };
-
-
-
-        //Pohyb
+        //Pohyb hráče po bludišti + ovládání hry
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
+                //Hráč chce resetovat hru, když je pozastavena vše resetuji a počítadlo v závislosti kdy byla hra pozastavena nastavím
                 if (key == GLFW_KEY_R && action == GLFW_PRESS && pauseGame) {
-
+                    //Reset pohybu
                     isPressedW = false;
                     isPressedA = false;
                     isPressedS= false;
                     isPressedD = false;
+                    //Nastavení počítadla
                     if (isPlayerDead)
                         countOfDeads++;
                     if (inFinish)
                         countOfDeads = 0;
+                    //Reset pohybu npc
                     Arrays.fill(modelMatrixEnemy, 1);
                     firstTimeRenderEnemy = true;
                     animaceRun = false;
-
+                    //Základní rozložení bludiště
                     for (int i = 0; i < maze.getPocetKrychli(); i++) {
                         for (int j = 0; j < maze.getPocetKrychli(); j++) {
                             maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
                         }
                     }
+                    //Reset kamery
                     camera.setAzimuth(0);
                     camera.setZenith(0);
                     azimut = 0;
                     zenit = 0;
-                    camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), 5 * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+                    camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana()/4f* maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+                    //Reset proměnných
                     showHelp = false;
-
                     pauseGame = false;
                     isPlayerDead = false;
                     inFinish = false;
-
                     showCursor = false;
-
+                    //Nastavení současné polohy
                     maze.setCurrenI(maze.getSpawnI());
                     maze.setCurrenJ(maze.getSpawnJ());
+                    //Skrytí kurzoru
                     DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
                     DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
                     glfwGetCursorPos(window, xBuffer, yBuffer);
@@ -184,7 +159,7 @@ public class Renderer extends AbstractRenderer {
                     glfwSetWindowShouldClose(window, true);
                     System.exit(0);
                 }
-                // Pozastavení hry
+                // Pozastavení hry + zobrazení kurzoru
                 if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
                     pauseGame = !pauseGame;
                     showCursor = !showCursor;
@@ -201,7 +176,6 @@ public class Renderer extends AbstractRenderer {
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     }
                 }
-
                 // Kontrola, zda je hra pozastavena, když ano vracím se a dále nic nekontroluji
                 if (pauseGame) return;
 
@@ -217,21 +191,18 @@ public class Renderer extends AbstractRenderer {
                 // Teleportace - nahraní uložené kamery
                 if (key == GLFW_KEY_T && action == GLFW_PRESS) {
                     if (cameraTeleport != null) {
-                        millsTeleport = System.currentTimeMillis();
+                        milsTeleport = System.currentTimeMillis();
                         loadedTeleportPosition = true;
                         azimut = azimutTeport;
                         zenit = zenitTeleport;
                         camera = new GLCamera(cameraTeleport);
                     } else {
-                        millsTeleportFailed = System.currentTimeMillis();
+                        milsTeleportFailed = System.currentTimeMillis();
                         loadedTeleportFailed = true;
-                        System.out.println("Nejdrive nastav misto pro teleport");
                     }
                 }
 
-
                 // Pohyb hráče
-                //vice ifu kvuli tomu ze press se resetuje asi po chbyli a zacne hlasit flase
                 //W
                 if (key == GLFW_KEY_W && action == GLFW_PRESS)
                     isPressedW = true;
@@ -258,9 +229,6 @@ public class Renderer extends AbstractRenderer {
                 if (key == GLFW_KEY_E && action == GLFW_PRESS) {
                     animateStart = !animateStart;
                 }
-                if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-                    renderObjV = !renderObjV;
-                }
                 // Přepínání mezi režimem s nápovědou a s NPC
                 if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                     showHelp = !showHelp;
@@ -279,6 +247,7 @@ public class Renderer extends AbstractRenderer {
                         enemy.setEnemyPosJ(-1);
                             int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
                             //TODo napsat kdyz null tka neexistuje cesta z bludiste
+                            //null -> neexistuje cesta z bludiště
                             if(tmpBludiste != null){
                                 for (int i = 0; i < maze.getPocetKrychli(); i++) {
                                     for (int j = 0; j < maze.getPocetKrychli(); j++) {
@@ -297,30 +266,39 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         };
+        //Základní chování (odstranění výpisů)
         glfwScrollCallback = new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double dx, double dy) {
                 //do nothing
             }
         };
+        glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {//do nothing
+            }
+        };
+
     }
 
-    //Inicializace bludiste
+    //Inicializace bludiště
     @Override
     public void init() {
-//        super.init();
-
+        //Základní nastavení
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-//        glPolygonMode(GL_FRONT, GL_FILL);
-//        glPolygonMode(GL_BACK, GL_FILL);
         glEnable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glEnable(GL_DEPTH_TEST);
+        glPolygonMode(GL_FRONT, GL_FILL);
+        glPolygonMode(GL_BACK, GL_POINT);
+        glFrontFace(GL_CCW);
+
+        //Načtení potřebných textur
         textureCube = new OGLTexture2D[6];
         try {
-            texture1 = new OGLTexture2D("textures/floor.jpg");
-            texture2 = new OGLTexture2D("textures/wall.png");
+            textureFloor = new OGLTexture2D("textures/floor.jpg");
+            textureWall = new OGLTexture2D("textures/wall.png");
             textureFinish = new OGLTexture2D("textures/finish.jpg");
             textureStart = new OGLTexture2D("textures/start.jpg");
             textureHelp = new OGLTexture2D("textures/help.jpg");
@@ -337,69 +315,43 @@ public class Renderer extends AbstractRenderer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-        //TODO zeptat se
-//        glFrontFace(GL_CCW);
-        glEnable(GL_DEPTH_TEST);
-        glPolygonMode(GL_FRONT, GL_FILL);
-        glPolygonMode(GL_BACK, GL_POINT);
-//        glEnable(GL_CULL_FACE);
-//        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
-
+        //Prvotní nastavení proměnných a objektu:
         maze = new MazeLoader();
-
         camera = new GLCamera();
-
-        camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), 5 * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
-
-        boxes = maze.getBoxes();
-
-        //vytvorim jednotkovou matici
+        camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana()/4f* maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+        findWay = new FindWayBFS();
+        //Vytvoření jednotkové matice pro pohyb NPC
+        modelMatrixEnemy = new float[16];
         Arrays.fill(modelMatrixEnemy, 1);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
-        glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
-
-        //objekt
         obj = new ObjReader();
-
         pauseGame = true;
-
         textRenderer = new OGLTextRenderer(width, height);
-
         countOfDeads = 0;
-        animateStart = true;
-
         enemy = new Enemy(maze.getPocetKrychli());
+        wayToFinishExist = true;
+        showCursor = true;
+        firstTimeRenderEnemy = true;
 
-//        if(findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()}) !=null)
-            wayToFinishExist = true;
-
+        //TODo odstranit
+        animateStart = true;
     }
 
 
-    //Funkce pro neustale vykreslovani
+    //Funkce pro neustále vykreslováni
     @Override
     public void display() {
-
-        // kontroluji stavy hry a podle toho se chovám
+        //Kontroluji stavy hry a podle toho se chovám
         if (pauseGame || inFinish || isPlayerDead) {
+            //Vykreslení menu podle stavu hry
             texturePause.bind();
             if (isPlayerDead)
                 textureIsDead.bind();
             if (inFinish)
                 texturePauseFinish.bind();
-            glViewport(0, 0, width, height);
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            glViewport(0, 0, width, height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             glMatrixMode(GL_PROJECTION);
@@ -425,33 +377,31 @@ public class Renderer extends AbstractRenderer {
             return;
         }
 
-        // vypocet fps, nastaveni rychlosti animace podle rychlosti prekresleni
+        //Výpočet fps, nastaveni rychlosti pohybu NPC podle rychlosti překreslení
         long mils = System.currentTimeMillis();
         if ((mils - oldFPSmils) > 300) {
             fps = 1000 / (double) (mils - oldmils + 1);
             oldFPSmils = mils;
         }
         String textInfo = String.format(Locale.US, "FPS %3.1f", fps);
-
-        float speed = 20; // pocet jednotek za vterinu
+        float speed = maze.getJednaHrana(); // počet jednotek za vteřinu
         step = speed * (mils - oldmils) / 1000.0f; // krok za jedno
         oldmils = mils;
-
-
 
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
         glClearColor(0f, 0f, 0f, 1f);
 
-        //Modelovaci
+        //Modelovací
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
-        //Projekcni
+        //Projekční
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45, width / (float) height, 0.01f, 10000.0f);
+        gluPerspective(45, width / (float) height, 0.01f, 100.0f);
 
+        //Kamera
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
         // TODo otesotvat pro jine rozmery bludiste a zmenil jsem v boxech zpuisob vytvareni vysky boxu
@@ -459,34 +409,22 @@ public class Renderer extends AbstractRenderer {
         camera.setPosition(cameraFixedY.withY(maze.getJednaHrana()/4f* maze.getZmenseni()));
         camera.setMatrix();
 
-        texture1.bind();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
         skyBox();
-
-
         renderMaze();
-        if(renderObjV)
-        renderObj();
 
-        //zjisteni zda me zasahlo np kdyz ano zareaguji
+        //Zjištěni, zda hráče zasáhlo npc
         if (maze.getCurrenI() == enemy.getEnemyPosI() && maze.getCurrenJ() == enemy.getEnemyPosJ()) {
-//            inFinish = true;
             isPlayerDead = true;
             pauseGame = true;
-            System.out.println("jsi mrtvy");
         }
 
-
-        //Ovládani klávesnice zda kvůli lepší simulaci ovládání jako ve hře
+        //Ovládaní klávesnice zde kvůli lepší simulaci ovládání jako ve hře:
         //W
         if (isPressedW && !isPressedD && !isPressedA && !isPressedS) {
             GLCamera tmp = new GLCamera(camera);
-            tmp.forward(0.3);
+            tmp.forward(0.03);
             if (maze.isOutside(tmp) == 0)
-                camera.forward(0.3);
+                camera.forward(0.03);
             if (maze.isOutside(tmp) == 2) {
                 pauseGame = true;
                 inFinish = true;
@@ -613,8 +551,8 @@ public class Renderer extends AbstractRenderer {
             }
         }
 
-        //zapiani a vypinani pomoci
-        //nahrani bludiscte pok akzdem kliku/drzeni klavesy
+        //Zapínaní a vypínaní pomoci
+        //Nahraní bludiště po každém kliku/držení klávesy
         if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
             int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
             if(tmpBludiste != null) {
@@ -626,12 +564,12 @@ public class Renderer extends AbstractRenderer {
             }
         }
 
-        // zmizení textu po 1s pro oznaméní informace o teleportu
+        //Zmizení textu po 1s pro oznámení informace o teleportu
         if (savedTeleportPosition && (mils - milsSave) > 1000)
             savedTeleportPosition = false;
-        if (loadedTeleportPosition && (mils - millsTeleport) > 1000)
+        if (loadedTeleportPosition && (mils - milsTeleport) > 1000)
             loadedTeleportPosition = false;
-        if (loadedTeleportFailed && (mils - millsTeleportFailed) > 1000)
+        if (loadedTeleportFailed && (mils - milsTeleportFailed) > 1000)
             loadedTeleportFailed = false;
 
         // Zobrazováni textu na obrazovce
@@ -647,31 +585,30 @@ public class Renderer extends AbstractRenderer {
             textRenderer.addStr2D(2, height - 3, "Nejdříve nastav místo pro teleportaci.");
         if (!wayToFinishExist)
             textRenderer.addStr2D(width - 800, height -3, "Z tohoto bludiště neexistuje cesta ven.");
-
         textRenderer.addStr2D(width - 315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
         textRenderer.draw();
 
     }
 
-
     // Funkce pro vykreslení NPC - funkce se stará o to aby se npc(obj) pohybovalo ve spravném směru
     private void renderEnemy(int x, int y) {
-//        System.out.println( "vlakno");
         if (!animateStart) return;
+
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-
-        //zajisteni naharani matice pro npc
+        //Zajištěni nahraní nové matice pro npc na středu bloku
         if (newMove) {
             glLoadIdentity();
             glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
             glTranslatef(maze.getJednaHrana() / 2f + x * maze.getJednaHrana(), 0f, maze.getJednaHrana() / 2f + y * maze.getJednaHrana());
+            //Uložení matice do proměnné
             glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
             newMove = false;
         }
+        //Nahrání modelovací matice pro NPC
         glLoadMatrixf(modelMatrixEnemy);
 
-        //ptám se jaký smerem ma npc jit hodnota je uloze jako posledni v poli
+        //Ptám se jaký směrem má npc jít hodnota je uložena v poli
         switch (enemy.getCurrentDestinationBlock()[2]) {
             case 1 -> glTranslatef(0, 0, step);
             case 2 -> glTranslatef(0, 0, -step);
@@ -680,12 +617,10 @@ public class Renderer extends AbstractRenderer {
             default -> glTranslatef(0, 0, 0);
         }
 
+        //Vykreslení objektu
         textureKing.bind();
-
         glBegin(GL_TRIANGLES);
-
         for (int[] indice : obj.getIndices()) {
-//            System.out.println("test");
             glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
             glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
@@ -693,41 +628,29 @@ public class Renderer extends AbstractRenderer {
             glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
             glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
         }
-//        for (int[] indice : obj.getIndices()) {
-////            System.out.println("test");
-//            glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
-//            glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[2] - 1)[0], obj.getVrcholy().get(indice[2] - 1)[1], obj.getVrcholy().get(indice[2] - 1)[2]);
-//            glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
-//            glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
-//        }
-
         glEnd();
+        //Uložení matice pro další pohyb
         glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrixEnemy);
         glPopMatrix();
-
-        //precahzim hranu nastavuji jiny papametry site
+        //NPC přechází hranu s jiným blokem upravím podle toho rozložení bludiště
         if (startBod >= maze.getJednaHrana() / 2f) {
-            prechodhrana = true;
-//            rozlozeniBludiste[source[0]][source[1]] = 0;
+            prechodHrana = true;
+            //Starý blok nastavím na cestu a nový na enemy
             maze.setRozlozeniBludiste(enemy.getSource()[0],enemy.getSource()[1],0);
-
             maze.setRozlozeniBludiste(enemy.getCurrentDestinationBlock()[0],enemy.getCurrentDestinationBlock()[1],4);
         }
+        //Posouvám, dokud není npc na středu dalšího bloku
         if (startBod < finishBod)
             startBod = startBod + step;
-
-        //vim ze animace skoncila a muzu najit  dalsi mozny blok pro pohyb
+        //Vím ze animace skončila a mužů najit další možný blok pro pohyb
         if (startBod >= finishBod) {
             animaceRun = false;
-            prechodhrana = false;
+            prechodHrana = false;
         }
     }
 
-    //Vykresleni bludiste
+    //Vykresluji bludiště podle hodnot v matici
     private void renderMaze() {
-//        rozlozeniBludiste[3][7] = 3;
         for (int i = 0; i < maze.getPocetKrychli(); i++) {
             for (int j = 0; j < maze.getPocetKrychli(); j++) {
                 if (maze.getRozlozeniBludiste(i,j) == 0) {
@@ -737,16 +660,16 @@ public class Renderer extends AbstractRenderer {
                 } else if (maze.getRozlozeniBludiste(i,j) == 2) {
                     renderStart(i, j);
                 } else if (maze.getRozlozeniBludiste(i,j) == 4) {
-                    //ulozeni hodnot kde se nachazi enemy
+                    //Uložení hodnot, kde se nachází enemy
                     enemy.setEnemyPosI(i);
                     enemy.setEnemyPosJ(j);
-
-                    //kdyz renderuji enmy poprve v kazdem novem pohybbu nastavim mu prvni blok v poli puvodni aby se nemohol vratit ani tma od kud zacal
+                    //Když renderuji enemy poprvé v každém novem pohybu mu nastavím první blok v poli navštívených původní blok,
+                    // aby se nemohl vrátit ani tam kde začal
                     if (firstTimeRenderEnemy) {
                         enemy.getAllVisitedEnemy().add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
                         firstTimeRenderEnemy = false;
                     }
-                    //nove zapnuti pohybu vyhleadm blok a resetuji hodnoty pro poybu pro funkci kterea ho vykresluje
+                    //Nové zapnutí pohybu vyhledám blok a resetuji hodnoty pro pohyb a to i ve funkci která ho vykresluje
                     if (!animaceRun) {
                         enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
                         startBod = 0f;
@@ -754,28 +677,10 @@ public class Renderer extends AbstractRenderer {
                         animaceRun = true;
                         newMove = true;
                     }
-                    if (prechodhrana) {
-                        //ta predchozi, rpoze jeste nedoberhla animace ale blobk uz je prehozeni
-//                        Executors.newSingleThreadExecutor().execute(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                glfwMakeContextCurrent(glfwGetPrimaryMonitor());
-//                                renderEnemy(source[0], source[1]);
-//                                glfwMakeContextCurrent(MemoryUtil.NULL);
-//                            }
-//                        });
+                    if (prechodHrana) {
+                        //Enemy přesel na jiný blok, ale animace ještě neskončila, proto vykresluji ještě objekt podle zdrojového bloku
                         renderEnemy(enemy.getSource()[0], enemy.getSource()[1]);
                     } else {
-//                        int finalI = i;
-//                        int finalJ = j;
-//                        Executors.newSingleThreadExecutor().execute(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                glfwMakeContextCurrent(glfwGetPrimaryMonitor());
-//                                renderEnemy(finalI, finalJ);
-//                                glfwMakeContextCurrent(MemoryUtil.NULL);
-//                            }
-//                        });
                         renderEnemy(i, j);
                     }
                 } else if (maze.getRozlozeniBludiste(i,j) == 5) {
@@ -790,72 +695,72 @@ public class Renderer extends AbstractRenderer {
         }
 
     }
-    //Vykresleni boxu/zdi matice
+    //Vykreslení boxu/zdi matice
     private void renderBox(int x, int y) {
-        texture2.bind();
+        textureWall.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
 
         glEnd();
     }
 
-    //Vykresleni boxu/zdi pomoci boxu
+    //Vykreslení boxu/zdi pomoci boxu
     private void renderBox(Box box) {
-        texture2.bind();
+        textureWall.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
@@ -916,123 +821,124 @@ public class Renderer extends AbstractRenderer {
         glEnd();
     }
 
-    //Vykresleni podlahy
+    //Vykreslení podlahy
     private void renderPlate(int x, int y) {
-        texture1.bind();
+        textureFloor.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glEnd();
     }
 
+    //Vykreslení podlahy označující cestu z bludiště
     private void renderPlateHelp(int x, int y) {
         textureHelp.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glEnd();
     }
 
-    //Vykresleni cile
+    //Vykreslení cile
     private void renderFinish(int x, int y) {
         textureFinish.bind();
         glBegin(GL_QUADS);
         glColor3f(0f, 1f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp1().getX(), (float) boxes[x][y].getbUp1().getY(), (float) boxes[x][y].getbUp1().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp1().getX(), (float) maze.getBoxes()[x][y].getbUp1().getY(), (float) maze.getBoxes()[x][y].getbUp1().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp2().getX(), (float) boxes[x][y].getbUp2().getY(), (float) boxes[x][y].getbUp2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp2().getX(), (float) maze.getBoxes()[x][y].getbUp2().getY(), (float) maze.getBoxes()[x][y].getbUp2().getZ());
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getbUp3().getX(), (float) boxes[x][y].getbUp3().getY(), (float) boxes[x][y].getbUp3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp3().getX(), (float) maze.getBoxes()[x][y].getbUp3().getY(), (float) maze.getBoxes()[x][y].getbUp3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getbUp4().getX(), (float) boxes[x][y].getbUp4().getY(), (float) boxes[x][y].getbUp4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbUp4().getX(), (float) maze.getBoxes()[x][y].getbUp4().getY(), (float) maze.getBoxes()[x][y].getbUp4().getZ());
 
         glEnd();
     }
 
-    //Vykresleni startu
+    //Vykreslení startu
     private void renderStart(int x, int y) {
         textureStart.bind();
         glBegin(GL_QUADS);
         glColor3f(1f, 0f, 0f);
 
         glTexCoord2f(0, 0);
-        glVertex3f((float) boxes[x][y].getbH().getX(), (float) boxes[x][y].getbH().getY(), (float) boxes[x][y].getbH().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getbH().getX(), (float) maze.getBoxes()[x][y].getbH().getY(), (float) maze.getBoxes()[x][y].getbH().getZ());
         glTexCoord2f(1, 0);
-        glVertex3f((float) boxes[x][y].getB2().getX(), (float) boxes[x][y].getB2().getY(), (float) boxes[x][y].getB2().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB2().getX(), (float) maze.getBoxes()[x][y].getB2().getY(), (float) maze.getBoxes()[x][y].getB2().getZ());
         glTexCoord2f(1, 1);
-        glVertex3f((float) boxes[x][y].getB3().getX(), (float) boxes[x][y].getB3().getY(), (float) boxes[x][y].getB3().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB3().getX(), (float) maze.getBoxes()[x][y].getB3().getY(), (float) maze.getBoxes()[x][y].getB3().getZ());
         glTexCoord2f(0, 1);
-        glVertex3f((float) boxes[x][y].getB4().getX(), (float) boxes[x][y].getB4().getY(), (float) boxes[x][y].getB4().getZ());
+        glVertex3f((float) maze.getBoxes()[x][y].getB4().getX(), (float) maze.getBoxes()[x][y].getB4().getY(), (float) maze.getBoxes()[x][y].getB4().getZ());
 
         glEnd();
     }
 
-    //Vykresleni skyboxu
+    //Vykreslení skyboxu
     private void skyBox() {
 
         glMatrixMode(GL_MODELVIEW);
@@ -1046,9 +952,6 @@ public class Renderer extends AbstractRenderer {
 
         glutWireCube(size);
         glEnable(GL_TEXTURE_2D);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-
 
         textureCube[1].bind(); //-x  (left)
         glBegin(GL_QUADS);
@@ -1126,40 +1029,4 @@ public class Renderer extends AbstractRenderer {
 
         glEndList();
     }
-    //TODO odstranit
-    public void renderObj() {
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-        glScalef(maze.getZmenseni(), maze.getZmenseni(), maze.getZmenseni());
-//        glRotatef(270,1,0,0);
-//        glTranslatef(8.4f,1.1f,0);
-        glTranslatef(10f, 0f, 10f);
-        glEnable(GL_TEXTURE_2D);
-//        glEnable(GL_LIGHTING);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        textureKing.bind();
-        glBegin(GL_TRIANGLES);
-//        glBegin(GL_QUAD_STRIP);
-        glColor3f(1f, 1f, 1f);
-
-
-
-        for (int[] indice : obj.getIndices()) {
-            glTexCoord2f(obj.getTextury().get(indice[1] - 1)[0], obj.getTextury().get(indice[1] - 1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[0] - 1)[0], obj.getVrcholy().get(indice[0] - 1)[1], obj.getVrcholy().get(indice[0] - 1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[3] - 1)[0], obj.getTextury().get(indice[3] - 1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[2] - 1)[0], obj.getVrcholy().get(indice[2] - 1)[1], obj.getVrcholy().get(indice[2] - 1)[2]);
-            glTexCoord2f(obj.getTextury().get(indice[5] - 1)[0], obj.getTextury().get(indice[5] - 1)[1]);
-            glVertex3f(obj.getVrcholy().get(indice[4] - 1)[0], obj.getVrcholy().get(indice[4] - 1)[1], obj.getVrcholy().get(indice[4] - 1)[2]);
-        }
-        glEnd();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glPopMatrix();
-    }
-
-
 }
-

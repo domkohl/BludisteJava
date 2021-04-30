@@ -54,6 +54,7 @@ public class Enemy {
         int randomWay = (int) (Math.random() * possbileWays.size());
         allVisitedEnemy.add(possbileWays.get(randomWay));
         setCurrentDestinationBlock(possbileWays.get(randomWay)[0], possbileWays.get(randomWay)[1], possbileWays.get(randomWay)[2]);
+        System.out.println(allVisitedEnemy.toString());
 
     }
 
