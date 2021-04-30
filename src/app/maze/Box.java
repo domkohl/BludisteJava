@@ -21,10 +21,10 @@ public class Box {
         this.b3 = new Point3D(bH.getX() - jednaHrana, 0, bH.getZ() - jednaHrana);
         this.b4 = new Point3D(bH.getX() - jednaHrana, 0, bH.getZ());
 
-        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana, jednaHrana/2f, jednaHrana + z * jednaHrana);
-        this.bUp2 = new Point3D(bH.getX(), jednaHrana/2f, bH.getZ() - jednaHrana);
-        this.bUp3 = new Point3D(bH.getX() - jednaHrana, jednaHrana/2f, bH.getZ() - jednaHrana);
-        this.bUp4 = new Point3D(bH.getX() - jednaHrana, jednaHrana/2f, bH.getZ());
+        this.bUp1 = new Point3D(jednaHrana + x * jednaHrana, jednaHrana / 2f, jednaHrana + z * jednaHrana);
+        this.bUp2 = new Point3D(bH.getX(), jednaHrana / 2f, bH.getZ() - jednaHrana);
+        this.bUp3 = new Point3D(bH.getX() - jednaHrana, jednaHrana / 2f, bH.getZ() - jednaHrana);
+        this.bUp4 = new Point3D(bH.getX() - jednaHrana, jednaHrana / 2f, bH.getZ());
 
         //Zjištěni max/min hodnot pro kolize
         double[] allX = {bH.getX(), b2.getX(), b3.getX(), b4.getX(), bUp1.getX(), bUp2.getX(), bUp3.getX(), bUp4.getX()};

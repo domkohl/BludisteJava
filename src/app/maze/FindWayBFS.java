@@ -85,7 +85,6 @@ public class FindWayBFS {
         }
 
         //Po průchodu všech cest, nebo nalezení cíle:
-
         //Když jsem nenašel cíl vracím null –> k cíli nejde dojít
         if (dest == null) {
             return null;

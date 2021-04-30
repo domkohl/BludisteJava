@@ -18,7 +18,6 @@ public class Enemy {
     public Enemy(int pocetKrychli) {
         //Pomocné pole uchovávající hodnoty: 1. i, 2. j a 3. směr odkud jdu
         currentDestinationBlock = new int[3];
-
         allVisitedEnemy = new ArrayList<>();
         this.pocetKrychli = pocetKrychli;
         possbileWays = new ArrayList<>();
@@ -54,8 +53,6 @@ public class Enemy {
         int randomWay = (int) (Math.random() * possbileWays.size());
         allVisitedEnemy.add(possbileWays.get(randomWay));
         setCurrentDestinationBlock(possbileWays.get(randomWay)[0], possbileWays.get(randomWay)[1], possbileWays.get(randomWay)[2]);
-        System.out.println(allVisitedEnemy.toString());
-
     }
 
     //Pomocná funkce pro zjištění, zda se npc může pohnout tím to směrem

@@ -7,13 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-
 /**
  * Třída pro načtení bludiště ze souboru a následnou práci s bludištěm
  */
 
 public class MazeLoader extends FileReader {
     private final float zmenseni;
+    private final ArrayList<Box> helpBoxes;
     private int pocetKrychli;
     private int delkaHrany;
     private int[][] rozlozeniBludiste, rozlozeniBludisteBackUp, rozlozeniBludisteNoEnemy;
@@ -21,9 +21,7 @@ public class MazeLoader extends FileReader {
     private int spawnI, spawnJ;
     private int finishI, finishJ;
     private double spawnX, spawnZ;
-    private final ArrayList<Box> helpBoxes;
     private boolean mazeLoadError;
-    private String mazeLoadErrorMessage;
     //Proměnná, kde se nachází hráč
     private int currenI, currenJ;
     //Boxy pro bludiště
@@ -33,8 +31,8 @@ public class MazeLoader extends FileReader {
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
         //Pro generování jar souboru
-//        parseFile("src/res/proportions/maze");
-        parseFile(System.getProperty("user.dir") + "/maze");
+        parseFile("src/res/proportions/maze");
+//        parseFile(System.getProperty("user.dir") + "/maze");
         if (mazeLoadError)
             loadDefaultMaze();
         createMaze();
@@ -180,13 +178,10 @@ public class MazeLoader extends FileReader {
                         enemyCount++;
                 }
             }
-            mazeLoadError = enemyCount != 1 || spawnCount != 1 || finishCount < 1;
+            mazeLoadError = enemyCount != 1 || spawnCount != 1 || finishCount != 1;
         } catch (Exception e) {
             mazeLoadError = true;
-            //TODo
-//            e.printStackTrace();
         }
-
     }
 
     //Funkce pro kolize
@@ -320,7 +315,4 @@ public class MazeLoader extends FileReader {
         return mazeLoadError;
     }
 
-    public String getMazeLoadErrorMessage() {
-        return mazeLoadErrorMessage;
-    }
 }

@@ -21,7 +21,6 @@ import java.util.Locale;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static utils.GluUtils.gluPerspective;
-import static utils.GlutUtils.glutWireCube;
 
 
 /**
@@ -36,10 +35,10 @@ public class Renderer extends AbstractRenderer {
     private float dx, dy, ox, oy;
     private float azimut, zenit;
     private boolean animaceRun;
-    private boolean showHelp,pauseGame,inFinish,isPlayerDead,savedTeleportPosition,loadedTeleportPosition,loadedTeleportFailed,wayToFinishExist;
+    private boolean showHelp, pauseGame, inFinish, isPlayerDead, savedTeleportPosition, loadedTeleportPosition, loadedTeleportFailed, wayToFinishExist;
     //Textury
     private OGLTexture2D[] textureCube;
-    private OGLTexture2D textureFloor, textureWall, textureFinish, textureStart,textureHelp,textureKing,texturePause,texturePauseFinish,textureIsDead;
+    private OGLTexture2D textureFloor, textureWall, textureFinish, textureStart, textureHelp, textureKing, texturePause, texturePauseFinish, textureIsDead;
     //NPC+čas
     private int countOfDeads;
     private long oldmils;
@@ -48,12 +47,12 @@ public class Renderer extends AbstractRenderer {
     private float step;
     private float[] modelMatrixEnemy;
     private boolean prechodHrana;
-    private float startBod,finishBod;
+    private float startBod, finishBod;
     private boolean newMove;
     private boolean firstTimeRenderEnemy;
-    private long milsSave,milsTeleport,milsTeleportFailed;
+    private long milsSave, milsTeleport, milsTeleportFailed;
     //Klávesnice
-    private boolean isPressedW,isPressedA,isPressedS,isPressedD;
+    private boolean isPressedW, isPressedA, isPressedS, isPressedD;
     //Objekty pro bludiště
     private MazeLoader maze;
     private FindWayBFS findWay;
@@ -110,7 +109,7 @@ public class Renderer extends AbstractRenderer {
                     //Reset pohybu
                     isPressedW = false;
                     isPressedA = false;
-                    isPressedS= false;
+                    isPressedS = false;
                     isPressedD = false;
                     //Nastavení počítadla
                     if (isPlayerDead)
@@ -124,7 +123,7 @@ public class Renderer extends AbstractRenderer {
                     //Základní rozložení bludiště
                     for (int i = 0; i < maze.getPocetKrychli(); i++) {
                         for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                            maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
+                            maze.setRozlozeniBludiste(i, j, maze.getRozlozeniBludisteBackUp(i, j));
                         }
                     }
                     //Reset kamery
@@ -132,7 +131,8 @@ public class Renderer extends AbstractRenderer {
                     camera.setZenith(0);
                     azimut = 0;
                     zenit = 0;
-                    camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana()/4f* maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+                    camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana() / 4f * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+                    cameraTeleport = null;
                     //Reset proměnných
                     showHelp = false;
                     pauseGame = false;
@@ -231,30 +231,28 @@ public class Renderer extends AbstractRenderer {
                         animaceRun = false;
                         for (int i = 0; i < maze.getPocetKrychli(); i++) {
                             for (int j = 0; j < maze.getPocetKrychli(); j++) {
-//                                rozlozeniBludiste[i][j] = rozlozeniBludisteBackUp[i][j];
-                                maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteBackUp(i,j));
+                                maze.setRozlozeniBludiste(i, j, maze.getRozlozeniBludisteBackUp(i, j));
                             }
                         }
-                    }else{
+                    } else {
                         enemy.setEnemyPosI(-1);
                         enemy.setEnemyPosJ(-1);
-                            int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
-                            //TODo napsat kdyz null tka neexistuje cesta z bludiste
-                            //null -> neexistuje cesta z bludiště
-                            if(tmpBludiste != null){
-                                for (int i = 0; i < maze.getPocetKrychli(); i++) {
-                                    for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                                        maze.setRozlozeniBludiste(i,j,tmpBludiste[i][j]);
-                                    }
+                        int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
+                        //null -> neexistuje cesta z bludiště
+                        if (tmpBludiste != null) {
+                            for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                                for (int j = 0; j < maze.getPocetKrychli(); j++) {
+                                    maze.setRozlozeniBludiste(i, j, tmpBludiste[i][j]);
                                 }
-                            }else{
-                                for (int i = 0; i < maze.getPocetKrychli(); i++) {
-                                    for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                                        maze.setRozlozeniBludiste(i,j,maze.getRozlozeniBludisteNoEnemy()[i][j]);
-                                    }
-                                }
-                                wayToFinishExist = false;
                             }
+                        } else {
+                            for (int i = 0; i < maze.getPocetKrychli(); i++) {
+                                for (int j = 0; j < maze.getPocetKrychli(); j++) {
+                                    maze.setRozlozeniBludiste(i, j, maze.getRozlozeniBludisteNoEnemy()[i][j]);
+                                }
+                            }
+                            wayToFinishExist = false;
+                        }
                     }
                 }
             }
@@ -312,7 +310,7 @@ public class Renderer extends AbstractRenderer {
         //Prvotní nastavení proměnných a objektu:
         maze = new MazeLoader();
         camera = new GLCamera();
-        camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana()/4f* maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
+        camera.setPosition(new Vec3D(maze.getSpawnX() * maze.getZmenseni(), maze.getJednaHrana() / 4f * maze.getZmenseni(), maze.getSpawnZ() * maze.getZmenseni()));
         findWay = new FindWayBFS();
         //Vytvoření jednotkové matice pro pohyb NPC
         modelMatrixEnemy = new float[16];
@@ -361,7 +359,7 @@ public class Renderer extends AbstractRenderer {
             textRenderer.resize(width, height);
             textRenderer.clear();
             if (maze.isMazeLoadError())
-                textRenderer.addStr2D(width - 800, height -3, "!! Nepodařolo se náhrat ze souboru !! -> bylo nahráno základní bludiště");
+                textRenderer.addStr2D(width - 800, height - 3, "!! Nepodařolo se náhrat ze souboru !! -> bylo nahráno základní bludiště");
             textRenderer.addStr2D(2, 17, "Počet smrtí: " + countOfDeads);
             textRenderer.draw();
             return;
@@ -389,14 +387,12 @@ public class Renderer extends AbstractRenderer {
         //Projekční
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45, width / (float) height, 0.01f, 100.0f);
+        gluPerspective(45, width / (float) height, 0.01f, maze.getPocetKrychli() * maze.getDelkaHrany() * 1.1f);
 
         //Kamera
         camera.setFirstPerson(true);
         Vec3D cameraFixedY = camera.getPosition();
-        // TODo otesotvat pro jine rozmery bludiste a zmenil jsem v boxech zpuisob vytvareni vysky boxu
-//        camera.setPosition(cameraFixedY.withY(0.20));
-        camera.setPosition(cameraFixedY.withY(maze.getJednaHrana()/4f* maze.getZmenseni()));
+        camera.setPosition(cameraFixedY.withY(maze.getJednaHrana() / 4f * maze.getZmenseni()));
         camera.setMatrix();
 
         skyBox();
@@ -423,23 +419,23 @@ public class Renderer extends AbstractRenderer {
             tryMoveSingleClick(4);
         //W+D
         if (isPressedW && isPressedD && !isPressedA && !isPressedS) {
-            tryMoveDoubleClick(0.03,1);
+            tryMoveDoubleClick(0.03, 1);
         }
         //W+A
         if (isPressedW && isPressedA && !isPressedD && !isPressedS)
-            tryMoveDoubleClick(-0.03,2);
+            tryMoveDoubleClick(-0.03, 2);
         //S+D
         if (isPressedS && isPressedD && !isPressedW && !isPressedA)
-            tryMoveDoubleClick(0.03,2);
+            tryMoveDoubleClick(0.03, 2);
         //S+A
         if (isPressedS && isPressedA && !isPressedW && !isPressedD)
-            tryMoveDoubleClick(-0.03,1);
+            tryMoveDoubleClick(-0.03, 1);
 
         //Zapínaní a vypínaní pomoci
         //Nahraní bludiště po každém kliku/držení klávesy
-        if (showHelp && (isPressedS||isPressedA||isPressedD||isPressedW)) {
+        if (showHelp && (isPressedS || isPressedA || isPressedD || isPressedW)) {
             int[][] tmpBludiste = findWay.shortestPath(maze.getRozlozeniBludisteNoEnemy(), new int[]{maze.getCurrenI(), maze.getCurrenJ()}, new int[]{maze.getFinishI(), maze.getFinishJ()});
-            if(tmpBludiste != null) {
+            if (tmpBludiste != null) {
                 for (int i = 0; i < maze.getPocetKrychli(); i++) {
                     for (int j = 0; j < maze.getPocetKrychli(); j++) {
                         maze.setRozlozeniBludiste(i, j, tmpBludiste[i][j]);
@@ -468,7 +464,7 @@ public class Renderer extends AbstractRenderer {
         if (loadedTeleportFailed)
             textRenderer.addStr2D(2, height - 3, "Nejdříve nastav místo pro teleportaci.");
         if (!wayToFinishExist)
-            textRenderer.addStr2D(width - 800, height -3, "Z tohoto bludiště neexistuje cesta ven.");
+            textRenderer.addStr2D(width - 800, height - 3, "Z tohoto bludiště neexistuje cesta ven.");
         textRenderer.addStr2D(width - 315, height - 3, "Semestrální projekt – Dominik Kohl(c) PGRF2 UHK 2021");
         textRenderer.draw();
 
@@ -478,18 +474,19 @@ public class Renderer extends AbstractRenderer {
     private void tryMoveSingleClick(int i) {
         GLCamera tmp = new GLCamera(camera);
         switch (i) {
-            case 1 -> tmp.forward(0.03);
-            case 2 -> tmp.backward(0.03);
-            case 3 -> tmp.left(0.03);
-            case 4 -> tmp.right(0.03);
+            case 1 -> tmp.forward((0.03 / 20) * maze.getJednaHrana());
+            case 2 -> tmp.backward((0.03 / 20) * maze.getJednaHrana());
+            case 3 -> tmp.left((0.03 / 20) * maze.getJednaHrana());
+            case 4 -> tmp.right((0.03 / 20) * maze.getJednaHrana());
             default -> tmp.getPosition();
         }
-        if (maze.isOutside(tmp) == 0){
+        if (maze.isOutside(tmp) == 0) {
+
             switch (i) {
-                case 1 -> camera.forward(0.03);
-                case 2 -> camera.backward(0.03);
-                case 3 -> camera.left(0.03);
-                case 4 -> camera.right(0.03);
+                case 1 -> camera.forward((0.03 / 20) * maze.getJednaHrana());
+                case 2 -> camera.backward((0.03 / 20) * maze.getJednaHrana());
+                case 3 -> camera.left((0.03 / 20) * maze.getJednaHrana());
+                case 4 -> camera.right((0.03 / 20) * maze.getJednaHrana());
                 default -> camera.getPosition();
             }
         }
@@ -498,18 +495,19 @@ public class Renderer extends AbstractRenderer {
             inFinish = true;
         }
     }
+
     //Pomocná funkce pro pohyb do stran
     private void tryMoveDoubleClick(double v, int i) {
         GLCamera tmp = new GLCamera(camera);
         switch (i) {
-            case 1 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul(v));
-            case 2 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul(v));
+            case 1 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul((v / 20) * maze.getJednaHrana()));
+            case 2 -> tmp.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul((v / 20) * maze.getJednaHrana()));
             default -> tmp.getPosition();
         }
-        if (maze.isOutside(tmp) == 0){
+        if (maze.isOutside(tmp) == 0) {
             switch (i) {
-                case 1 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul(v));
-                case 2 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul(v));
+                case 1 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - 3f / 4 * Math.PI), 0.0f, +Math.cos(camera.getAzimuth() - 3f / 4 * Math.PI)).mul((v / 20) * maze.getJednaHrana()));
+                case 2 -> camera.move(new Vec3D(-Math.sin(camera.getAzimuth() - Math.PI / 4), 0.0f, +Math.cos(camera.getAzimuth() - Math.PI / 4)).mul((v / 20) * maze.getJednaHrana()));
                 default -> camera.getPosition();
             }
         }
@@ -563,8 +561,8 @@ public class Renderer extends AbstractRenderer {
         if (startBod >= maze.getJednaHrana() / 2f) {
             prechodHrana = true;
             //Starý blok nastavím na cestu a nový na enemy
-            maze.setRozlozeniBludiste(enemy.getSource()[0],enemy.getSource()[1],0);
-            maze.setRozlozeniBludiste(enemy.getCurrentDestinationBlock()[0],enemy.getCurrentDestinationBlock()[1],4);
+            maze.setRozlozeniBludiste(enemy.getSource()[0], enemy.getSource()[1], 0);
+            maze.setRozlozeniBludiste(enemy.getCurrentDestinationBlock()[0], enemy.getCurrentDestinationBlock()[1], 4);
         }
         //Posouvám, dokud není npc na středu dalšího bloku
         if (startBod < finishBod)
@@ -580,25 +578,25 @@ public class Renderer extends AbstractRenderer {
     private void renderMaze() {
         for (int i = 0; i < maze.getPocetKrychli(); i++) {
             for (int j = 0; j < maze.getPocetKrychli(); j++) {
-                if (maze.getRozlozeniBludiste(i,j) == 0) {
+                if (maze.getRozlozeniBludiste(i, j) == 0) {
                     renderPlate(i, j);
-                } else if (maze.getRozlozeniBludiste(i,j) == 3) {
+                } else if (maze.getRozlozeniBludiste(i, j) == 3) {
                     renderFinish(i, j);
-                } else if (maze.getRozlozeniBludiste(i,j) == 2) {
+                } else if (maze.getRozlozeniBludiste(i, j) == 2) {
                     renderStart(i, j);
-                } else if (maze.getRozlozeniBludiste(i,j) == 4) {
+                } else if (maze.getRozlozeniBludiste(i, j) == 4) {
                     //Uložení hodnot, kde se nachází enemy
                     enemy.setEnemyPosI(i);
                     enemy.setEnemyPosJ(j);
                     //Když renderuji enemy poprvé v každém novem pohybu mu nastavím první blok v poli navštívených původní blok,
                     // aby se nemohl vrátit ani tam kde začal
                     if (firstTimeRenderEnemy) {
-                        enemy.getAllVisitedEnemy().add(new int[]{i, j, maze.getRozlozeniBludiste(i,j)});
+                        enemy.getAllVisitedEnemy().add(new int[]{i, j, maze.getRozlozeniBludiste(i, j)});
                         firstTimeRenderEnemy = false;
                     }
                     //Nové zapnutí pohybu vyhledám blok a resetuji hodnoty pro pohyb a to i ve funkci která ho vykresluje
                     if (!animaceRun) {
-                        enemy.possibleWaysEnemyGetDestination(i, j,maze.getRozlozeniBludiste());
+                        enemy.possibleWaysEnemyGetDestination(i, j, maze.getRozlozeniBludiste());
                         startBod = 0f;
                         finishBod = maze.getJednaHrana();
                         animaceRun = true;
@@ -610,7 +608,7 @@ public class Renderer extends AbstractRenderer {
                     } else {
                         renderEnemy(i, j);
                     }
-                } else if (maze.getRozlozeniBludiste(i,j) == 5) {
+                } else if (maze.getRozlozeniBludiste(i, j) == 5) {
                     renderPlateHelp(i, j);
                 } else {
                     renderBox(i, j);
@@ -622,6 +620,7 @@ public class Renderer extends AbstractRenderer {
         }
 
     }
+
     //Vykreslení boxu/zdi matice
     private void renderBox(int x, int y) {
         textureWall.bind();
@@ -871,13 +870,12 @@ public class Renderer extends AbstractRenderer {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
 
-        glRotatef(90,1.0f,0.f,0.f);
-        glRotatef(270,0.f,1.0f,0.f);
+        glRotatef(90, 1.0f, 0.f, 0.f);
+        glRotatef(270, 0.f, 1.0f, 0.f);
 
         glColor3d(0.5, 0.5, 0.5);
         int size = 6 * maze.getDelkaHrany();
 
-        glutWireCube(size);
         glEnable(GL_TEXTURE_2D);
 
         textureCube[1].bind(); //-x  (left)

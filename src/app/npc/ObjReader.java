@@ -22,8 +22,8 @@ public class ObjReader extends FileReader {
         this.indices = new ArrayList<>();
 
         //Pro generování jar souboru
-//        parseFile("src/res/obj/chess");
-        parseFile(System.getProperty("user.dir") + "/chess");
+        parseFile("src/res/obj/chess");
+//        parseFile(System.getProperty("user.dir") + "/obj/chess");
 
     }
 
@@ -69,7 +69,6 @@ public class ObjReader extends FileReader {
             }
 
         } catch (Exception e) {
-            //TODo
             e.printStackTrace();
         }
 
