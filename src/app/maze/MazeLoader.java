@@ -3,31 +3,39 @@ package app.maze;
 import app.fileReader.FileReader;
 import utils.GLCamera;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class MazeLoader extends FileReader {
-        private int pocetKrychli;
-        private int delkaHrany;
-        private int[][] rozlozeniBludiste,rozlozeniBludisteBackUp,rozlozeniBludisteNoEnemy;
-        private Box[][] boxes;
-        private int jednaHrana;
-        private int spawnI,spawnJ;
-        private int finishI,finishJ;
-        private int currenI,currenJ;
-        private double spawnX,spawnZ;
-        private ArrayList<Box> helpBoxes;
-        private float zmenseni;
-        private boolean mazeLoadError;
-        private String mazeLoadErrorMessage;
 
+/**
+ * Třída pro načtení bludiště ze souboru a následnou práci s bludištěm
+ */
+
+public class MazeLoader extends FileReader {
+    private final float zmenseni;
+    private int pocetKrychli;
+    private int delkaHrany;
+    private int[][] rozlozeniBludiste, rozlozeniBludisteBackUp, rozlozeniBludisteNoEnemy;
+    private int jednaHrana;
+    private int spawnI, spawnJ;
+    private int finishI, finishJ;
+    private double spawnX, spawnZ;
+    private final ArrayList<Box> helpBoxes;
+    private boolean mazeLoadError;
+    private String mazeLoadErrorMessage;
+    //Proměnná, kde se nachází hráč
+    private int currenI, currenJ;
+    //Boxy pro bludiště
+    private Box[][] boxes;
+
+    //Konstruktor
     public MazeLoader() {
         helpBoxes = new ArrayList<>();
+        //Pro generování jar souboru
 //        parseFile("src/res/proportions/maze");
-        parseFile(System.getProperty("user.dir")+"/maze");
-        if(mazeLoadError)
+        parseFile(System.getProperty("user.dir") + "/maze");
+        if (mazeLoadError)
             loadDefaultMaze();
         createMaze();
         currenI = spawnI;
@@ -35,6 +43,7 @@ public class MazeLoader extends FileReader {
         zmenseni = 0.04f;
     }
 
+    //Pří chybě se souborem nahraji základní bludiště
     private void loadDefaultMaze() {
         rozlozeniBludiste = new int[][]{
                 {1, 0, 1, 1, 2, 1, 1, 0, 1, 1},
@@ -60,7 +69,8 @@ public class MazeLoader extends FileReader {
 
     }
 
-    //Funkce vytvoreni bludiste
+    //Funkce pro vytvořeni bludiště
+    //Rozložení matice: 0 = cesta, 1 = zeď, 2 = spawn, 3 = cíl, 4 = enemy, 5 = cesta do cíle
     private void createMaze() {
         rozlozeniBludisteBackUp = new int[pocetKrychli][pocetKrychli];
         rozlozeniBludisteNoEnemy = new int[pocetKrychli][pocetKrychli];
@@ -95,7 +105,7 @@ public class MazeLoader extends FileReader {
                             boxes[i][j].getbUp1().getZ()
                     ) / 8;
                 }
-                //pradni bloku kolem npc/cesty kdyz je na kraji mapy
+                //Přidání bloků kolem npc/cesty, když je na kraji mapy
                 if (rozlozeniBludiste[i][j] == 0 || rozlozeniBludiste[i][j] == 4) {
                     addBoxIfPossible(i, j + 1);
                     addBoxIfPossible(i + 1, j);
@@ -106,21 +116,21 @@ public class MazeLoader extends FileReader {
                     finishI = i;
                     finishJ = j;
                 }
-
             }
         }
+        //Přidání bloků kolem spawnu, když je na kraji mapy
         addBoxIfPossible(spawnI, spawnJ + 1);
         addBoxIfPossible(spawnI + 1, spawnJ);
         addBoxIfPossible(spawnI - 1, spawnJ);
         addBoxIfPossible(spawnI, spawnJ - 1);
     }
 
-    //Funkce zjistujici zda musime vykresli box, aby hrac nemohl ven z mapy
+    //Funkce zjišťující, zda musíme vykresli box, aby hráč nemohl ven z mapy
     private void addBoxIfPossible(int i, int j) {
         try {
             double tmp = boxes[i][j].getxMax();
         } catch (ArrayIndexOutOfBoundsException e) {
-            //mimo-vytvorim novy box
+            //Mimo – vytvořím nový pomocný box
             Box tmp = new Box(i, j, jednaHrana);
             helpBoxes.add(tmp);
         } catch (Exception e) {
@@ -128,12 +138,11 @@ public class MazeLoader extends FileReader {
         }
     }
 
-    //Nacteni bludiste ze souboru
+    //Načtení bludiště ze souboru – když nějaká chyba načtu základní bludiště a uživatele upozorním
     @Override
     public void parseFile(String filename) {
-        try{
-//            String data = readFromFile(filename, "txt");
-            String data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, "txt"))));;
+        try {
+            String data = new String(Files.readAllBytes(Paths.get(String.format("%s.%s", filename, "txt"))));
             String[] lines = data.split("\n");
             String[] velikostString = lines[0].split("!");
             String[] velikostString2 = lines[1].split("!");
@@ -143,7 +152,7 @@ public class MazeLoader extends FileReader {
             boxes = new Box[pocetKrychli][pocetKrychli];
             jednaHrana = delkaHrany / pocetKrychli;
             for (int i = 0; i < pocetKrychli; i++) {
-                // rozdeleni radku na jednotlive segmenty
+                //Rozděleni řádku na jednotlivé segmenty
                 String[] attributes = lines[i + 2].split("!");
                 for (int j = 0; j < pocetKrychli; j++) {
                     switch (attributes[j]) {
@@ -153,36 +162,36 @@ public class MazeLoader extends FileReader {
                         case "E" -> rozlozeniBludiste[i][j] = 4;
                         default -> rozlozeniBludiste[i][j] = 1;
                     }
+                    //Vytváření boxů pro bludiště
                     boxes[i][j] = new Box(i, j, jednaHrana);
                 }
             }
-
-            int  finishCount = 0;
-            int  spawnCount = 0;
-            int  enemyCount = 0;
+            //Kontrola správnosti bludiště
+            int finishCount = 0;
+            int spawnCount = 0;
+            int enemyCount = 0;
             for (int i = 0; i < pocetKrychli; i++) {
                 for (int j = 0; j < pocetKrychli; j++) {
-                    if(rozlozeniBludiste[i][j] == 3)
+                    if (rozlozeniBludiste[i][j] == 3)
                         finishCount++;
-                    if(rozlozeniBludiste[i][j] == 2)
+                    if (rozlozeniBludiste[i][j] == 2)
                         spawnCount++;
-                    if(rozlozeniBludiste[i][j] == 4)
+                    if (rozlozeniBludiste[i][j] == 4)
                         enemyCount++;
                 }
             }
-
             mazeLoadError = enemyCount != 1 || spawnCount != 1 || finishCount < 1;
-
-//            System.out.println(mazeLoadError);
-        }catch(Exception e) {
+        } catch (Exception e) {
             mazeLoadError = true;
+            //TODo
 //            e.printStackTrace();
         }
 
     }
 
     //Funkce pro kolize
-    // 0-jsem v bludisti, 1 - jsem blizko zdi, 2 - jsem v cili
+    // 0 - jsem v bludišti, 1 - jsem blízko zdi, 2 - jsem v cíli
+    //Rozložení matice: 0 = cesta, 1 = zeď, 2 = spawn, 3 = cíl, 4 = enemy, 5 = cesta do cíle
     public int isOutside(GLCamera cam) {
         double camX = cam.getPosition().getX();
         double camY = cam.getPosition().getY();
@@ -190,8 +199,8 @@ public class MazeLoader extends FileReader {
         for (int i = 0; i < pocetKrychli; i++) {
             for (int j = 0; j < pocetKrychli; j++) {
                 if (rozlozeniBludiste[i][j] == 1) {
-                    if (boxes[i][j].getxMin() * zmenseni * 0.98<= camX && camX <= boxes[i][j].getxMax() * zmenseni * 1.02 &&
-                            boxes[i][j].getyMin() * zmenseni * 0.98  <= camY && camY <= boxes[i][j].getyMax() * zmenseni * 1.02 &&
+                    if (boxes[i][j].getxMin() * zmenseni * 0.98 <= camX && camX <= boxes[i][j].getxMax() * zmenseni * 1.02 &&
+                            boxes[i][j].getyMin() * zmenseni * 0.98 <= camY && camY <= boxes[i][j].getyMax() * zmenseni * 1.02 &&
                             boxes[i][j].getzMin() * zmenseni * 0.98 <= camZ && camZ <= boxes[i][j].getzMax() * zmenseni * 1.02)
                         return 1;
                 }
@@ -211,79 +220,18 @@ public class MazeLoader extends FileReader {
                 }
             }
         }
-//        System.out.println(helpBoxes.toString());
         for (Box box : helpBoxes) {
-            // TODo konmtrola zda funfiji kolize s help a i vsevhny
-//            System.out.println(box.getxMin());
-            if (box.getxMin() * zmenseni  * 0.98 <= camX && camX <= box.getxMax() * zmenseni  * 1.02 &&
-                    box.getyMin() * zmenseni * 0.98  <= camY && camY <= box.getyMax() * zmenseni * 1.02 &&
-                    box.getzMin() * zmenseni * 0.98 <= camZ && camZ <= box.getzMax() * zmenseni* 1.02 )
+            if (box.getxMin() * zmenseni * 0.98 <= camX && camX <= box.getxMax() * zmenseni * 1.02 &&
+                    box.getyMin() * zmenseni * 0.98 <= camY && camY <= box.getyMax() * zmenseni * 1.02 &&
+                    box.getzMin() * zmenseni * 0.98 <= camZ && camZ <= box.getzMax() * zmenseni * 1.02)
                 return 1;
-
         }
         return 0;
     }
 
-
-
-    public void setPocetKrychli(int pocetKrychli) {
-        this.pocetKrychli = pocetKrychli;
-    }
-
-    public void setDelkaHrany(int delkaHrany) {
-        this.delkaHrany = delkaHrany;
-    }
-
-    public void setRozlozeniBludiste(int[][] rozlozeniBludiste) {
-        this.rozlozeniBludiste = rozlozeniBludiste;
-    }
-
+    //Get/Set
     public void setRozlozeniBludiste(int i, int j, int value) {
         this.rozlozeniBludiste[i][j] = value;
-    }
-
-    public void setRozlozeniBludisteBackUp(int[][] rozlozeniBludisteBackUp) {
-        this.rozlozeniBludisteBackUp = rozlozeniBludisteBackUp;
-    }
-
-    public void setRozlozeniBludisteNoEnemy(int[][] rozlozeniBludisteNoEnemy) {
-        this.rozlozeniBludisteNoEnemy = rozlozeniBludisteNoEnemy;
-    }
-
-    public void setBoxes(Box[][] boxes) {
-        this.boxes = boxes;
-    }
-
-    public void setJednaHrana(int jednaHrana) {
-        this.jednaHrana = jednaHrana;
-    }
-
-    public void setSpawnI(int spawnI) {
-        this.spawnI = spawnI;
-    }
-
-    public void setSpawnJ(int spawnJ) {
-        this.spawnJ = spawnJ;
-    }
-
-    public void setSpawnX(double spawnX) {
-        this.spawnX = spawnX;
-    }
-
-    public void setSpawnZ(double spawnZ) {
-        this.spawnZ = spawnZ;
-    }
-
-    public void setHelpBoxes(ArrayList<Box> helpBoxes) {
-        this.helpBoxes = helpBoxes;
-    }
-
-    public void setCurrenI(int currenI) {
-        this.currenI = currenI;
-    }
-
-    public void setCurrenJ(int currenJ) {
-        this.currenJ = currenJ;
     }
 
     public int getPocetKrychli() {
@@ -294,21 +242,18 @@ public class MazeLoader extends FileReader {
         return delkaHrany;
     }
 
-    public int getRozlozeniBludiste(int i ,int j) {
+    public int getRozlozeniBludiste(int i, int j) {
         return rozlozeniBludiste[i][j];
     }
 
-    public int[][] getRozlozeniBludisteBackUp() {
-        return rozlozeniBludisteBackUp;
-    }
-
-    public int getRozlozeniBludisteBackUp(int i,int j) {
+    public int getRozlozeniBludisteBackUp(int i, int j) {
         return rozlozeniBludisteBackUp[i][j];
     }
 
     public int[][] getRozlozeniBludisteNoEnemy() {
         return rozlozeniBludisteNoEnemy;
     }
+
 
     public Box[][] getBoxes() {
         return boxes;
@@ -342,12 +287,21 @@ public class MazeLoader extends FileReader {
         return rozlozeniBludiste;
     }
 
+
     public int getCurrenI() {
         return currenI;
     }
 
+    public void setCurrenI(int currenI) {
+        this.currenI = currenI;
+    }
+
     public int getCurrenJ() {
         return currenJ;
+    }
+
+    public void setCurrenJ(int currenJ) {
+        this.currenJ = currenJ;
     }
 
     public int getFinishI() {
